@@ -3,13 +3,12 @@ package com.uragiristereo.mejiboard.ui.screens.about
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
@@ -74,6 +73,7 @@ fun AboutScreen(
     ) { innerPadding ->
         LazyColumn(
             Modifier
+                .fillMaxSize()
                 .padding(innerPadding)
         ) {
             item {
@@ -167,93 +167,107 @@ fun AboutScreen(
                             top = 32.dp,
                             end = 16.dp,
                             start = 16.dp,
-                            bottom = 8.dp
+                            bottom = 12.dp
                         ),
                     style = MaterialTheme.typography.h6
                 )
             }
             item {
-                Row(
+                Card(
                     Modifier
                         .fillMaxWidth()
                         .padding(
                             start = 16.dp,
                             end = 16.dp
                         ),
-                    verticalAlignment = Alignment.CenterVertically
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = 4.dp
                 ) {
-                    CoilImage(
-                        imageRequest = ImageRequest
-                            .Builder(context)
-                            .data("https://avatars.githubusercontent.com/u/52477630?v=4")
-                            .crossfade(true)
-                            .build(),
+                    Row(
                         Modifier
-                            .clip(CircleShape)
-                            .size(48.dp)
-                    )
-                    Column(
-                        Modifier
-                            .padding(start = 16.dp)
+                            .padding(16.dp)
                     ) {
-                        Text(
-                            "Agung Watanabe",
-                            fontSize = 18.sp
+                        CoilImage(
+                            imageRequest = ImageRequest
+                                .Builder(context)
+                                .data("https://avatars.githubusercontent.com/u/52477630?v=4")
+                                .crossfade(true)
+                                .build(),
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(48.dp),
+                            imageLoader = mainViewModel.imageLoader,
+                            loading = {
+                                Box(
+                                    Modifier
+                                        .fillMaxSize()
+                                        .background(Color.DarkGray)
+                                )
+                            }
                         )
-                        Text(
-                            "@uragiristereo",
+                        Column(
                             Modifier
-                                .padding(top = 4.dp),
-                            style = MaterialTheme.typography.body2,
-                            color = MaterialTheme.colors.onSurface.copy(0.7f)
-                        )
-                        Row(
-                            Modifier
-                                .padding(top = 8.dp)
+                                .padding(start = 16.dp)
                         ) {
-                            LinkIconButton(
-                                painter = painterResource(if (mainViewModel.isDesiredThemeDark) R.drawable.github_logo_white else R.drawable.github_logo),
-                                text = "Github",
-                                onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/uragiristereo"))
-                                    context.startActivity(intent)
-                                }
+                            Text(
+                                "Agung Watanabe",
+                                fontSize = 18.sp
                             )
-                            Spacer(
-                                Modifier.width(8.dp)
+                            Text(
+                                "@uragiristereo",
+                                Modifier
+                                    .padding(top = 4.dp),
+                                style = MaterialTheme.typography.body2,
+                                color = MaterialTheme.colors.onSurface.copy(0.7f)
                             )
-                            LinkIconButton(
-                                painter = painterResource(R.drawable.facebook_logo),
-                                text = "Facebook",
-                                onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://facebook.com/agutenx"))
-                                    context.startActivity(intent)
-                                }
-                            )
-                            Spacer(
-                                Modifier.width(8.dp)
-                            )
-                            LinkIconButton(
-                                painter = painterResource(R.drawable.twitter_logo),
-                                text = "Twitter",
-                                onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/uragiristereo"))
-                                    context.startActivity(intent)
-                                }
-                            )
-                        }
-                        Row(
-                            Modifier
-                                .padding(top = 8.dp)
-                        ) {
-                            LinkIconButton(
-                                icon = Icons.Filled.Email,
-                                text = "Email",
-                                onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("mailto:raava@outlook.co.id"))
-                                    context.startActivity(intent)
-                                }
-                            )
+                            Row(
+                                Modifier
+                                    .padding(top = 8.dp)
+                            ) {
+                                LinkIconButton(
+                                    painter = painterResource(if (mainViewModel.isDesiredThemeDark) R.drawable.github_logo_white else R.drawable.github_logo),
+                                    text = "Github",
+                                    onClick = {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/uragiristereo"))
+                                        context.startActivity(intent)
+                                    }
+                                )
+                                Spacer(
+                                    Modifier.width(8.dp)
+                                )
+                                LinkIconButton(
+                                    painter = painterResource(R.drawable.facebook_logo),
+                                    text = "Facebook",
+                                    onClick = {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://facebook.com/agutenx"))
+                                        context.startActivity(intent)
+                                    }
+                                )
+                            }
+                            Row(
+                                Modifier
+                                    .padding(top = 8.dp)
+                            ) {
+                                LinkIconButton(
+                                    painter = painterResource(R.drawable.twitter_logo),
+                                    text = "Twitter",
+                                    onClick = {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/uragiristereo"))
+                                        context.startActivity(intent)
+                                    }
+                                )
+                                Spacer(
+                                    Modifier.width(8.dp)
+                                )
+                                LinkIconButton(
+                                    painter = painterResource(R.drawable.outlook_logo),
+                                    text = "Email",
+                                    onClick = {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("mailto:raava@outlook.co.id"))
+                                        context.startActivity(intent)
+                                    }
+                                )
+                            }
                         }
                     }
                 }
