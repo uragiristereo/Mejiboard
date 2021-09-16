@@ -294,19 +294,20 @@ fun PostMoreNavigation(
                         )
                     }
                     if (post.source.isNotEmpty()) {
+                        var source = post.source.replace("&amp;", "&")
+                        source =
+                            if ("https://" in source || "http://" in source)
+                                source
+                            else
+                                "https://www.google.com/search?q=${source}"
+
                         item {
                             SheetInfoItem(
                                 "Source",
-                                post.source,
+                                source,
                                 Modifier
                                     .clickable {
-                                        val link =
-                                            if ("https://" in post.source || "http://" in post.source)
-                                                post.source
-                                            else
-                                                "https://www.google.com/search?q=${post.source}"
-
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(source))
                                         context.startActivity(intent)
                                     }
                             )
