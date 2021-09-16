@@ -229,6 +229,7 @@ fun ImageScreen(
                             decoder(GifDecoder())
 
                         crossfade(true)
+                        size(post.width, post.height)
 
                         listener(
                             onStart = { loading = true },
@@ -253,8 +254,8 @@ fun ImageScreen(
                         originalUrl,
                         imageLoader = mainViewModel.imageLoader,
                         builder = {
-
                             crossfade(true)
+                            size(post.width, post.height)
 
                             listener(
                                 onStart = { loading = true },
