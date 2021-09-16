@@ -136,62 +136,64 @@ fun SearchScreen(
                         .fillMaxWidth()
                 )
                 if (searchViewModel.searchError == "") {
-                    LazyColumn(
-                        Modifier
-                            .fillMaxWidth(),
-                        state = columnState
-                    ) {
-                        itemsIndexed(searchViewModel.searchData) { _, item ->
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clickable(onClick = {
-                                        searchAllowed = false
-
-                                        val result = query.value.text.replaceRange(
-                                            startQueryIndex,
-                                            endQueryIndex,
-                                            "$delimiter${item.value} "
-                                        )
-
-                                        val newQuery = "$result ".replace("\\s+".toRegex(), " ")
-
-                                        query.value = TextFieldValue(newQuery, TextRange(newQuery.length))
-                                        searchViewModel.clearSearches()
-                                        searchAllowed = true
-                                    })
-                                    .padding(16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Icon(
-                                    Icons.Outlined.Search,
-                                    "Search",
-                                    Modifier
-                                        .weight(1f)
-                                )
+                    if (query.value.text.isNotEmpty()) {
+                        LazyColumn(
+                            Modifier
+                                .fillMaxWidth(),
+                            state = columnState
+                        ) {
+                            itemsIndexed(searchViewModel.searchData) { _, item ->
                                 Row(
                                     Modifier
-                                        .weight(8f)
-                                        .padding(start = 16.dp, end = 16.dp),
+                                        .fillMaxWidth()
+                                        .clickable(onClick = {
+                                            searchAllowed = false
+
+                                            val result = query.value.text.replaceRange(
+                                                startQueryIndex,
+                                                endQueryIndex,
+                                                "$delimiter${item.value} "
+                                            )
+
+                                            val newQuery = "$result ".replace("\\s+".toRegex(), " ")
+
+                                            query.value = TextFieldValue(newQuery, TextRange(newQuery.length))
+                                            searchViewModel.clearSearches()
+                                            searchAllowed = true
+                                        })
+                                        .padding(16.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(
-                                        "$delimiter${item.value}",
-                                        Modifier.weight(6f)
+                                    Icon(
+                                        Icons.Outlined.Search,
+                                        "Search",
+                                        Modifier
+                                            .weight(1f)
                                     )
-                                    Text(
-                                        item.post_count.toString(),
-                                        Modifier.weight(2f),
-                                        textAlign = TextAlign.Right,
-                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                                    Row(
+                                        Modifier
+                                            .weight(8f)
+                                            .padding(start = 16.dp, end = 16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            "$delimiter${item.value}",
+                                            Modifier.weight(6f)
+                                        )
+                                        Text(
+                                            item.post_count.toString(),
+                                            Modifier.weight(2f),
+                                            textAlign = TextAlign.Right,
+                                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                    Icon(
+                                        painterResource(R.drawable.north_west),
+                                        "Append search",
+                                        Modifier
+                                            .weight(1f)
                                     )
                                 }
-                                Icon(
-                                    painterResource(R.drawable.north_west),
-                                    "Append search",
-                                    Modifier
-                                        .weight(1f)
-                                )
                             }
                         }
                     }
