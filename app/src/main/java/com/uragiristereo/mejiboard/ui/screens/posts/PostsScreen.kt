@@ -20,17 +20,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
-import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.insets.rememberInsetsPaddingValues
+import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.insets.ui.TopAppBar
 import com.uragiristereo.mejiboard.BuildConfig
 import com.uragiristereo.mejiboard.R
@@ -41,6 +46,7 @@ import com.uragiristereo.mejiboard.ui.viewmodel.PostsViewModel
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.MaterialFade
 import soup.compose.material.motion.MotionConstants
+import kotlin.math.roundToInt
 
 @ExperimentalAnimationApi
 @ExperimentalCoilApi
@@ -58,6 +64,8 @@ fun MainScreen(
     val drawerItemSelected = remember { mutableStateOf("home") }
     val postsData by postsViewModel.postsData
     val gridState = rememberLazyListState()
+
+    var toolbarOffsetHeightPx by remember { mutableStateOf(0f) }
 
     if (mainViewModel.refreshNeeded) {
         postsViewModel.getPosts(mainViewModel.searchTags, true, mainViewModel.safeListingOnly)
@@ -169,37 +177,12 @@ fun MainScreen(
                             scope.launch {
                                 gridState.animateScrollToItem(0)
                             }
+                            toolbarOffsetHeightPx = 0f
                         }
                     ) {
                         Icon(Icons.Outlined.KeyboardArrowUp, "Scroll to top")
                     }
                 }
-            },
-            topBar = {
-                TopAppBar(
-                    backgroundColor = Color.Transparent,
-                    elevation = 0.dp,
-                    title = {
-                        Text("Mejiboard")
-                    },
-                    contentPadding = rememberInsetsPaddingValues(
-                        LocalWindowInsets.current.statusBars,
-                        applyBottom = false,
-                    ),
-                    navigationIcon = {
-                        Surface(
-                            Modifier
-                                .padding(8.dp),
-                            shape = CircleShape,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.not_like_tsugu),
-                                contentDescription = "App icon"
-                            )
-                        }
-                    }
-                )
             },
             bottomBar = {
                 BottomAppBar(
@@ -259,6 +242,7 @@ fun MainScreen(
                                     onClick = {
                                         dropDownExpanded.value = false
                                         postsViewModel.getPosts(mainViewModel.searchTags, true, mainViewModel.safeListingOnly)
+                                        toolbarOffsetHeightPx = 0f
                                     }
                                 ) {
                                     Text("Refresh")
@@ -268,6 +252,7 @@ fun MainScreen(
                                         dropDownExpanded.value = false
                                         mainViewModel.searchTags = ""
                                         postsViewModel.getPosts(mainViewModel.searchTags, true, mainViewModel.safeListingOnly)
+                                        toolbarOffsetHeightPx = 0f
                                     }
                                 ) {
                                     Text("All posts")
@@ -278,17 +263,29 @@ fun MainScreen(
                 }
             }
         ) { innerPadding ->
-            Column(
+            val toolbarHeight = 56.dp
+            val toolbarHeightPx = with (LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
+
+            val nestedScrollConnection = remember {
+                object : NestedScrollConnection {
+                    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+
+                        val delta = available.y
+                        val newOffset = toolbarOffsetHeightPx + delta
+                        toolbarOffsetHeightPx = newOffset.coerceIn(-toolbarHeightPx, 0f)
+                        return Offset.Zero
+                    }
+                }
+            }
+
+            Box(
                 Modifier
+                    .statusBarsPadding()
                     .padding(innerPadding)
+                    .nestedScroll(nestedScrollConnection)
             ) {
-                LinearProgressIndicator(
-                    Modifier
-                        .alpha(if (postsViewModel.postsProgressVisible) 1f else 0f)
-                        .fillMaxWidth()
-                )
                 if (postsViewModel.postsError.isEmpty()) {
-                    PostsGrid(postsData, postsViewModel, mainViewModel, mainNavigation, gridState)
+                    PostsGrid(postsData, postsViewModel, mainViewModel, mainNavigation, gridState, toolbarHeight)
                 } else {
                     Column(
                         Modifier
@@ -306,6 +303,36 @@ fun MainScreen(
                             textAlign = TextAlign.Center
                         )
                     }
+                }
+                Column(
+                    Modifier
+                        .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.roundToInt()) }
+                ) {
+                    TopAppBar(
+                        backgroundColor = MaterialTheme.colors.background,
+                        elevation = 0.dp,
+                        modifier = Modifier
+                            .height(toolbarHeight),
+                        title = { Text("Mejiboard") },
+                        navigationIcon = {
+                            Surface(
+                                Modifier
+                                    .padding(8.dp),
+                                shape = CircleShape,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.not_like_tsugu),
+                                    contentDescription = "App icon"
+                                )
+                            }
+                        }
+                    )
+                    LinearProgressIndicator(
+                        Modifier
+                            .alpha(if (postsViewModel.postsProgressVisible) 1f else 0f)
+                            .fillMaxWidth()
+                    )
                 }
             }
         }

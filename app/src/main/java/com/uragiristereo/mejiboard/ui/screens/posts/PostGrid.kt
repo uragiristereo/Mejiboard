@@ -19,17 +19,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import coil.ImageLoader
 import coil.annotation.ExperimentalCoilApi
 import coil.request.ImageRequest
-import coil.util.CoilUtils
 import com.skydoves.landscapist.coil.CoilImage
 import com.uragiristereo.mejiboard.model.Post
 import com.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.uragiristereo.mejiboard.ui.viewmodel.PostsViewModel
-import timber.log.Timber
 import java.io.File
 
 @ExperimentalCoilApi
@@ -39,7 +37,8 @@ fun PostsGrid(
     postsViewModel: PostsViewModel,
     mainViewModel: MainViewModel,
     mainNavigation: NavHostController,
-    gridState: LazyListState
+    gridState: LazyListState,
+    toolbarHeight: Dp,
 ) {
     val context = LocalContext.current
     val gridCount = 2
@@ -60,7 +59,7 @@ fun PostsGrid(
 
     LazyColumn(
         state = gridState,
-        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 8.dp)
+        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 8.dp, top = toolbarHeight + 2.dp)
     ) {
         val supportedTypesAnimation = listOf("gif", "webm", "mp4")
 

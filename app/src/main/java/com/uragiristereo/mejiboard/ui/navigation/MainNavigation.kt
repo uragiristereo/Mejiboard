@@ -31,9 +31,10 @@ import soup.compose.material.motion.navigation.rememberMaterialMotionNavControll
 @ExperimentalMaterialApi
 @ExperimentalComposeUiApi
 @Composable
-fun MainNavigation() {
+fun MainNavigation(
+    mainViewModel: MainViewModel = hiltViewModel()
+) {
     val mainNavigation = rememberMaterialMotionNavController()
-    val mainViewModel: MainViewModel = hiltViewModel()
     val systemUiController = rememberSystemUiController()
 
     mainViewModel.isDesiredThemeDark =
