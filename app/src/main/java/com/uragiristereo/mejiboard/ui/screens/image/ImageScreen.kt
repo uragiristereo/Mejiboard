@@ -61,7 +61,7 @@ fun ImageScreen(
     mainViewModel: MainViewModel,
     imageViewModel: ImageViewModel = hiltViewModel(),
 ) {
-    val post = mainViewModel.selectedPost
+    val post = mainViewModel.selectedPost!!
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val window = (context as Activity).window

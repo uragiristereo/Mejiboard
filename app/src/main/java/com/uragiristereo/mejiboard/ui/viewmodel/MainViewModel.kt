@@ -52,7 +52,7 @@ class MainViewModel @Inject constructor(
     var searchTags by mutableStateOf("")
 
     // posts & image
-    lateinit var selectedPost: Post
+    var selectedPost: Post? = null
 
     // bookmarks
     var bookmarks by mutableStateOf<List<Bookmark>>(listOf())
