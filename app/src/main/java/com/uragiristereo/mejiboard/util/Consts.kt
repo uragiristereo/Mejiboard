@@ -11,3 +11,4 @@ val PREVIEW_SIZE = stringPreferencesKey("PREVIEW_SIZE")
 val SAFE_LISTING_ONLY = booleanPreferencesKey("SAFE_LISTING_ONLY")
 val USE_DNS_OVER_HTTPS = booleanPreferencesKey("USE_DNS_OVER_HTTPS")
 val DNS_OVER_HTTPS_PROVIDER = stringPreferencesKey("DNS_OVER_HTTPS_PROVIDER")
+const val STATE_KEY_SELECTED_POST = "main.selected.post"

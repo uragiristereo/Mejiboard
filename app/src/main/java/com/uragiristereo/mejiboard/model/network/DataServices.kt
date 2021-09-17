@@ -1,8 +1,5 @@
 package com.uragiristereo.mejiboard.model.network
 
-import com.uragiristereo.mejiboard.model.Post
-import com.uragiristereo.mejiboard.model.Search
-import com.uragiristereo.mejiboard.model.Tag
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.GET

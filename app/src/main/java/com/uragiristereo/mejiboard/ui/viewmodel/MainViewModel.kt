@@ -5,14 +5,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.uragiristereo.mejiboard.model.Post
+import com.uragiristereo.mejiboard.model.network.Post
 import com.uragiristereo.mejiboard.model.database.AppDatabase
 import com.uragiristereo.mejiboard.model.database.Bookmark
 import com.uragiristereo.mejiboard.model.network.NetworkInstance
 import com.uragiristereo.mejiboard.model.preferences.PreferencesManager
 import com.uragiristereo.mejiboard.util.*
+import dagger.assisted.Assisted
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -25,14 +27,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    _preferencesManager: PreferencesManager,
-    _networkInstance: NetworkInstance,
-    _appDatabase: AppDatabase
+    private val preferencesManager: PreferencesManager,
+    private val networkInstance: NetworkInstance,
+    private val appDatabase: AppDatabase,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val preferencesManager = _preferencesManager
-    private val networkInstance = _networkInstance
-    private val appDatabase = _appDatabase
-
     var okHttpClient = networkInstance.okHttpClient
     var imageLoader = networkInstance.imageLoader
 
@@ -58,6 +57,11 @@ class MainViewModel @Inject constructor(
     var bookmarks by mutableStateOf<List<Bookmark>>(listOf())
 
     init {
+        // load saved state from system
+        savedStateHandle.get<Post>(STATE_KEY_SELECTED_POST)?.let {
+            selectedPost = it
+        }
+
         viewModelScope.launch {
             // load preferences
             with(preferencesManager.dataStore.data) {
@@ -131,5 +135,10 @@ class MainViewModel @Inject constructor(
     fun getBookmarks() {
         bookmarks = appDatabase.bookmarkDao().get()
         Timber.i(bookmarks.toString())
+    }
+
+    fun saveSelectedPost(post: Post) {
+        selectedPost = post
+        savedStateHandle.set(STATE_KEY_SELECTED_POST, post)
     }
 }

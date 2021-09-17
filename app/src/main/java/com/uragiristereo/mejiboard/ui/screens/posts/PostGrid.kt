@@ -25,7 +25,7 @@ import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import coil.request.ImageRequest
 import com.skydoves.landscapist.coil.CoilImage
-import com.uragiristereo.mejiboard.model.Post
+import com.uragiristereo.mejiboard.model.network.Post
 import com.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.uragiristereo.mejiboard.ui.viewmodel.PostsViewModel
 import java.io.File
@@ -111,7 +111,9 @@ fun PostsGrid(
                                     )
                                 )
                                 .clickable(onClick = {
-                                    mainViewModel.selectedPost = postsViewModel.postsData.value.find { it.id == item.id }!!
+                                    val selectedPost = postsViewModel.postsData.value.find { it.id == item.id }!!
+                                    mainViewModel.saveSelectedPost(selectedPost)
+
                                     mainNavigation.navigate("image") {
                                         popUpTo("main") { saveState = true }
                                         launchSingleTop = true

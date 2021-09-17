@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.uragiristereo.mejiboard.model.Post
+import com.uragiristereo.mejiboard.model.network.Post
 import com.uragiristereo.mejiboard.model.network.NetworkInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import retrofit2.Call
@@ -15,10 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PostsViewModel @Inject constructor(
-    _networkInstance: NetworkInstance
+    private val networkInstance: NetworkInstance
 ) : ViewModel() {
-    private val retrofitInstance = _networkInstance
-
     val postsData = mutableStateOf<ArrayList<Post>>(arrayListOf())
     var postsProgressVisible by mutableStateOf(false)
     var page by mutableStateOf(0)
@@ -37,7 +35,7 @@ class PostsViewModel @Inject constructor(
 
         val tags = if (safeListingOnly) "$searchTags rating:safe" else searchTags
 
-        retrofitInstance.api.getPosts(page, tags).enqueue(object : Callback<List<Post>> {
+        networkInstance.api.getPosts(page, tags).enqueue(object : Callback<List<Post>> {
             override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
                 postsProgressVisible = false
 

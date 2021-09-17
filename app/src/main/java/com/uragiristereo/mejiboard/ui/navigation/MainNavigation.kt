@@ -86,14 +86,7 @@ fun MainNavigation(
                         "image",
                     ) {
                         systemUiController.setSystemBarsColor(Color.Black.copy(0.4f))
-                        if (mainViewModel.selectedPost == null) {
-                            mainNavigation.navigate("main") {
-                                popUpTo("main") { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        } else
-                            ImageScreen(mainNavigation, mainViewModel)
+                        ImageScreen(mainNavigation, mainViewModel)
                     }
                     composable(
                         "about",

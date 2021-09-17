@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.navigationBarsPadding
 import com.uragiristereo.mejiboard.R
-import com.uragiristereo.mejiboard.model.Post
+import com.uragiristereo.mejiboard.model.network.Post
 import com.uragiristereo.mejiboard.ui.components.SheetInfoItem
 import com.uragiristereo.mejiboard.ui.components.SheetItem
 import com.uragiristereo.mejiboard.ui.components.TagInfoItem

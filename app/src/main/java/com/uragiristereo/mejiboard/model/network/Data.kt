@@ -1,7 +1,10 @@
-package com.uragiristereo.mejiboard.model
+package com.uragiristereo.mejiboard.model.network
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import java.util.*
 
+@Parcelize
 data class Post(
     val id: Int,
     val image: String,
@@ -18,7 +21,7 @@ data class Post(
     val source: String,
     val rating: String,
     val created_at: Date
-)
+) : Parcelable
 
 data class Search(
     val value: String,

@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.uragiristereo.mejiboard.model.Search
+import com.uragiristereo.mejiboard.model.network.Search
 import com.uragiristereo.mejiboard.model.network.NetworkInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import retrofit2.Call
@@ -15,11 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    _networkInstance: NetworkInstance
+    private val networkInstance: NetworkInstance
 ) : ViewModel() {
-    private val retrofitInstance = _networkInstance
-
-    //    val searchText = mutableStateOf(TextFieldValue(""))
     var searchData: List<Search> by mutableStateOf(listOf())
     var searchProgressVisible by mutableStateOf(false)
     var searchError by mutableStateOf("")
@@ -32,7 +29,7 @@ class SearchViewModel @Inject constructor(
             tagsQueue.add(thisUUID)
             searchProgressVisible = true
 
-            retrofitInstance.api.getTags(newTag).enqueue(object : Callback<List<Search>> {
+            networkInstance.api.getTags(newTag).enqueue(object : Callback<List<Search>> {
                 override fun onResponse(
                     call: Call<List<Search>>,
                     response: Response<List<Search>>

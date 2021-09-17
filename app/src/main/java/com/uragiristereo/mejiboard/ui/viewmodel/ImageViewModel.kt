@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.uragiristereo.mejiboard.model.Tag
+import com.uragiristereo.mejiboard.model.network.Tag
 import com.uragiristereo.mejiboard.model.network.NetworkInstance
 import com.uragiristereo.mejiboard.util.convertSize
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,10 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ImageViewModel @Inject constructor(
-    _networkInstance: NetworkInstance
+    private val networkInstance: NetworkInstance
 ) : ViewModel() {
-    val retrofitInstance = _networkInstance
-
     var imageSize by mutableStateOf("")
     var originalImageSize by mutableStateOf("")
     var shareModalVisible by mutableStateOf(false)
@@ -36,7 +34,7 @@ class ImageViewModel @Inject constructor(
     fun checkImage(url: String, original: Boolean = false) {
         if (original) originalImageSize = "Loading..." else imageSize = "Loading..."
 
-        retrofitInstance.api.checkImage(url).enqueue(object : Callback<Void> {
+        networkInstance.api.checkImage(url).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 val size = response.headers()["content-length"] ?: "0"
 
@@ -59,7 +57,7 @@ class ImageViewModel @Inject constructor(
         infoProgressVisible = true
         infoData.value = listOf()
 
-        retrofitInstance.api.getTagsInfo(names).enqueue(object : Callback<List<Tag>> {
+        networkInstance.api.getTagsInfo(names).enqueue(object : Callback<List<Tag>> {
             override fun onResponse(call: Call<List<Tag>>, response: Response<List<Tag>>) {
                 infoData.value = response.body()!!
                 infoProgressVisible = false
