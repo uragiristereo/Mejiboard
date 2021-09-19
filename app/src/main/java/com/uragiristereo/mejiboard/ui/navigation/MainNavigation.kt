@@ -20,6 +20,8 @@ import com.uragiristereo.mejiboard.ui.screens.settings.SettingsScreen
 import com.uragiristereo.mejiboard.ui.screens.splash.SplashScreen
 import com.uragiristereo.mejiboard.ui.theme.MejiboardTheme
 import com.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
+import com.uragiristereo.mejiboard.util.MiuiHelper
+import com.uragiristereo.mejiboard.util.MiuiHelper.isDeviceMiui
 import soup.compose.material.motion.materialSharedAxisXIn
 import soup.compose.material.motion.materialSharedAxisXOut
 import soup.compose.material.motion.navigation.MaterialMotionNavHost
@@ -36,6 +38,7 @@ fun MainNavigation(
 ) {
     val mainNavigation = rememberMaterialMotionNavController()
     val systemUiController = rememberSystemUiController()
+    val isDeviceMiui = isDeviceMiui()
 
     mainViewModel.isDesiredThemeDark =
         when (mainViewModel.theme) {
@@ -52,9 +55,6 @@ fun MainNavigation(
             theme = mainViewModel.theme,
             blackTheme = mainViewModel.blackTheme
         ) {
-            systemUiController.setStatusBarColor(MaterialTheme.colors.surface)
-            systemUiController.setNavigationBarColor(MaterialTheme.colors.surface.copy(0.4f))
-
             Surface(color = MaterialTheme.colors.background) {
                 MaterialMotionNavHost(navController = mainNavigation, startDestination = "main") {
                     composable("splash") {
@@ -63,7 +63,11 @@ fun MainNavigation(
                         SplashScreen(mainNavigation, mainViewModel.isDesiredThemeDark)
                     }
                     composable("main") {
-                        systemUiController.setSystemBarsColor(MaterialTheme.colors.surface)
+                        if (isDeviceMiui && !mainViewModel.isDesiredThemeDark) {
+                            systemUiController.setStatusBarColor(Color.Black)
+                            systemUiController.setNavigationBarColor(MaterialTheme.colors.surface)
+                        } else
+                            systemUiController.setSystemBarsColor(MaterialTheme.colors.surface)
 
                         MainScreen(mainNavigation, mainViewModel)
                     }
@@ -72,13 +76,24 @@ fun MainNavigation(
                         enterMotionSpec = { _, _ -> materialSharedAxisXIn() },
                         exitMotionSpec = { _, _ -> materialSharedAxisXOut() },
                     ) {
+                        if (isDeviceMiui && !mainViewModel.isDesiredThemeDark) {
+                            systemUiController.setStatusBarColor(Color.Black)
+                            systemUiController.setNavigationBarColor(MaterialTheme.colors.surface)
+                        } else
+                            systemUiController.setSystemBarsColor(MaterialTheme.colors.surface)
+
                         SearchScreen(mainNavigation, mainViewModel)
                     }
                     composable(
                         "settings",
                     ) {
-                        systemUiController.setStatusBarColor(MaterialTheme.colors.surface)
-                        systemUiController.setNavigationBarColor(MaterialTheme.colors.surface.copy(0.4f))
+                        if (isDeviceMiui && !mainViewModel.isDesiredThemeDark) {
+                            systemUiController.setStatusBarColor(Color.Black)
+                            systemUiController.setNavigationBarColor(MaterialTheme.colors.surface)
+                        } else {
+                            systemUiController.setStatusBarColor(MaterialTheme.colors.surface)
+                            systemUiController.setNavigationBarColor(MaterialTheme.colors.surface.copy(0.4f))
+                        }
 
                         SettingsScreen(mainNavigation, mainViewModel)
                     }
@@ -91,8 +106,13 @@ fun MainNavigation(
                     composable(
                         "about",
                     ) {
-                        systemUiController.setStatusBarColor(MaterialTheme.colors.surface)
-                        systemUiController.setNavigationBarColor(MaterialTheme.colors.surface.copy(0.4f))
+                        if (isDeviceMiui && !mainViewModel.isDesiredThemeDark) {
+                            systemUiController.setStatusBarColor(Color.Black)
+                            systemUiController.setNavigationBarColor(MaterialTheme.colors.surface)
+                        } else {
+                            systemUiController.setStatusBarColor(MaterialTheme.colors.surface)
+                            systemUiController.setNavigationBarColor(MaterialTheme.colors.surface.copy(0.4f))
+                        }
 
                         AboutScreen(mainNavigation, mainViewModel)
                     }
