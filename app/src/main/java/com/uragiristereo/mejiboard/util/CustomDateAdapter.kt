@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class CustomDateAdapter : JsonAdapter<Date>() {
-    private val dateFormat = SimpleDateFormat(SERVER_FORMAT, Locale.getDefault())
+    private val dateFormat = SimpleDateFormat(SERVER_FORMAT, Locale.US)
 
     @FromJson
     override fun fromJson(reader: JsonReader): Date? {
