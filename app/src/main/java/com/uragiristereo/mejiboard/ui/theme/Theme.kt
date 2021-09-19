@@ -11,15 +11,15 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 private val DarkColorPalette = darkColors(
     primary = DeepPurple200,
     primaryVariant = DeepPurple700,
-//    secondary = Teal200
+    secondaryVariant = DeepPurple700,
     secondary = DeepPurple200
 )
 
 private val BlackColorPalette = darkColors(
     primary = DeepPurple200,
     primaryVariant = DeepPurple700,
-//    secondary = Teal200,
     secondary = DeepPurple200,
+    secondaryVariant = DeepPurple700,
     background = Color.Black,
     surface = Color.Black
 )
@@ -27,8 +27,8 @@ private val BlackColorPalette = darkColors(
 private val LightColorPalette = lightColors(
     primary = DeepPurple500,
     primaryVariant = DeepPurple700,
-//    secondary = Teal200
-    secondary = DeepPurple500
+    secondary = DeepPurple500,
+    secondaryVariant = DeepPurple700,
 
     /* Other default colors to override
     background = Color.White,
