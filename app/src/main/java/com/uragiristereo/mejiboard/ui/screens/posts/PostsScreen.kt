@@ -328,11 +328,11 @@ fun MainScreen(
                             }
                         }
                     )
-                    LinearProgressIndicator(
-                        Modifier
-                            .alpha(if (postsViewModel.postsProgressVisible) 1f else 0f)
-                            .fillMaxWidth()
-                    )
+//                    LinearProgressIndicator(
+//                        Modifier
+//                            .alpha(if (postsViewModel.postsProgressVisible) 1f else 0f)
+//                            .fillMaxWidth()
+//                    )
                 }
             }
         }

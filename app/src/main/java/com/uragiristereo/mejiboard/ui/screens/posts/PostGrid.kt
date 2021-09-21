@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -59,7 +60,7 @@ fun PostsGrid(
 
     LazyColumn(
         state = gridState,
-        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 8.dp, top = toolbarHeight + 2.dp)
+        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 8.dp, top = toolbarHeight)
     ) {
         val supportedTypesAnimation = listOf("gif", "webm", "mp4")
 
@@ -150,6 +151,18 @@ fun PostsGrid(
                             ) {}
                         }
                     }
+                }
+            }
+        }
+        if (postsViewModel.postsProgressVisible) {
+            item {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
             }
         }
