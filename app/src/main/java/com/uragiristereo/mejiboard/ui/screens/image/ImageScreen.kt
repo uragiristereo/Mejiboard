@@ -75,6 +75,7 @@ fun ImageScreen(
     val moreNavigation = rememberMaterialMotionNavController()
 
     var loading by remember { mutableStateOf(false) }
+    val maxSize = 4096f
 
     LaunchedEffect(Unit) {
         imageViewModel.imageSize = ""
@@ -229,7 +230,20 @@ fun ImageScreen(
                             decoder(GifDecoder())
 
                         crossfade(true)
-                        size(post.width, post.height)
+
+                        if (post.width > maxSize || post.height > maxSize) {
+                            val scale =
+                                if (post.width > post.height)
+                                    maxSize.div(post.width)
+                                else
+                                    maxSize.div(post.height)
+
+                            val scaledWidth = post.width * scale
+                            val scaledHeight = post.height * scale
+
+                            size(scaledWidth.toInt(), scaledHeight.toInt())
+                        } else
+                            size(post.width, post.height)
 
                         listener(
                             onStart = { loading = true },
@@ -255,7 +269,20 @@ fun ImageScreen(
                         imageLoader = mainViewModel.imageLoader,
                         builder = {
                             crossfade(true)
-                            size(post.width, post.height)
+
+                            if (post.width > maxSize || post.height > maxSize) {
+                                val scale =
+                                    if (post.width > post.height)
+                                        maxSize.div(post.width)
+                                    else
+                                        maxSize.div(post.height)
+
+                                val scaledWidth = post.width * scale
+                                val scaledHeight = post.height * scale
+
+                                size(scaledWidth.toInt(), scaledHeight.toInt())
+                            } else
+                                size(post.width, post.height)
 
                             listener(
                                 onStart = { loading = true },
