@@ -81,7 +81,7 @@ fun MainScreen(
 
     BottomDrawer(
         drawerState = drawerState,
-        drawerShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
+        drawerShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
         drawerContent = {
             Column {
                 Box(

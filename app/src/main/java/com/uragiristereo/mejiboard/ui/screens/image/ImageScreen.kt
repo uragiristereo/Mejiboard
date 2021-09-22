@@ -382,7 +382,7 @@ fun ImageScreen(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding(),
-        sheetShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
+        sheetShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
         scrimColor = Color(0xFF121212).copy(alpha = DrawerDefaults.ScrimOpacity),
         sheetContent = {
             Column(

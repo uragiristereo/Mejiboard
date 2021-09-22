@@ -180,7 +180,7 @@ fun AboutScreen(
                             end = 16.dp
                         ),
                     shape = RoundedCornerShape(8.dp),
-                    elevation = 4.dp
+                    elevation = 2.dp
                 ) {
                     Row(
                         Modifier
