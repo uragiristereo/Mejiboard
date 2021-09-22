@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,10 +15,12 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.navigationBarsPadding
@@ -27,6 +30,9 @@ import com.uragiristereo.mejiboard.ui.components.SheetInfoItem
 import com.uragiristereo.mejiboard.ui.components.SheetItem
 import com.uragiristereo.mejiboard.ui.components.TagInfoItem
 import com.uragiristereo.mejiboard.ui.viewmodel.ImageViewModel
+import com.uragiristereo.mejiboard.util.convertSize
+import com.vanpra.composematerialdialogs.MaterialDialog
+import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.materialSharedAxisXIn
 import soup.compose.material.motion.materialSharedAxisXOut
@@ -49,6 +55,65 @@ fun PostMoreNavigation(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val dialogState = rememberMaterialDialogState()
+
+    MaterialDialog(
+        dialogState = dialogState,
+        onCloseRequest = { },
+        buttons = {
+            negativeButton(
+                "Cancel",
+                onClick = {
+                    scope.launch {
+                        imageViewModel.instance.call.cancel()
+                        dialogState.hide()
+                    }
+                }
+            )
+        }
+    ) {
+        val info by imageViewModel.instance.info
+
+        val progressSmooth by animateFloatAsState(targetValue = info.progress)
+
+        Column(
+            Modifier
+                .padding(16.dp)
+        ) {
+            val progressFormatted = "%.2f".format(info.progress.times(100))
+
+            Text(
+                "Downloading...",
+                Modifier
+                    .padding(bottom = 12.dp),
+                style = MaterialTheme.typography.h6
+            )
+            if (progressSmooth != 0f) {
+                LinearProgressIndicator(
+                    progress = progressSmooth,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp)
+                )
+            } else {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp)
+                )
+            }
+            Text(
+                "$progressFormatted%",
+                Modifier.fillMaxWidth(),
+                textAlign = TextAlign.End
+            )
+            Text(
+                "${convertSize(info.downloaded.toInt())} / ${convertSize(info.length.toInt())}",
+                Modifier.fillMaxWidth(),
+                textAlign = TextAlign.End
+            )
+        }
+    }
 
     MaterialMotionNavHost(navController = moreNavigation, startDestination = "main") {
         composable("main") {
@@ -90,7 +155,18 @@ fun PostMoreNavigation(
                     onClick = {
                         scope.launch {
                             sheetState.hide()
-                            Toast.makeText(context, "Feature not yet available", Toast.LENGTH_SHORT).show()
+                            val externalFilesDir = context.getExternalFilesDir("")!!
+                            imageViewModel.instance = imageViewModel.download(
+                                originalUrl,
+                                externalFilesDir,
+                                onDownloadComplete = {
+                                    scope.launch {
+                                        dialogState.hide()
+                                        Toast.makeText(context, "Image saved to:\n${imageViewModel.instance.info.value.path}", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            )
+                            dialogState.show()
                         }
                     }
                 )

@@ -2,10 +2,7 @@ package com.uragiristereo.mejiboard.model.network
 
 import okhttp3.ResponseBody
 import retrofit2.Call
-import retrofit2.http.GET
-import retrofit2.http.HEAD
-import retrofit2.http.Query
-import retrofit2.http.Url
+import retrofit2.http.*
 
 interface DataServices {
     @GET("/index.php?page=dapi&s=post&q=index&limit=100&json=1")
@@ -14,8 +11,9 @@ interface DataServices {
     @GET("/index.php?page=autocomplete2&type=tag_query&limit=10&")
     fun getTags(@Query("term") term: String): Call<List<Search>>
 
+    @Streaming
     @GET
-    fun downloadImage(@Url url: String): Call<ResponseBody>
+    fun download(@Url url: String): Call<ResponseBody>
 
     @HEAD
     fun checkImage(@Url url: String): Call<Void>

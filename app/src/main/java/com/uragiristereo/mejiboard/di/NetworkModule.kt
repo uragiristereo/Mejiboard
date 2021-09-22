@@ -1,6 +1,7 @@
 package com.uragiristereo.mejiboard.di
 
 import android.content.Context
+import coil.util.CoilUtils
 import com.uragiristereo.mejiboard.model.network.NetworkInstance
 import dagger.Module
 import dagger.Provides
@@ -15,7 +16,9 @@ import javax.inject.Singleton
 object NetworkModule {
     @Provides
     @Singleton
-    fun providesOkHttpClient() = OkHttpClient()
+    fun providesOkHttpClient(@ApplicationContext context: Context) = OkHttpClient.Builder()
+        .cache(CoilUtils.createDefaultCache(context))
+        .build()
 
     @Provides
     @Singleton

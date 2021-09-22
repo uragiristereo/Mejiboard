@@ -2,44 +2,31 @@ package com.uragiristereo.mejiboard.model.network
 
 import android.content.Context
 import coil.ImageLoader
-import coil.decode.GifDecoder
-import coil.util.CoilUtils
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.dnsoverhttps.DnsOverHttps
 
 class NetworkInstance(
-    context: Context,
-    bootstrapOkHttpClient: OkHttpClient
+    private val context: Context,
+    private val bootstrapOkHttpClient: OkHttpClient
 ) {
-    private val _bootstrapOkHttpClient = bootstrapOkHttpClient
-    private val _context = context
-
     var okHttpClient = bootstrapOkHttpClient
 
     var api = DataRepository.create(okHttpClient)
 
-    var imageLoader = ImageLoader.Builder(_context)
-        .okHttpClient(
-            okHttpClient.newBuilder()
-                .cache(CoilUtils.createDefaultCache(_context))
-                .build()
-        )
+    var imageLoader = ImageLoader.Builder(context)
+        .okHttpClient(okHttpClient)
         .build()
 
     fun renewInstance(
         useDnsOverHttps: Boolean,
         dohProvider: String
     ) {
-        okHttpClient = createOkHttpClient(_bootstrapOkHttpClient, useDnsOverHttps, dohProvider)
+        okHttpClient = createOkHttpClient(bootstrapOkHttpClient, useDnsOverHttps, dohProvider)
         api = DataRepository.create(okHttpClient)
 
-        imageLoader = ImageLoader.Builder(_context)
-            .okHttpClient(
-                okHttpClient.newBuilder()
-                    .cache(CoilUtils.createDefaultCache(_context))
-                    .build()
-            )
+        imageLoader = ImageLoader.Builder(context)
+            .okHttpClient(okHttpClient)
             .build()
     }
 
