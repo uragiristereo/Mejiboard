@@ -145,7 +145,7 @@ fun SettingsOptions(
     enabled: Boolean = true,
 ) {
     var dropDownExpanded by remember { mutableStateOf(false) }
-    var offsetY by remember { mutableStateOf(0.dp) }
+//    var offsetY by remember { mutableStateOf(0.dp) }
     var itemOffsetY by remember { mutableStateOf(0.dp) }
     val selectedItem = items.filter { it.key == selectedItemKey }[0]
     var selectedItemIndexState by remember { mutableStateOf(items.indexOf(selectedItem)) }
@@ -161,7 +161,7 @@ fun SettingsOptions(
         enabled = enabled,
         modifier = modifier
             .onGloballyPositioned {
-                offsetY = with(density) { it.positionInWindow().y.toDp() }
+//                offsetY = with(density) { it.positionInWindow().y.toDp() }
 //                Timber.i("chooseThemeOffsetY = $offsetY")
             },
         onClick = {

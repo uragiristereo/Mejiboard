@@ -8,13 +8,12 @@ import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.uragiristereo.mejiboard.model.network.Post
 import com.uragiristereo.mejiboard.model.database.AppDatabase
 import com.uragiristereo.mejiboard.model.database.Bookmark
 import com.uragiristereo.mejiboard.model.network.NetworkInstance
+import com.uragiristereo.mejiboard.model.network.Post
 import com.uragiristereo.mejiboard.model.preferences.PreferencesManager
 import com.uragiristereo.mejiboard.util.*
-import dagger.assisted.Assisted
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

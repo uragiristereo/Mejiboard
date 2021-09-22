@@ -13,10 +13,4 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
-
-    <style name="Theme.AppSplash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/deep_purple_700</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/not_like_tsugu</item>
-        <item name="postSplashScreenTheme">@style/Theme.Mejiboard</item>
-    </style>
 </resources>

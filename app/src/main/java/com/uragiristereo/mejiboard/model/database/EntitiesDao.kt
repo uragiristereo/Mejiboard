@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import com.uragiristereo.mejiboard.model.database.Bookmark
 
 @Dao
 interface BookmarkDao {

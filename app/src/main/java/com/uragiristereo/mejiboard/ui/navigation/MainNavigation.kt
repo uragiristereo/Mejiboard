@@ -20,7 +20,6 @@ import com.uragiristereo.mejiboard.ui.screens.settings.SettingsScreen
 import com.uragiristereo.mejiboard.ui.screens.splash.SplashScreen
 import com.uragiristereo.mejiboard.ui.theme.MejiboardTheme
 import com.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
-import com.uragiristereo.mejiboard.util.MiuiHelper
 import com.uragiristereo.mejiboard.util.MiuiHelper.isDeviceMiui
 import soup.compose.material.motion.materialSharedAxisXIn
 import soup.compose.material.motion.materialSharedAxisXOut

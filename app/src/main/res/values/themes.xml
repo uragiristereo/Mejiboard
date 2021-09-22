@@ -22,10 +22,4 @@
     <style name="Theme.Mejiboard.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.Mejiboard.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-
-    <style name="Theme.AppSplash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/deep_purple_700</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/not_like_tsugu</item>
-        <item name="postSplashScreenTheme">@style/Theme.Mejiboard</item>
-    </style>
 </resources>

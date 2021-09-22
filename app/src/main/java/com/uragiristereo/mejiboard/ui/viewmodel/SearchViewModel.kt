@@ -4,8 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.uragiristereo.mejiboard.model.network.Search
 import com.uragiristereo.mejiboard.model.network.NetworkInstance
+import com.uragiristereo.mejiboard.model.network.Search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import retrofit2.Call
 import retrofit2.Callback

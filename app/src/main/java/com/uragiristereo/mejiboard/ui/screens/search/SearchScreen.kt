@@ -32,7 +32,6 @@ import com.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.uragiristereo.mejiboard.ui.viewmodel.SearchViewModel
 import com.uragiristereo.mejiboard.util.getWordInPosition
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @ExperimentalComposeUiApi
 @Composable
