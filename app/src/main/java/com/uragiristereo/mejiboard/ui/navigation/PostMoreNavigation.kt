@@ -22,6 +22,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.navigationBarsPadding
 import com.uragiristereo.mejiboard.R
@@ -30,6 +32,7 @@ import com.uragiristereo.mejiboard.ui.components.SheetInfoItem
 import com.uragiristereo.mejiboard.ui.components.SheetItem
 import com.uragiristereo.mejiboard.ui.components.TagInfoItem
 import com.uragiristereo.mejiboard.ui.viewmodel.ImageViewModel
+import com.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.uragiristereo.mejiboard.util.convertSize
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -51,11 +54,13 @@ fun PostMoreNavigation(
     url: String,
     originalUrl: String,
     imageType: String,
-    moreNavigation: NavHostController
+    moreNavigation: NavHostController,
+    mainViewModel: MainViewModel
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val dialogState = rememberMaterialDialogState()
+    val notificationManager = NotificationManagerCompat.from(context)
 
     MaterialDialog(
         dialogState = dialogState,
@@ -155,18 +160,54 @@ fun PostMoreNavigation(
                     onClick = {
                         scope.launch {
                             sheetState.hide()
+
                             val externalFilesDir = context.getExternalFilesDir("")!!
+                            val notification = NotificationCompat.Builder(context, "downloads")
+                                .setSmallIcon(android.R.drawable.stat_sys_download)
+                                .setContentTitle("Post ${post.id}")
+                                .setPriority(NotificationCompat.PRIORITY_LOW)
+                                .setOngoing(true)
+                                .setOnlyAlertOnce(true)
+                            val notificationId = mainViewModel.getNewNotificationCount()
+
+                            notificationManager.apply {
+                                notification
+                                    .setProgress(100, 0, true)
+                                    .setSubText("Downloading 0%")
+                                    .setContentText("0 B / 0 B")
+                                notify(notificationId, notification.build())
+                            }
+
                             imageViewModel.instance = imageViewModel.download(
                                 originalUrl,
                                 externalFilesDir,
+                                onDownloadProgress = {
+                                    notificationManager.apply {
+                                        notification
+                                            .setProgress(100, it.progress.times(100).toInt(), it.progress == 0f)
+                                            .setSubText("Downloading ${it.progress.times(100).toInt()}%")
+                                            .setContentText("${convertSize(it.downloaded.toInt())} / ${convertSize(it.length.toInt())}")
+                                        notify(notificationId, notification.build())
+                                    }
+
+                                },
                                 onDownloadComplete = {
                                     scope.launch {
-                                        dialogState.hide()
-                                        Toast.makeText(context, "Image saved to:\n${imageViewModel.instance.info.value.path}", Toast.LENGTH_LONG).show()
+                                        notificationManager.cancel(notificationId)
+
+                                        val downloadCompletedNotification = NotificationCompat.Builder(context, "downloads")
+                                            .setSmallIcon(R.drawable.file_download_done)
+                                            .setContentTitle("Download completed")
+                                            .setContentText("Post ${post.id} successfully downloaded")
+                                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                            .setAutoCancel(true)
+
+                                        notificationManager.notify(mainViewModel.getNewNotificationCount(), downloadCompletedNotification.build())
                                     }
                                 }
                             )
-                            dialogState.show()
+
+                            Toast.makeText(context, "Download started.\nCheck your notification to see the progress.", Toast.LENGTH_SHORT).show()
                         }
                     }
                 )

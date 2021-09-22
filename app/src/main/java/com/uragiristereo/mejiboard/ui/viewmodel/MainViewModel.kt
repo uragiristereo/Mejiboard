@@ -55,10 +55,16 @@ class MainViewModel @Inject constructor(
     // bookmarks
     var bookmarks by mutableStateOf<List<Bookmark>>(listOf())
 
+    // image
+    private var notificationCount = 0
+
     init {
         // load saved state from system
         savedStateHandle.get<Post>(STATE_KEY_SELECTED_POST)?.let {
             selectedPost = it
+        }
+        savedStateHandle.get<Int>(STATE_KEY_NOTIFICATION_COUNT)?.let {
+            notificationCount = it
         }
 
         viewModelScope.launch {
@@ -78,6 +84,13 @@ class MainViewModel @Inject constructor(
 
             refreshNeeded = true
         }
+    }
+
+    fun getNewNotificationCount(): Int {
+        notificationCount = notificationCount.inc()
+        savedStateHandle.set(STATE_KEY_NOTIFICATION_COUNT, notificationCount)
+
+        return notificationCount
     }
 
     fun renewNetworkInstance(

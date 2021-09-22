@@ -12,3 +12,4 @@ val SAFE_LISTING_ONLY = booleanPreferencesKey("SAFE_LISTING_ONLY")
 val USE_DNS_OVER_HTTPS = booleanPreferencesKey("USE_DNS_OVER_HTTPS")
 val DNS_OVER_HTTPS_PROVIDER = stringPreferencesKey("DNS_OVER_HTTPS_PROVIDER")
 const val STATE_KEY_SELECTED_POST = "main.selected.post"
+const val STATE_KEY_NOTIFICATION_COUNT = "main.notification.count"

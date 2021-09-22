@@ -404,7 +404,8 @@ fun ImageScreen(
                     url,
                     originalUrl,
                     imageType,
-                    moreNavigation
+                    moreNavigation,
+                    mainViewModel
                 )
                 Box(Modifier.navigationBarsPadding())
             }
