@@ -157,9 +157,14 @@ fun PostsGrid(
         if (postsViewModel.postsProgressVisible) {
             item {
                 Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
+                    if (postsData.isEmpty())
+                        Modifier
+                            .fillMaxWidth()
+                            .fillParentMaxHeight()
+                    else
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
