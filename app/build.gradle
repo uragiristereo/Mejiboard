@@ -10,7 +10,7 @@ apply plugin: 'dagger.hilt.android.plugin'
 android {
     compileSdk 31
     defaultConfig {
-        applicationId "com.uragiristereo.mejiboard"
+        applicationId "com.github.uragiristereo.mejiboard"
         minSdk 26
         targetSdk 30
         versionCode 1
