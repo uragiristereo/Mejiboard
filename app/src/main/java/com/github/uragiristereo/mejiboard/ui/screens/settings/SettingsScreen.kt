@@ -23,11 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import coil.util.CoilUtils
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.navigationBarsHeight
-import com.google.accompanist.insets.rememberInsetsPaddingValues
-import com.google.accompanist.insets.ui.TopAppBar
 import com.github.uragiristereo.mejiboard.ui.components.SettingsCategory
 import com.github.uragiristereo.mejiboard.ui.components.SettingsItem
 import com.github.uragiristereo.mejiboard.ui.components.SettingsOptions
@@ -37,6 +32,11 @@ import com.github.uragiristereo.mejiboard.util.DNS_OVER_HTTPS_PROVIDER
 import com.github.uragiristereo.mejiboard.util.PREVIEW_SIZE
 import com.github.uragiristereo.mejiboard.util.SAFE_LISTING_ONLY
 import com.github.uragiristereo.mejiboard.util.USE_DNS_OVER_HTTPS
+import com.google.accompanist.insets.LocalWindowInsets
+import com.google.accompanist.insets.navigationBarsHeight
+import com.google.accompanist.insets.rememberInsetsPaddingValues
+import com.google.accompanist.insets.ui.TopAppBar
+import kotlinx.coroutines.launch
 
 @ExperimentalAnimationApi
 @Composable
@@ -45,6 +45,7 @@ fun SettingsScreen(
     mainViewModel: MainViewModel
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val themes = listOf(
         SettingsOptionsItem("system", "System default"),
@@ -262,9 +263,11 @@ fun SettingsScreen(
                     title = "Clear cache",
                     subtitle = "Remove all cached memory and files",
                     onClick = {
-                        mainViewModel.imageLoader.memoryCache.clear()
-                        CoilUtils.createDefaultCache(context).directory.deleteRecursively()
-                        Toast.makeText(context, "Cache successfully cleaned", Toast.LENGTH_SHORT).show()
+                        scope.launch {
+                            mainViewModel.imageLoader.memoryCache.clear()
+                            context.cacheDir.deleteRecursively()
+                            Toast.makeText(context, "Cache successfully cleaned", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 )
                 Spacer(

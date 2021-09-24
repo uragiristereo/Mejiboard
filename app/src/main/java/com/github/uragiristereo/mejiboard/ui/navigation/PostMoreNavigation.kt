@@ -41,7 +41,6 @@ import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.github.uragiristereo.mejiboard.util.PermissionHelper
 import com.github.uragiristereo.mejiboard.util.convertSize
 import com.google.accompanist.insets.navigationBarsPadding
-import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.materialSharedAxisXIn
@@ -69,6 +68,7 @@ fun PostMoreNavigation(
     val scope = rememberCoroutineScope()
     val notificationManager = NotificationManagerCompat.from(context)
     var shareDownloadInfo by remember { mutableStateOf(DownloadInfo()) }
+    var shareDownloadSpeed by remember { mutableStateOf(0) }
     var dialogShown by remember { mutableStateOf(false)  }
 
     if (dialogShown) {
@@ -123,11 +123,13 @@ fun PostMoreNavigation(
                                 .padding(bottom = 4.dp)
                         )
                     }
-                    Text(
-                        "$progressFormatted%",
+                    Row(
                         Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.End
-                    )
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("$progressFormatted%")
+                        Text("${convertSize(shareDownloadSpeed)}/s")
+                    }
                     Text(
                         "${convertSize(shareDownloadInfo.downloaded.toInt())} / ${convertSize(shareDownloadInfo.length.toInt())}",
                         Modifier.fillMaxWidth(),
@@ -137,64 +139,6 @@ fun PostMoreNavigation(
             }
         )
     }
-
-//    MaterialDialog(
-//        dialogState = dialogState,
-//        onCloseRequest = { },
-//        buttons = {
-//            negativeButton(
-//                "Cancel",
-//                onClick = {
-//                    scope.launch {
-//                        imageViewModel.instance2.call.cancel()
-//                        dialogState.hide()
-//                    }
-//                }
-//            )
-//        }
-//    ) {
-//        val info by imageViewModel.instance2.info
-//
-//        val progressSmooth by animateFloatAsState(targetValue = info.progress)
-//
-//        Column(
-//            Modifier
-//                .padding(16.dp)
-//        ) {
-//            val progressFormatted = "%.2f".format(info.progress.times(100))
-//
-//            Text(
-//                "Downloading...",
-//                Modifier
-//                    .padding(bottom = 12.dp),
-//                style = MaterialTheme.typography.h6
-//            )
-//            if (progressSmooth != 0f) {
-//                LinearProgressIndicator(
-//                    progress = progressSmooth,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(bottom = 4.dp)
-//                )
-//            } else {
-//                LinearProgressIndicator(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(bottom = 4.dp)
-//                )
-//            }
-//            Text(
-//                "$progressFormatted%",
-//                Modifier.fillMaxWidth(),
-//                textAlign = TextAlign.End
-//            )
-//            Text(
-//                "${convertSize(info.downloaded.toInt())} / ${convertSize(info.length.toInt())}",
-//                Modifier.fillMaxWidth(),
-//                textAlign = TextAlign.End
-//            )
-//        }
-//    }
 
     MaterialMotionNavHost(navController = moreNavigation, startDestination = "main") {
         composable("main") {
@@ -440,9 +384,12 @@ fun PostMoreNavigation(
                                     Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
                                 } else {
                                     dialogShown = true
+                                    var lastDownloaded: Long
                                     while (instance.info.status == "downloading") {
-                                        shareDownloadInfo = instance.info
+                                        lastDownloaded = instance.info.downloaded
                                         delay(1000)
+                                        shareDownloadInfo = instance.info
+                                        shareDownloadSpeed = (instance.info.downloaded - lastDownloaded).toInt()
                                     }
                                     dialogShown = false
                                     if (instance.info.status == "completed") {
@@ -494,9 +441,12 @@ fun PostMoreNavigation(
                                 Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
                             } else {
                                 dialogShown = true
+                                var lastDownloaded: Long
                                 while (instance.info.status == "downloading") {
-                                    shareDownloadInfo = instance.info
+                                    lastDownloaded = instance.info.downloaded
                                     delay(1000)
+                                    shareDownloadInfo = instance.info
+                                    shareDownloadSpeed = (instance.info.downloaded - lastDownloaded).toInt()
                                 }
                                 dialogShown = false
                                 if (instance.info.status == "completed") {
