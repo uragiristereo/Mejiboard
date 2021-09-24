@@ -8,6 +8,18 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 
 android {
+    signingConfigs {
+        debug {
+            Properties properties = new Properties()
+
+            properties.load(project.rootProject.file('signing.properties').newDataInputStream())
+            
+            storeFile file(properties.getProperty('STORE_FILE'))
+            keyAlias properties.getProperty('KEY_ALIAS')
+            storePassword properties.getProperty('STORE_PASSWORD')
+            keyPassword properties.getProperty('KEY_PASSWORD')
+        }
+    }
     compileSdk 31
     defaultConfig {
         applicationId "com.github.uragiristereo.mejiboard"
