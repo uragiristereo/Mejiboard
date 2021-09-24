@@ -40,5 +40,5 @@ data class DownloadInfo(
     val downloaded: Long = 0L,
     val length: Long = 0L,
     var path: String = "",
-    var status: String = "downloading"
+    var status: String = "idle"
 )

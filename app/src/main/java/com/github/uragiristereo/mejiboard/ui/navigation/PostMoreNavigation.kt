@@ -1,11 +1,13 @@
 package com.github.uragiristereo.mejiboard.ui.navigation
 
 import android.app.PendingIntent
+import android.content.ClipData
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,17 +17,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.R
+import com.github.uragiristereo.mejiboard.model.network.DownloadInfo
 import com.github.uragiristereo.mejiboard.model.network.Post
 import com.github.uragiristereo.mejiboard.model.network.download.DownloadBroadcastReceiver
 import com.github.uragiristereo.mejiboard.ui.components.SheetInfoItem
@@ -62,8 +67,76 @@ fun PostMoreNavigation(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val dialogState = rememberMaterialDialogState()
     val notificationManager = NotificationManagerCompat.from(context)
+    var shareDownloadInfo by remember { mutableStateOf(DownloadInfo()) }
+    var dialogShown by remember { mutableStateOf(false)  }
+
+    if (dialogShown) {
+        AlertDialog(
+            onDismissRequest = { },
+            buttons = {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            end = 16.dp,
+                            bottom = 8.dp
+                        ),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    Box(
+                        Modifier
+                            .clickable {
+                                dialogShown = false
+                                val instance = imageViewModel.getInstance(post.id)
+                                instance?.cancel()
+                                imageViewModel.removeInstance(post.id)
+                            }
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            "Cancel".uppercase(),
+                            color = MaterialTheme.colors.primary
+                        )
+                    }
+                }
+            },
+            title = {
+                Text("Downloading...")
+            },
+            text = {
+                val progressSmooth by animateFloatAsState(targetValue = shareDownloadInfo.progress)
+                Column {
+                    val progressFormatted = "%.2f".format(shareDownloadInfo.progress.times(100))
+
+                    if (progressSmooth != 0f) {
+                        LinearProgressIndicator(
+                            progress = progressSmooth,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 4.dp)
+                        )
+                    } else {
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 4.dp)
+                        )
+                    }
+                    Text(
+                        "$progressFormatted%",
+                        Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End
+                    )
+                    Text(
+                        "${convertSize(shareDownloadInfo.downloaded.toInt())} / ${convertSize(shareDownloadInfo.length.toInt())}",
+                        Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End
+                    )
+                }
+            }
+        )
+    }
 
 //    MaterialDialog(
 //        dialogState = dialogState,
@@ -228,7 +301,7 @@ fun PostMoreNavigation(
                                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 }
 
-                                val pendingOpenDownloadedFileIntent = PendingIntent.getActivity(context, 0, openDownloadedFileIntent, 0)
+                                val pendingOpenDownloadedFileIntent = PendingIntent.getActivity(context, 0, openDownloadedFileIntent, PendingIntent.FLAG_IMMUTABLE)
 
                                 if (instance.info.status == "completed") {
                                     imageViewModel.removeInstance(post.id)
@@ -357,7 +430,37 @@ fun PostMoreNavigation(
                         onClick = {
                             scope.launch {
                                 sheetState.hide()
-                                Toast.makeText(context, "Feature not yet available", Toast.LENGTH_SHORT).show()
+                                val tempDir = File(context.cacheDir.absolutePath + "/temp/")
+                                if (!tempDir.isDirectory)
+                                    tempDir.mkdir()
+
+                                val instance = imageViewModel.newDownloadInstance(context, post.id, url, tempDir)
+
+                                if (instance == null) {
+                                    Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
+                                } else {
+                                    dialogShown = true
+                                    while (instance.info.status == "downloading") {
+                                        shareDownloadInfo = instance.info
+                                        delay(1000)
+                                    }
+                                    dialogShown = false
+                                    if (instance.info.status == "completed") {
+                                        imageViewModel.removeInstance(post.id)
+                                        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", File(instance.info.path))
+
+                                        val shareIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            clipData = ClipData.newRawUri(null, uri)
+                                            putExtra(Intent.EXTRA_STREAM, uri)
+                                            type = context.contentResolver.getType(uri)
+                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        }
+                                        startActivity(context, Intent.createChooser(shareIntent, "Send to"), null)
+                                    }
+                                }
+
+//                                Toast.makeText(context, "Feature not yet available", Toast.LENGTH_SHORT).show()
                             }
                         }
                     )
@@ -381,7 +484,37 @@ fun PostMoreNavigation(
                     onClick = {
                         scope.launch {
                             sheetState.hide()
-                            Toast.makeText(context, "Feature not yet available", Toast.LENGTH_SHORT).show()
+                            val tempDir = File(context.cacheDir.absolutePath + "/temp/")
+                            if (!tempDir.isDirectory)
+                                tempDir.mkdir()
+
+                            val instance = imageViewModel.newDownloadInstance(context, post.id, originalUrl, tempDir)
+
+                            if (instance == null) {
+                                Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
+                            } else {
+                                dialogShown = true
+                                while (instance.info.status == "downloading") {
+                                    shareDownloadInfo = instance.info
+                                    delay(1000)
+                                }
+                                dialogShown = false
+                                if (instance.info.status == "completed") {
+                                    imageViewModel.removeInstance(post.id)
+                                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", File(instance.info.path))
+
+                                    val shareIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        clipData = ClipData.newRawUri(null, uri)
+                                        putExtra(Intent.EXTRA_STREAM, uri)
+                                        type = context.contentResolver.getType(uri)
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
+                                    startActivity(context, Intent.createChooser(shareIntent, "Send to"), null)
+                                }
+                            }
+
+//                            Toast.makeText(context, "Feature not yet available", Toast.LENGTH_SHORT).show()
                         }
                     }
                 )

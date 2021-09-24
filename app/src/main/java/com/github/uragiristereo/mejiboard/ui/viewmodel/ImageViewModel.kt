@@ -86,6 +86,7 @@ class ImageViewModel @Inject constructor(
         onDownloadComplete: () -> Unit = {},
     ): DownloadInstance {
         val instance = DownloadInstance(networkInstance.api.download(url))
+        instance.info.status = "downloading"
 
         instance.call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -111,8 +112,8 @@ class ImageViewModel @Inject constructor(
                                     downloaded += read.toLong()
                                     val progress = downloaded.toFloat() / length.toFloat()
 
-                                    instance.info = DownloadInfo(progress, downloaded, length, path.absolutePath)
-                                    onDownloadProgress(instance.info )
+                                    instance.info = DownloadInfo(progress, downloaded, length, path.absolutePath, "downloading")
+                                    onDownloadProgress(instance.info)
                                 }
 
                                 outputStream.flush()
@@ -131,6 +132,7 @@ class ImageViewModel @Inject constructor(
             }
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                 t.printStackTrace()
+                instance.info.status = "canceled"
                 val file = File(instance.info.path)
                 if (file.exists())
                     file.delete()
@@ -148,6 +150,10 @@ class ImageViewModel @Inject constructor(
             downloadRepository.addInstance(postId, instance)
             instance
         }
+    }
+
+    fun getInstance(postId: Int): DownloadInstance? {
+        return downloadRepository.getInstance(postId)
     }
 
     fun removeInstance(postId: Int) {
