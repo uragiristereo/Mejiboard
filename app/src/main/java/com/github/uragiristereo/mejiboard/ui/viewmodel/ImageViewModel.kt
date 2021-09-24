@@ -131,6 +131,9 @@ class ImageViewModel @Inject constructor(
             }
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                 t.printStackTrace()
+                val file = File(instance.info.path)
+                if (file.exists())
+                    file.delete()
             }
         })
 
