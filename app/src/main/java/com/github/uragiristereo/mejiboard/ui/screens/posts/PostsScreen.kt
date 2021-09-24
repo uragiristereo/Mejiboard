@@ -277,11 +277,14 @@ fun MainScreen(
                 }
             }
 
+            val modifier = Modifier
+                .statusBarsPadding()
+                .padding(innerPadding)
             Box(
-                Modifier
-                    .statusBarsPadding()
-                    .padding(innerPadding)
-                    .nestedScroll(nestedScrollConnection)
+                if (!postsViewModel.postsProgressVisible)
+                    modifier.nestedScroll(nestedScrollConnection)
+                else
+                    modifier
             ) {
                 if (postsViewModel.postsError.isEmpty()) {
                     PostsGrid(postsData, postsViewModel, mainViewModel, mainNavigation, gridState, toolbarHeight)
