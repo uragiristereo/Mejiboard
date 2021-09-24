@@ -26,16 +26,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.request.ImageRequest
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.rememberInsetsPaddingValues
-import com.google.accompanist.insets.ui.Scaffold
-import com.google.accompanist.insets.ui.TopAppBar
-import com.skydoves.landscapist.coil.CoilImage
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.ui.components.LinkIconButton
 import com.github.uragiristereo.mejiboard.ui.theme.MejiboardTheme
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
+import com.google.accompanist.insets.LocalWindowInsets
+import com.google.accompanist.insets.rememberInsetsPaddingValues
+import com.google.accompanist.insets.ui.Scaffold
+import com.google.accompanist.insets.ui.TopAppBar
+import com.skydoves.landscapist.coil.CoilImage
 
 @Composable
 fun AboutScreen(

@@ -29,6 +29,13 @@ import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import coil.decode.GifDecoder
 import coil.load
+import com.github.uragiristereo.mejiboard.R
+import com.github.uragiristereo.mejiboard.ui.components.ThumbPill
+import com.github.uragiristereo.mejiboard.ui.navigation.PostMoreNavigation
+import com.github.uragiristereo.mejiboard.ui.viewmodel.ImageViewModel
+import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
+import com.github.uragiristereo.mejiboard.util.hideSystemBars
+import com.github.uragiristereo.mejiboard.util.showSystemBars
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.rememberInsetsPaddingValues
@@ -40,13 +47,6 @@ import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerView
 import com.ortiz.touchview.TouchImageView
-import com.github.uragiristereo.mejiboard.R
-import com.github.uragiristereo.mejiboard.ui.components.ThumbPill
-import com.github.uragiristereo.mejiboard.ui.navigation.PostMoreNavigation
-import com.github.uragiristereo.mejiboard.ui.viewmodel.ImageViewModel
-import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
-import com.github.uragiristereo.mejiboard.util.hideSystemBars
-import com.github.uragiristereo.mejiboard.util.showSystemBars
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.navigation.rememberMaterialMotionNavController
 import java.io.File

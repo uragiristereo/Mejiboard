@@ -24,13 +24,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.google.accompanist.insets.navigationBarsWithImePadding
-import com.google.accompanist.insets.statusBarsPadding
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.ui.components.SearchView
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.github.uragiristereo.mejiboard.ui.viewmodel.SearchViewModel
 import com.github.uragiristereo.mejiboard.util.getWordInPosition
+import com.google.accompanist.insets.navigationBarsWithImePadding
+import com.google.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.launch
 
 @ExperimentalComposeUiApi

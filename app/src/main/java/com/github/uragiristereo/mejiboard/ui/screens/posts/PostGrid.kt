@@ -25,10 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import coil.request.ImageRequest
-import com.skydoves.landscapist.coil.CoilImage
 import com.github.uragiristereo.mejiboard.model.network.Post
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.github.uragiristereo.mejiboard.ui.viewmodel.PostsViewModel
+import com.skydoves.landscapist.coil.CoilImage
 import java.io.File
 
 @ExperimentalCoilApi
@@ -160,7 +160,7 @@ fun PostsGrid(
                     if (postsData.isEmpty())
                         Modifier
                             .fillMaxWidth()
-                            .fillParentMaxHeight()
+                            .fillParentMaxHeight(0.9f)
                     else
                         Modifier
                             .fillMaxWidth()

@@ -89,7 +89,6 @@ class MainViewModel @Inject constructor(
     fun getNewNotificationCount(): Int {
         notificationCount = notificationCount.inc()
         savedStateHandle.set(STATE_KEY_NOTIFICATION_COUNT, notificationCount)
-        Timber.i(notificationCount.toString())
         return notificationCount
     }
 

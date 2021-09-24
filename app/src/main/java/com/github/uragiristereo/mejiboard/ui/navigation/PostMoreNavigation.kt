@@ -1,10 +1,11 @@
 package com.github.uragiristereo.mejiboard.ui.navigation
 
+import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
 import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,27 +16,28 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
-import com.google.accompanist.insets.navigationBarsPadding
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.model.network.Post
+import com.github.uragiristereo.mejiboard.model.network.download.DownloadBroadcastReceiver
 import com.github.uragiristereo.mejiboard.ui.components.SheetInfoItem
 import com.github.uragiristereo.mejiboard.ui.components.SheetItem
 import com.github.uragiristereo.mejiboard.ui.components.TagInfoItem
 import com.github.uragiristereo.mejiboard.ui.viewmodel.ImageViewModel
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
+import com.github.uragiristereo.mejiboard.util.PermissionHelper
 import com.github.uragiristereo.mejiboard.util.convertSize
-import com.vanpra.composematerialdialogs.MaterialDialog
+import com.google.accompanist.insets.navigationBarsPadding
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.materialSharedAxisXIn
 import soup.compose.material.motion.materialSharedAxisXOut
@@ -43,6 +45,7 @@ import soup.compose.material.motion.navigation.MaterialMotionNavHost
 import soup.compose.material.motion.navigation.composable
 import java.io.File
 import java.util.*
+
 
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
@@ -62,63 +65,63 @@ fun PostMoreNavigation(
     val dialogState = rememberMaterialDialogState()
     val notificationManager = NotificationManagerCompat.from(context)
 
-    MaterialDialog(
-        dialogState = dialogState,
-        onCloseRequest = { },
-        buttons = {
-            negativeButton(
-                "Cancel",
-                onClick = {
-                    scope.launch {
-                        imageViewModel.instance.call.cancel()
-                        dialogState.hide()
-                    }
-                }
-            )
-        }
-    ) {
-        val info by imageViewModel.instance.info
-
-        val progressSmooth by animateFloatAsState(targetValue = info.progress)
-
-        Column(
-            Modifier
-                .padding(16.dp)
-        ) {
-            val progressFormatted = "%.2f".format(info.progress.times(100))
-
-            Text(
-                "Downloading...",
-                Modifier
-                    .padding(bottom = 12.dp),
-                style = MaterialTheme.typography.h6
-            )
-            if (progressSmooth != 0f) {
-                LinearProgressIndicator(
-                    progress = progressSmooth,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
-                )
-            } else {
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
-                )
-            }
-            Text(
-                "$progressFormatted%",
-                Modifier.fillMaxWidth(),
-                textAlign = TextAlign.End
-            )
-            Text(
-                "${convertSize(info.downloaded.toInt())} / ${convertSize(info.length.toInt())}",
-                Modifier.fillMaxWidth(),
-                textAlign = TextAlign.End
-            )
-        }
-    }
+//    MaterialDialog(
+//        dialogState = dialogState,
+//        onCloseRequest = { },
+//        buttons = {
+//            negativeButton(
+//                "Cancel",
+//                onClick = {
+//                    scope.launch {
+//                        imageViewModel.instance2.call.cancel()
+//                        dialogState.hide()
+//                    }
+//                }
+//            )
+//        }
+//    ) {
+//        val info by imageViewModel.instance2.info
+//
+//        val progressSmooth by animateFloatAsState(targetValue = info.progress)
+//
+//        Column(
+//            Modifier
+//                .padding(16.dp)
+//        ) {
+//            val progressFormatted = "%.2f".format(info.progress.times(100))
+//
+//            Text(
+//                "Downloading...",
+//                Modifier
+//                    .padding(bottom = 12.dp),
+//                style = MaterialTheme.typography.h6
+//            )
+//            if (progressSmooth != 0f) {
+//                LinearProgressIndicator(
+//                    progress = progressSmooth,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 4.dp)
+//                )
+//            } else {
+//                LinearProgressIndicator(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 4.dp)
+//                )
+//            }
+//            Text(
+//                "$progressFormatted%",
+//                Modifier.fillMaxWidth(),
+//                textAlign = TextAlign.End
+//            )
+//            Text(
+//                "${convertSize(info.downloaded.toInt())} / ${convertSize(info.length.toInt())}",
+//                Modifier.fillMaxWidth(),
+//                textAlign = TextAlign.End
+//            )
+//        }
+//    }
 
     MaterialMotionNavHost(navController = moreNavigation, startDestination = "main") {
         composable("main") {
@@ -161,53 +164,90 @@ fun PostMoreNavigation(
                         scope.launch {
                             sheetState.hide()
 
-                            val externalFilesDir = context.getExternalFilesDir("")!!
-                            val notification = NotificationCompat.Builder(context, "downloads")
-                                .setSmallIcon(android.R.drawable.stat_sys_download)
-                                .setContentTitle("Post ${post.id}")
-                                .setPriority(NotificationCompat.PRIORITY_LOW)
-                                .setOngoing(true)
-                                .setOnlyAlertOnce(true)
-                            val notificationId = mainViewModel.getNewNotificationCount()
-
-                            notificationManager.apply {
-                                notification
-                                    .setProgress(100, 0, true)
-                                    .setSubText("Downloading 0%")
-                                    .setContentText("0 B / 0 B")
-                                notify(notificationId, notification.build())
+                            if (!PermissionHelper.checkPermission(context)) {
+                                PermissionHelper.requestPermission(context)
+                                if (!PermissionHelper.checkPermission(context)) {
+                                    Toast.makeText(context, "Error: Storage permission is not granted", Toast.LENGTH_LONG).show()
+                                    return@launch
+                                }
                             }
 
-                            imageViewModel.instance = imageViewModel.download(
-                                originalUrl,
-                                externalFilesDir,
-                                onDownloadProgress = {
+                            Toast.makeText(context, "Download started", Toast.LENGTH_SHORT).show()
+
+                            val downloadLocation = File(Environment.getExternalStorageDirectory().absolutePath + "/Pictures/Mejiboard/")
+                            if (!downloadLocation.isDirectory)
+                                downloadLocation.mkdir()
+
+                            val instance = imageViewModel.newDownloadInstance(context, post.id, originalUrl, downloadLocation)
+
+                            if (instance == null) {
+                                Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
+                            } else {
+                                val notificationId = mainViewModel.getNewNotificationCount()
+                                val cancelDownloadIntent = Intent(context, DownloadBroadcastReceiver::class.java).apply {
+                                    action = post.id.toString()
+                                    putExtra("notificationId", notificationId)
+                                }
+                                val cancelDownloadPendingIntent = PendingIntent.getBroadcast(
+                                    context,
+                                    0,
+                                    cancelDownloadIntent,
+                                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
+                                )
+
+                                val notification = NotificationCompat.Builder(context, "downloads")
+                                    .setSmallIcon(android.R.drawable.stat_sys_download)
+                                    .setContentTitle("Downloading post ${post.id}")
+                                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                                    .setOngoing(true)
+                                    .setOnlyAlertOnce(true)
+                                    .setAutoCancel(true)
+                                    .addAction(R.drawable.cancel, "Cancel", cancelDownloadPendingIntent)
+
+                                var downloadSpeed = 0
+                                var lastDownloaded: Long
+
+                                while (instance.info.status == "downloading") {
                                     notificationManager.apply {
                                         notification
-                                            .setProgress(100, it.progress.times(100).toInt(), it.progress == 0f)
-                                            .setSubText("Downloading ${it.progress.times(100).toInt()}%")
-                                            .setContentText("${convertSize(it.downloaded.toInt())} / ${convertSize(it.length.toInt())}")
+                                            .setProgress(100, instance.info.progress.times(100).toInt(), instance.info.progress == 0f)
+                                            .setSubText("${instance.info.progress.times(100).toInt()}% - ${convertSize(downloadSpeed)}/s")
+                                            .setContentText("${convertSize(instance.info.downloaded.toInt())} / ${convertSize(instance.info.length.toInt())}")
                                         notify(notificationId, notification.build())
                                     }
+                                    lastDownloaded = instance.info.downloaded
+                                    delay(1300)
+                                    downloadSpeed = ((instance.info.downloaded - lastDownloaded) / 1.3f).toInt()
+                                }
 
-                                },
-                                onDownloadComplete = {
-                                    scope.launch {
-                                        notificationManager.cancel(notificationId)
+                                val openDownloadedFileIntent = Intent().apply {
+                                    action = Intent.ACTION_VIEW
+                                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", File(instance.info.path))
+                                    val contentResolver = context.contentResolver
+                                    setDataAndType(uri, contentResolver.getType(uri))
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
 
-                                        val downloadCompletedNotification = NotificationCompat.Builder(context, "downloads")
+                                val pendingOpenDownloadedFileIntent = PendingIntent.getActivity(context, 0, openDownloadedFileIntent, 0)
+
+                                if (instance.info.status == "completed") {
+                                    imageViewModel.removeInstance(post.id)
+                                    notificationManager.apply {
+                                        notification
                                             .setSmallIcon(R.drawable.file_download_done)
                                             .setContentTitle("Download completed")
-                                            .setContentText("Post ${post.id} successfully downloaded")
-                                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                            .setProgress(0, 0, false)
+                                            .setSubText(null)
+                                            .setContentText("Post ${post.id} has been successfully downloaded.")
+                                            .setOngoing(false)
                                             .setAutoCancel(true)
-
-                                        notificationManager.notify(mainViewModel.getNewNotificationCount(), downloadCompletedNotification.build())
+                                            .setOnlyAlertOnce(false)
+                                            .clearActions()
+                                            .setContentIntent(pendingOpenDownloadedFileIntent)
+                                        notify(notificationId, notification.build())
                                     }
                                 }
-                            )
-
-                            Toast.makeText(context, "Download started.\nCheck your notification to see the progress.", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 )

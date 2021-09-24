@@ -34,3 +34,11 @@ data class Tag(
     val type: String,
     val count: Int
 )
+
+data class DownloadInfo(
+    val progress: Float = 0f,
+    val downloaded: Long = 0L,
+    val length: Long = 0L,
+    var path: String = "",
+    var status: String = "downloading"
+)

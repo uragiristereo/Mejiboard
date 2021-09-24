@@ -3,6 +3,7 @@ package com.github.uragiristereo.mejiboard.di
 import android.content.Context
 import coil.util.CoilUtils
 import com.github.uragiristereo.mejiboard.model.network.NetworkInstance
+import com.github.uragiristereo.mejiboard.model.network.download.DownloadRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,4 +24,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideNetworkInstance(@ApplicationContext context: Context, bootstrapOkHttpClient: OkHttpClient) = NetworkInstance(context, bootstrapOkHttpClient)
+
+    @Provides
+    @Singleton
+    fun provideDownloadRepository(): DownloadRepository = DownloadRepository()
 }

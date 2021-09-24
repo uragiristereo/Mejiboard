@@ -1,8 +1,8 @@
 package com.github.uragiristereo.mejiboard.model.network
 
-import com.squareup.moshi.Moshi
 import com.github.uragiristereo.mejiboard.util.BASE_URL
 import com.github.uragiristereo.mejiboard.util.CustomDateAdapter
+import com.squareup.moshi.Moshi
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory

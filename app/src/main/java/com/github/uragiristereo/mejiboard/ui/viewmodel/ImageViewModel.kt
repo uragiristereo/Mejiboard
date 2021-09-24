@@ -1,13 +1,17 @@
 package com.github.uragiristereo.mejiboard.ui.viewmodel
 
-import androidx.compose.runtime.MutableState
+import android.content.Context
+import android.media.MediaScannerConnection
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.uragiristereo.mejiboard.model.network.DownloadInfo
 import com.github.uragiristereo.mejiboard.model.network.NetworkInstance
 import com.github.uragiristereo.mejiboard.model.network.Tag
+import com.github.uragiristereo.mejiboard.model.network.download.DownloadInstance
+import com.github.uragiristereo.mejiboard.model.network.download.DownloadRepository
 import com.github.uragiristereo.mejiboard.util.convertSize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +25,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ImageViewModel @Inject constructor(
-    private val networkInstance: NetworkInstance
+    private val networkInstance: NetworkInstance,
+    private val downloadRepository: DownloadRepository
 ) : ViewModel() {
     var imageSize by mutableStateOf("")
     var originalImageSize by mutableStateOf("")
@@ -34,9 +39,6 @@ class ImageViewModel @Inject constructor(
     var infoData = mutableStateOf<List<Tag>>(listOf())
     var infoProgressVisible by mutableStateOf(false)
     var showTagsIsCollapsed by mutableStateOf(true)
-
-    // download
-    lateinit var instance: DownloadInstance
 
     fun checkImage(url: String, original: Boolean = false) {
         if (original) originalImageSize = "Loading..." else imageSize = "Loading..."
@@ -76,16 +78,14 @@ class ImageViewModel @Inject constructor(
         })
     }
 
-    fun download(
+    private fun download(
+        context: Context,
         url: String,
         location: File,
         onDownloadProgress: (DownloadInfo) -> Unit = {},
         onDownloadComplete: () -> Unit = {},
     ): DownloadInstance {
-        val instance = DownloadInstance(
-            call = networkInstance.api.download(url),
-            info = mutableStateOf(DownloadInfo())
-        )
+        val instance = DownloadInstance(networkInstance.api.download(url))
 
         instance.call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -97,7 +97,6 @@ class ImageViewModel @Inject constructor(
                             val length = body.contentLength()
                             var inputStream: InputStream? = null
                             var outputStream: OutputStream? = null
-                            var info by instance.info
 
                             try {
                                 val buffer = ByteArray(8192)
@@ -112,12 +111,13 @@ class ImageViewModel @Inject constructor(
                                     downloaded += read.toLong()
                                     val progress = downloaded.toFloat() / length.toFloat()
 
-                                    info = DownloadInfo(progress, downloaded, length, path.absolutePath)
-                                    onDownloadProgress(info)
+                                    instance.info = DownloadInfo(progress, downloaded, length, path.absolutePath)
+                                    onDownloadProgress(instance.info )
                                 }
 
                                 outputStream.flush()
-                                info.completed = true
+                                instance.info.status = "completed"
+                                MediaScannerConnection.scanFile(context, arrayOf(path.absolutePath.toString()), null, null)
                                 onDownloadComplete()
                             } catch (e: IOException) {
                                 e.printStackTrace()
@@ -137,16 +137,17 @@ class ImageViewModel @Inject constructor(
         return instance
     }
 
-    data class DownloadInfo(
-        val progress: Float = 0f,
-        val downloaded: Long = 0L,
-        val length: Long = 0L,
-        var path: String = "",
-        var completed: Boolean = false
-    )
+    fun newDownloadInstance(context: Context, postId: Int, url: String, location: File): DownloadInstance? {
+        return if (downloadRepository.isInstanceAlreadyAdded(postId))
+            null
+        else {
+            val instance = download(context, url, location)
+            downloadRepository.addInstance(postId, instance)
+            instance
+        }
+    }
 
-    data class DownloadInstance(
-        val call: Call<ResponseBody>,
-        var info: MutableState<DownloadInfo>
-    )
+    fun removeInstance(postId: Int) {
+        downloadRepository.removeInstance(postId)
+    }
 }

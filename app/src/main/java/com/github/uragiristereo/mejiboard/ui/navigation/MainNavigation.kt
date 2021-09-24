@@ -10,8 +10,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
-import com.google.accompanist.insets.ProvideWindowInsets
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.github.uragiristereo.mejiboard.ui.screens.about.AboutScreen
 import com.github.uragiristereo.mejiboard.ui.screens.image.ImageScreen
 import com.github.uragiristereo.mejiboard.ui.screens.posts.MainScreen
@@ -21,6 +19,8 @@ import com.github.uragiristereo.mejiboard.ui.screens.splash.SplashScreen
 import com.github.uragiristereo.mejiboard.ui.theme.MejiboardTheme
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.github.uragiristereo.mejiboard.util.MiuiHelper.isDeviceMiui
+import com.google.accompanist.insets.ProvideWindowInsets
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import soup.compose.material.motion.materialSharedAxisXIn
 import soup.compose.material.motion.materialSharedAxisXOut
 import soup.compose.material.motion.navigation.MaterialMotionNavHost
