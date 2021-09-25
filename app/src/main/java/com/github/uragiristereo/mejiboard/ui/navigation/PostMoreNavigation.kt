@@ -534,8 +534,8 @@ fun PostMoreNavigation(
                         )
                     }
                     if (post.source.isNotEmpty()) {
-                        var source = post.source.replace("&amp;", "&")
-                        source =
+                        val source = post.source.replace("&amp;", "&")
+                        val sourceLink =
                             if ("https://" in source || "http://" in source)
                                 source
                             else
@@ -547,7 +547,7 @@ fun PostMoreNavigation(
                                 source,
                                 Modifier
                                     .clickable {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(source))
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(sourceLink))
                                         context.startActivity(intent)
                                     }
                             )
