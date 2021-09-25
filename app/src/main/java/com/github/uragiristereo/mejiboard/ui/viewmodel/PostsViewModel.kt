@@ -26,6 +26,7 @@ class PostsViewModel @Inject constructor(
 
     fun getPosts(searchTags: String, refresh: Boolean, safeListingOnly: Boolean) {
         postsProgressVisible = true
+        postsError = ""
 
         if (refresh) {
             page = 0

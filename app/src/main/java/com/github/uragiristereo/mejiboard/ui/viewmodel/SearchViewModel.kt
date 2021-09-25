@@ -24,6 +24,7 @@ class SearchViewModel @Inject constructor(
 
     fun getTags(newTag: String) {
         if (newTag != "") {
+            searchError = ""
             val thisUUID = UUID.randomUUID().toString()
 
             tagsQueue.add(thisUUID)
