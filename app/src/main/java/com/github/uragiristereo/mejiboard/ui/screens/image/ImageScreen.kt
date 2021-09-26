@@ -29,6 +29,7 @@ import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import coil.decode.GifDecoder
 import coil.load
+import coil.request.Disposable
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.ui.components.ThumbPill
 import com.github.uragiristereo.mejiboard.ui.navigation.PostMoreNavigation
@@ -49,6 +50,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.ortiz.touchview.TouchImageView
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.navigation.rememberMaterialMotionNavController
+import timber.log.Timber
 import java.io.File
 
 
@@ -74,6 +76,8 @@ fun ImageScreen(
     val imageType = File(post.image).extension
     val moreNavigation = rememberMaterialMotionNavController()
 
+    var imageDisposable: Disposable? = null
+    var originalImageDisposable: Disposable? = null
     var loading by remember { mutableStateOf(false) }
     val maxSize = 4096f
 
@@ -97,7 +101,10 @@ fun ImageScreen(
 
     DisposableEffect(Unit) {
         onDispose {
+            Timber.i("disposed ${imageDisposable == null}")
             window.showSystemBars()
+            imageDisposable?.dispose()
+            originalImageDisposable?.dispose()
         }
     }
 
@@ -222,7 +229,7 @@ fun ImageScreen(
 
                 maxZoom = 4f
 
-                load(
+                imageDisposable = load(
                     uri = url,
                     imageLoader = mainViewModel.imageLoader,
                     builder = {
@@ -264,7 +271,8 @@ fun ImageScreen(
                 if (imageViewModel.showOriginalImage && !imageViewModel.originalImageShown) {
                     imageViewModel.originalImageShown = true
 
-                    it.load(
+                    imageDisposable?.dispose()
+                    originalImageDisposable = it.load(
                         originalUrl,
                         imageLoader = mainViewModel.imageLoader,
                         builder = {

@@ -12,7 +12,7 @@ import com.github.uragiristereo.mejiboard.model.network.NetworkInstance
 import com.github.uragiristereo.mejiboard.model.network.Tag
 import com.github.uragiristereo.mejiboard.model.network.download.DownloadInstance
 import com.github.uragiristereo.mejiboard.model.network.download.DownloadRepository
-import com.github.uragiristereo.mejiboard.util.convertSize
+import com.github.uragiristereo.mejiboard.util.FileHelper.convertSize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

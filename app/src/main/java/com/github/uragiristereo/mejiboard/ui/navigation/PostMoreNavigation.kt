@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -38,8 +40,8 @@ import com.github.uragiristereo.mejiboard.ui.components.SheetItem
 import com.github.uragiristereo.mejiboard.ui.components.TagInfoItem
 import com.github.uragiristereo.mejiboard.ui.viewmodel.ImageViewModel
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
+import com.github.uragiristereo.mejiboard.util.FileHelper.convertSize
 import com.github.uragiristereo.mejiboard.util.PermissionHelper
-import com.github.uragiristereo.mejiboard.util.convertSize
 import com.google.accompanist.insets.navigationBarsPadding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -86,6 +88,7 @@ fun PostMoreNavigation(
                 ) {
                     Box(
                         Modifier
+                            .clip(RoundedCornerShape(4.dp))
                             .clickable {
                                 dialogShown = false
                                 val instance = imageViewModel.getInstance(post.id)
@@ -183,13 +186,17 @@ fun PostMoreNavigation(
 
                             if (!PermissionHelper.checkPermission(context)) {
                                 PermissionHelper.requestPermission(context)
-                                if (!PermissionHelper.checkPermission(context)) {
+                                mainViewModel.setPermissionState("wait")
+                                while (mainViewModel.getPermissionState() == "wait") {
+                                    delay(500)
+                                }
+                                if (mainViewModel.getPermissionState() == "denied") {
                                     Toast.makeText(context, "Error: Storage permission is not granted", Toast.LENGTH_LONG).show()
                                     return@launch
                                 }
                             }
 
-                            Toast.makeText(context, "Download started", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Download started.\nCheck notification for download progress.", Toast.LENGTH_SHORT).show()
 
                             val downloadLocation = File(Environment.getExternalStorageDirectory().absolutePath + "/Pictures/Mejiboard/")
                             if (!downloadLocation.isDirectory)

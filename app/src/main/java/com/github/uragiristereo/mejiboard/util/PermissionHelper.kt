@@ -5,12 +5,8 @@ import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
-import android.os.Build.VERSION.SDK_INT
-import android.os.Environment
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import timber.log.Timber
 
 
 object PermissionHelper {
@@ -21,8 +17,6 @@ object PermissionHelper {
 //        } else {
             val readPermission = ContextCompat.checkSelfPermission(context, READ_EXTERNAL_STORAGE)
             val writePermission = ContextCompat.checkSelfPermission(context, WRITE_EXTERNAL_STORAGE)
-            Timber.i("${readPermission == PackageManager.PERMISSION_GRANTED}")
-            Timber.i("${writePermission == PackageManager.PERMISSION_GRANTED}")
             return readPermission == PackageManager.PERMISSION_GRANTED && writePermission == PackageManager.PERMISSION_GRANTED
 //        }
     }

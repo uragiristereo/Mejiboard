@@ -152,4 +152,12 @@ class MainViewModel @Inject constructor(
         selectedPost = post
         savedStateHandle.set(STATE_KEY_SELECTED_POST, post)
     }
+
+    fun setPermissionState(state: String) {
+        preferencesManager.setPermissionState(state)
+    }
+
+    fun getPermissionState(): String {
+        return preferencesManager.getPermissionState()
+    }
 }
