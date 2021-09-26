@@ -15,7 +15,7 @@ An image board client based on [Gelbooru](https://gelbooru.com) for android, mad
 Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section.
 
 ## Screenshots
-<img src="https://github.com/uragiristereo/Mejiboard/raw/alpha/screenshots/Screenshots%20combined.jpg">
+<img src="https://github.com/uragiristereo/Mejiboard/raw/alpha/screenshots/Screenshots_combined.jpg">
 
 ## Libraries used
 - [Retrofit2](https://github.com/square/retrofit): A type-safe HTTP client for Android and the JVM
