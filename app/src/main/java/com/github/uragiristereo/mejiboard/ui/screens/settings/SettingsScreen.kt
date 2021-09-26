@@ -29,6 +29,8 @@ import com.github.uragiristereo.mejiboard.ui.components.SettingsOptions
 import com.github.uragiristereo.mejiboard.ui.components.SettingsOptionsItem
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.github.uragiristereo.mejiboard.util.DNS_OVER_HTTPS_PROVIDER
+import com.github.uragiristereo.mejiboard.util.FileHelper.convertSize
+import com.github.uragiristereo.mejiboard.util.FileHelper.getFolderSize
 import com.github.uragiristereo.mejiboard.util.PREVIEW_SIZE
 import com.github.uragiristereo.mejiboard.util.SAFE_LISTING_ONLY
 import com.github.uragiristereo.mejiboard.util.USE_DNS_OVER_HTTPS
@@ -69,6 +71,8 @@ fun SettingsScreen(
     )
     val selectedDohProviderFromViewModel = dohProviders.filter { it.key == mainViewModel.dohProvider }[0]
     var selectedDohProvider by remember { mutableStateOf(selectedDohProviderFromViewModel) }
+
+    var cacheDirectorySize by remember { mutableStateOf("Loading...") }
 
     Scaffold(
         topBar = {
@@ -259,14 +263,23 @@ fun SettingsScreen(
                 Divider()
                 SettingsCategory(text = "Miscellaneous")
 
+                LaunchedEffect(true) {
+                    launch {
+                        val size = getFolderSize(context.cacheDir)
+                        cacheDirectorySize = convertSize(size.toInt())
+                    }
+                }
+
                 SettingsItem(
                     title = "Clear cache",
-                    subtitle = "Remove all cached memory and files",
+                    subtitle = "Remove all cached memory and files\nCache size: $cacheDirectorySize (estimated)",
                     onClick = {
                         scope.launch {
                             mainViewModel.imageLoader.memoryCache.clear()
                             context.cacheDir.deleteRecursively()
                             Toast.makeText(context, "Cache successfully cleaned", Toast.LENGTH_SHORT).show()
+                            val size = getFolderSize(context.cacheDir)
+                            cacheDirectorySize = convertSize(size.toInt())
                         }
                     }
                 )
