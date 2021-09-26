@@ -79,6 +79,15 @@ fun MainScreen(
         }
     }
 
+    BackHandler(
+        enabled = gridState.firstVisibleItemIndex >= 1
+    ) {
+        scope.launch {
+            gridState.animateScrollToItem(0)
+        }
+        toolbarOffsetHeightPx = 0f
+    }
+
     BottomDrawer(
         drawerState = drawerState,
         drawerShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
