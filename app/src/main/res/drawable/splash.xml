@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/black" />
+
+    <item
+        android:gravity="center"
+        android:drawable="@drawable/not_like_tsugu_round"
+        android:width="92dp"
+        android:height="92dp"
+        />
+</layer-list>

@@ -13,3 +13,4 @@ val USE_DNS_OVER_HTTPS = booleanPreferencesKey("USE_DNS_OVER_HTTPS")
 val DNS_OVER_HTTPS_PROVIDER = stringPreferencesKey("DNS_OVER_HTTPS_PROVIDER")
 const val STATE_KEY_SELECTED_POST = "main.selected.post"
 const val STATE_KEY_NOTIFICATION_COUNT = "main.notification.count"
+const val STATE_KEY_SPLASH_SHOWN = "main.splash.shown"

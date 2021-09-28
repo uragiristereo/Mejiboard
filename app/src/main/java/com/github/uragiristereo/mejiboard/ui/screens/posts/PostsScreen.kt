@@ -63,8 +63,10 @@ fun MainScreen(
     val drawerItemSelected = remember { mutableStateOf("home") }
     val postsData by postsViewModel.postsData
     val gridState = rememberLazyListState()
+    val scaffoldState = rememberScaffoldState()
 
     var toolbarOffsetHeightPx by remember { mutableStateOf(0f) }
+    var confirmExit by remember { mutableStateOf(true) }
 
     if (mainViewModel.refreshNeeded) {
         postsViewModel.getPosts(mainViewModel.searchTags, true, mainViewModel.safeListingOnly)
@@ -72,7 +74,7 @@ fun MainScreen(
     }
 
     BackHandler(
-        enabled = drawerState.isOpen
+        enabled = drawerState.isOpen && confirmExit
     ) {
         scope.launch {
             drawerState.close()
@@ -80,12 +82,13 @@ fun MainScreen(
     }
 
     BackHandler(
-        enabled = gridState.firstVisibleItemIndex >= 1
+        enabled = confirmExit && drawerState.isClosed
     ) {
         scope.launch {
-            gridState.animateScrollToItem(0)
+            confirmExit = false
+            scaffoldState.snackbarHostState.showSnackbar("Press BACK again to exit Mejiboard", null, SnackbarDuration.Short)
+            confirmExit = true
         }
-        toolbarOffsetHeightPx = 0f
     }
 
     BottomDrawer(
@@ -138,13 +141,13 @@ fun MainScreen(
                 )
                 DrawerItem(
                     onClick = {
-                        mainNavigation.navigate("settings") {
-                            popUpTo("main") { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
                         scope.launch {
                             drawerState.close()
+                            mainNavigation.navigate("settings") {
+                                popUpTo("main") { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                     },
                     icon = Icons.Outlined.Settings,
@@ -154,13 +157,13 @@ fun MainScreen(
                 )
                 DrawerItem(
                     onClick = {
-                        mainNavigation.navigate("about") {
-                            popUpTo("main") { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
                         scope.launch {
                             drawerState.close()
+                            mainNavigation.navigate("about") {
+                                popUpTo("main") { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                     },
                     icon = Icons.Outlined.Info,
@@ -175,6 +178,7 @@ fun MainScreen(
         scrimColor = Color(0xFF121212).copy(alpha = DrawerDefaults.ScrimOpacity)
     ) {
         Scaffold(
+            scaffoldState = scaffoldState,
             floatingActionButton = {
                 MaterialFade(
                     visible = postsViewModel.fabVisible,
@@ -223,9 +227,9 @@ fun MainScreen(
                                 Row(
                                     Modifier
                                         .clickable(onClick = {
+//                                            mainNavigation.popBackStack()
                                             mainNavigation.navigate("search") {
-                                                popUpTo("main")
-                                                this.restoreState = true
+//                                                popUpTo("search") { inclusive = true }
                                             }
                                         }),
                                     verticalAlignment = Alignment.CenterVertically,

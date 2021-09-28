@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -24,20 +25,20 @@ fun SplashScreen(
     mainNavigation: NavHostController,
     darkTheme: Boolean
 ) {
-    LaunchedEffect(Unit) {
+    LaunchedEffect(true) {
         launch {
-            delay(1000)
+            delay(300)
 
             mainNavigation.navigate("main") {
                 popUpTo("splash") { inclusive = true }
-                launchSingleTop = true
             }
         }
     }
     Box(
         Modifier
             .fillMaxSize()
-            .background(if (darkTheme) MaterialTheme.colors.background else MaterialTheme.colors.primaryVariant),
+//            .background(if (darkTheme) MaterialTheme.colors.background else MaterialTheme.colors.primaryVariant),
+            .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
         Box(

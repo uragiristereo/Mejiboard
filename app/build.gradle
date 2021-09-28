@@ -37,6 +37,9 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            packagingOptions {
+                exclude 'DebugProbesKt.bin'
+            }
         }
     }
     compileOptions {
@@ -108,8 +111,8 @@ dependencies {
     // TouchImageView
     implementation 'com.github.MikeOrtiz:TouchImageView:3.1.0'
     // Material Motion
-    implementation "com.github.fornewid.material-motion-compose:navigation:0.8.0-alpha03"
-    implementation "com.github.fornewid.material-motion-compose:core:0.8.0-alpha03"
+    implementation "com.github.fornewid.material-motion-compose:navigation:0.7.4"
+    implementation "com.github.fornewid.material-motion-compose:core:0.7.4"
     // Room
     def room_version = "2.3.0"
     implementation "androidx.room:room-runtime:$room_version"

@@ -6,8 +6,10 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.ui.screens.about.AboutScreen
@@ -26,6 +28,7 @@ import soup.compose.material.motion.materialSharedAxisXOut
 import soup.compose.material.motion.navigation.MaterialMotionNavHost
 import soup.compose.material.motion.navigation.composable
 import soup.compose.material.motion.navigation.rememberMaterialMotionNavController
+import java.io.File
 
 @ExperimentalAnimationApi
 @ExperimentalCoilApi
@@ -38,6 +41,7 @@ fun MainNavigation(
     val mainNavigation = rememberMaterialMotionNavController()
     val systemUiController = rememberSystemUiController()
     val isDeviceMiui = isDeviceMiui()
+    val context = LocalContext.current
 
     mainViewModel.isDesiredThemeDark =
         when (mainViewModel.theme) {
@@ -47,6 +51,11 @@ fun MainNavigation(
             else -> false
         }
 
+    LaunchedEffect(true) {
+        val tempDirectory = File(context.cacheDir.absolutePath + "/temp/")
+        tempDirectory.deleteRecursively()
+    }
+
     ProvideWindowInsets(
         windowInsetsAnimationsEnabled = true
     ) {
@@ -55,10 +64,11 @@ fun MainNavigation(
             blackTheme = mainViewModel.blackTheme
         ) {
             Surface(color = MaterialTheme.colors.background) {
-                MaterialMotionNavHost(navController = mainNavigation, startDestination = "main") {
+                MaterialMotionNavHost(navController = mainNavigation, startDestination = if (mainViewModel.splashShown) "main" else "splash") {
                     composable("splash") {
-                        systemUiController.setSystemBarsColor(if (mainViewModel.isDesiredThemeDark) MaterialTheme.colors.background else MaterialTheme.colors.primaryVariant)
-
+//                        systemUiController.setSystemBarsColor(if (mainViewModel.isDesiredThemeDark) MaterialTheme.colors.background else MaterialTheme.colors.primaryVariant)
+//                        systemUiController.setSystemBarsColor(Color.Black)
+                        mainViewModel.saveSplashShown()
                         SplashScreen(mainNavigation, mainViewModel.isDesiredThemeDark)
                     }
                     composable("main") {
