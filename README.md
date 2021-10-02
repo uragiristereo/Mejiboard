@@ -18,6 +18,7 @@ Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) sectio
 <img src="https://github.com/uragiristereo/Mejiboard/raw/alpha/screenshots/Screenshots_combined.jpg">
 
 ## Libraries used
+- [OkHttp](https://github.com/square/okhttp): Square’s meticulous HTTP client for the JVM, Android, and GraalVM.
 - [Retrofit2](https://github.com/square/retrofit): A type-safe HTTP client for Android and the JVM
 - [Hilt](https://developer.android.com/training/dependency-injection/hilt-android): A dependency injection library for Android that reduces the boilerplate of doing manual dependency injection in your project.
 - [Coil](https://github.com/coil-kt/coil): Image loading for Android backed by Kotlin Coroutines.
