@@ -1,6 +1,5 @@
 package com.github.uragiristereo.mejiboard.ui.screens.settings
 
-import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -39,6 +38,7 @@ import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @ExperimentalAnimationApi
@@ -75,6 +75,7 @@ fun SettingsScreen(
     var selectedDohProvider by remember { mutableStateOf(selectedDohProviderFromViewModel) }
 
     var cacheDirectorySize by remember { mutableStateOf("Loading...") }
+    var cacheCleaned by remember { mutableStateOf(false) }
 
     LaunchedEffect(true) {
         launch {
@@ -86,7 +87,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             Card(
-                elevation = if (columnState.firstVisibleItemIndex > 0 || columnState.firstVisibleItemScrollOffset > 0) 4.dp else 0.dp
+                elevation = if (columnState.firstVisibleItemIndex > 0 || columnState.firstVisibleItemScrollOffset >= 60) 4.dp else 0.dp
             ) {
                 TopAppBar(
                     backgroundColor = Color.Transparent,
@@ -304,16 +305,26 @@ fun SettingsScreen(
                     SettingsCategory(text = "Miscellaneous")
                 }
                 item {
+                    var cacheSubtitleText by remember { mutableStateOf("") }
+
+                    cacheSubtitleText =
+                        if (cacheCleaned)
+                            "Cache successfully cleaned!"
+                        else
+                            "Cache size: $cacheDirectorySize (estimated)"
+
                     SettingsItem(
                         title = "Clear cache",
-                        subtitle = "Remove all cached memory and files\nCache size: $cacheDirectorySize (estimated)",
+                        subtitle = "Remove all cached memory and files\n$cacheSubtitleText",
                         onClick = {
                             scope.launch {
                                 mainViewModel.imageLoader.memoryCache.clear()
                                 context.cacheDir.deleteRecursively()
-                                Toast.makeText(context, "Cache successfully cleaned", Toast.LENGTH_SHORT).show()
+                                cacheCleaned = true
                                 val size = getFolderSize(context.cacheDir)
                                 cacheDirectorySize = convertSize(size.toInt())
+                                delay(4000)
+                                cacheCleaned = false
                             }
                         }
                     )
