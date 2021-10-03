@@ -4,12 +4,12 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -37,6 +37,7 @@ import com.github.uragiristereo.mejiboard.util.USE_DNS_OVER_HTTPS
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.rememberInsetsPaddingValues
+import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import kotlinx.coroutines.launch
 
@@ -48,6 +49,7 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val columnState = rememberLazyListState()
 
     val themes = listOf(
         SettingsOptionsItem("system", "System default"),
@@ -74,220 +76,248 @@ fun SettingsScreen(
 
     var cacheDirectorySize by remember { mutableStateOf("Loading...") }
 
+    LaunchedEffect(true) {
+        launch {
+            val size = getFolderSize(context.cacheDir)
+            cacheDirectorySize = convertSize(size.toInt())
+        }
+    }
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                backgroundColor = Color.Transparent,
-                elevation = 0.dp,
-                title = {
-                    Text("Settings")
-                },
-                contentPadding = rememberInsetsPaddingValues(
-                    LocalWindowInsets.current.statusBars,
-                    applyBottom = false,
-                ),
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            mainNavigation.navigateUp()
+            Card(
+                elevation = if (columnState.firstVisibleItemIndex > 0 || columnState.firstVisibleItemScrollOffset > 0) 4.dp else 0.dp
+            ) {
+                TopAppBar(
+                    backgroundColor = Color.Transparent,
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = 0.dp,
+                    title = {
+                        Text("Settings")
+                    },
+                    contentPadding = rememberInsetsPaddingValues(
+                        LocalWindowInsets.current.statusBars,
+                        applyBottom = false,
+                    ),
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                mainNavigation.navigateUp()
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.ArrowBack,
+                                "Back"
+                            )
                         }
-                    ) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            "Back"
-                        )
                     }
-                }
+                )
+            }
+        },
+        bottomBar = {
+            Spacer(
+                Modifier
+                    .navigationBarsHeight()
+                    .fillMaxWidth()
             )
         }
     ) { innerPadding ->
-        Surface(
-            Modifier.padding(innerPadding)
-        ) {
-            Column(
+        Box {
+            LazyColumn(
                 Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize(),
+                state = columnState,
+                contentPadding = innerPadding
             ) {
-                SettingsCategory(text = "Interface")
-                SettingsOptions(
-                    title = "Theme",
-                    subtitle = selectedTheme.value,
-                    items = themes,
-                    selectedItemKey = selectedTheme.key,
-                    onItemSelected = {
-                        selectedTheme = it
-                        mainViewModel.setTheme(selectedTheme.key, mainViewModel.blackTheme)
-                    }
-                )
-
-                AnimatedContent(targetState = mainViewModel.isDesiredThemeDark) { target ->
-                    if (target) {
-                        val blackThemeInteractionSource = remember { MutableInteractionSource() }
-                        SettingsItem(
-                            title = "Black dark theme",
-                            subtitle = "Use pitch black theme instead of regular dark theme, useful for OLED screens",
-                            interactionSource = blackThemeInteractionSource,
-                            onClick = {
-                                mainViewModel.blackTheme = !mainViewModel.blackTheme
-                                mainViewModel.setTheme(
-                                    if (mainViewModel.isDesiredThemeDark) "dark" else "light",
-                                    mainViewModel.blackTheme
-                                )
-                            },
-                            action = {
-                                Switch(
-                                    checked = mainViewModel.blackTheme,
-                                    interactionSource = blackThemeInteractionSource,
-                                    onCheckedChange = {
-                                        mainViewModel.blackTheme = !mainViewModel.blackTheme
-                                        mainViewModel.setTheme(
-                                            if (mainViewModel.isDesiredThemeDark) "dark" else "light",
-                                            mainViewModel.blackTheme
-                                        )
-                                    }
-                                )
-                            }
-                        )
+                item {
+                    SettingsCategory(text = "Interface")
+                }
+                item {
+                    SettingsOptions(
+                        title = "Theme",
+                        subtitle = selectedTheme.value,
+                        items = themes,
+                        selectedItemKey = selectedTheme.key,
+                        onItemSelected = {
+                            selectedTheme = it
+                            mainViewModel.setTheme(selectedTheme.key, mainViewModel.blackTheme)
+                        }
+                    )
+                }
+                item {
+                    AnimatedContent(targetState = mainViewModel.isDesiredThemeDark) { target ->
+                        if (target) {
+                            val blackThemeInteractionSource = remember { MutableInteractionSource() }
+                            SettingsItem(
+                                title = "Black dark theme",
+                                subtitle = "Use pitch black theme instead of regular dark theme, useful for OLED screens",
+                                interactionSource = blackThemeInteractionSource,
+                                onClick = {
+                                    mainViewModel.blackTheme = !mainViewModel.blackTheme
+                                    mainViewModel.setTheme(
+                                        if (mainViewModel.isDesiredThemeDark) "dark" else "light",
+                                        mainViewModel.blackTheme
+                                    )
+                                },
+                                action = {
+                                    Switch(
+                                        checked = mainViewModel.blackTheme,
+                                        interactionSource = blackThemeInteractionSource,
+                                        onCheckedChange = {
+                                            mainViewModel.blackTheme = !mainViewModel.blackTheme
+                                            mainViewModel.setTheme(
+                                                if (mainViewModel.isDesiredThemeDark) "dark" else "light",
+                                                mainViewModel.blackTheme
+                                            )
+                                        }
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
-                Divider()
-                SettingsCategory(text = "Behavior")
-
-                SettingsOptions(
-                    title = "Preview size",
-                    subtitle = selectedPreviewSize.value,
-                    items = previewSizes,
-                    selectedItemKey = selectedPreviewSize.key,
-                    onItemSelected = {
-                        selectedPreviewSize = it
-                        mainViewModel.previewSize = it.key
-                        mainViewModel.save(PREVIEW_SIZE, it.key)
-                    }
-                )
-
-                val safeListingOnlyInteractionSource = remember { MutableInteractionSource() }
-                SettingsItem(
-                    title = "Safe listing only mode",
-                    subtitle = buildAnnotatedString {
-                        append("Filter ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("questionable")
+                item {
+                    Divider()
+                }
+                item {
+                    SettingsCategory(text = "Behavior")
+                }
+                item {
+                    SettingsOptions(
+                        title = "Preview size",
+                        subtitle = selectedPreviewSize.value,
+                        items = previewSizes,
+                        selectedItemKey = selectedPreviewSize.key,
+                        onItemSelected = {
+                            selectedPreviewSize = it
+                            mainViewModel.previewSize = it.key
+                            mainViewModel.save(PREVIEW_SIZE, it.key)
                         }
-                        append(" & ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("explicit")
-                        }
+                    )
+                }
+                item {
+                    val safeListingOnlyInteractionSource = remember { MutableInteractionSource() }
+                    SettingsItem(
+                        title = "Safe listing only mode",
+                        subtitle = buildAnnotatedString {
+                            append("Filter ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("questionable")
+                            }
+                            append(" & ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("explicit")
+                            }
 //                        append(" rated posts")
-                        append(" rated posts\n(DISABLED)")
-                        append(" on ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("alpha")
-                        }
-                        append(" release")
-                    },
+                            append(" rated posts\n(DISABLED)")
+                            append(" on ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("alpha")
+                            }
+                            append(" release")
+                        },
                     enabled = false,
-                    interactionSource = safeListingOnlyInteractionSource,
-                    onClick = {
-                        mainViewModel.safeListingOnly = !mainViewModel.safeListingOnly
-                        mainViewModel.refreshNeeded = true
-                        mainViewModel.save(SAFE_LISTING_ONLY, mainViewModel.safeListingOnly)
-                    },
-                    action = {
-                        Switch(
-                            checked = mainViewModel.safeListingOnly,
+                        interactionSource = safeListingOnlyInteractionSource,
+                        onClick = {
+                            mainViewModel.safeListingOnly = !mainViewModel.safeListingOnly
+                            mainViewModel.refreshNeeded = true
+                            mainViewModel.save(SAFE_LISTING_ONLY, mainViewModel.safeListingOnly)
+                        },
+                        action = {
+                            Switch(
+                                checked = mainViewModel.safeListingOnly,
                             enabled = false,
-                            interactionSource = safeListingOnlyInteractionSource,
-                            onCheckedChange = {
-                                mainViewModel.safeListingOnly = !mainViewModel.safeListingOnly
-                                mainViewModel.refreshNeeded = true
-                                mainViewModel.save(SAFE_LISTING_ONLY, mainViewModel.safeListingOnly)
-                            }
-                        )
-                    }
-                )
+                                interactionSource = safeListingOnlyInteractionSource,
+                                onCheckedChange = {
+                                    mainViewModel.safeListingOnly = !mainViewModel.safeListingOnly
+                                    mainViewModel.refreshNeeded = true
+                                    mainViewModel.save(SAFE_LISTING_ONLY, mainViewModel.safeListingOnly)
+                                }
+                            )
+                        }
+                    )
+                }
+                item {
+                    Divider()
+                }
+                item {
+                    SettingsCategory(text = "Advanced")
+                }
+                item {
+                    val dohInteractionSource = remember { MutableInteractionSource() }
+                    SettingsItem(
+                        title = "DNS over HTTPS",
+                        subtitle = buildAnnotatedString {
+                            append("Enable if Gelbooru is blocked in your country ")
 
-                Divider()
-                SettingsCategory(text = "Advanced")
-
-                val dohInteractionSource = remember { MutableInteractionSource() }
-                SettingsItem(
-                    title = "DNS over HTTPS",
-                    subtitle = buildAnnotatedString {
-                        append("Enable if Gelbooru is blocked in your country ")
-
-                        withStyle(
-                            style = SpanStyle(fontWeight = FontWeight.Bold)
-                        ) {
-                            append("(recommended)")
+                            withStyle(
+                                style = SpanStyle(fontWeight = FontWeight.Bold)
+                            ) {
+                                append("(recommended)")
 //                            append("(recommended)\nRestart")
-                        }
+                            }
 //                        append(" is required to takes effect")
-                    },
-                    onClick = {
-                        mainViewModel.dohEnabled = !mainViewModel.dohEnabled
-                        mainViewModel.save(USE_DNS_OVER_HTTPS, mainViewModel.dohEnabled)
-                        mainViewModel.renewNetworkInstance(mainViewModel.dohEnabled, mainViewModel.dohProvider)
-                        mainViewModel.refreshNeeded = true
-                    },
-                    interactionSource = dohInteractionSource,
-                    action = {
-                        Switch(
-                            checked = mainViewModel.dohEnabled,
-                            interactionSource = dohInteractionSource,
-                            onCheckedChange = {
-                                mainViewModel.dohEnabled = !mainViewModel.dohEnabled
-                                mainViewModel.save(USE_DNS_OVER_HTTPS, mainViewModel.dohEnabled)
-                                mainViewModel.renewNetworkInstance(mainViewModel.dohEnabled, mainViewModel.dohProvider)
-                                mainViewModel.refreshNeeded = true
-                            }
-                        )
-                    }
-                )
-                AnimatedContent(targetState = mainViewModel.dohEnabled) { target ->
-                    if (target)
-                        SettingsOptions(
-                            title = "DNS over HTTPS Provider",
-                            subtitle = selectedDohProvider.value,
-                            items = dohProviders,
-                            selectedItemKey = selectedDohProvider.key,
-                            onItemSelected = {
-                                selectedDohProvider = it
-                                mainViewModel.dohProvider = it.key
-                                mainViewModel.save(DNS_OVER_HTTPS_PROVIDER, mainViewModel.dohProvider)
-                                mainViewModel.renewNetworkInstance(mainViewModel.dohEnabled, mainViewModel.dohProvider)
-                                mainViewModel.refreshNeeded = true
-                            }
-                        )
-                }
-                Divider()
-                SettingsCategory(text = "Miscellaneous")
-
-                LaunchedEffect(true) {
-                    launch {
-                        val size = getFolderSize(context.cacheDir)
-                        cacheDirectorySize = convertSize(size.toInt())
-                    }
-                }
-
-                SettingsItem(
-                    title = "Clear cache",
-                    subtitle = "Remove all cached memory and files\nCache size: $cacheDirectorySize (estimated)",
-                    onClick = {
-                        scope.launch {
-                            mainViewModel.imageLoader.memoryCache.clear()
-                            context.cacheDir.deleteRecursively()
-                            Toast.makeText(context, "Cache successfully cleaned", Toast.LENGTH_SHORT).show()
-                            val size = getFolderSize(context.cacheDir)
-                            cacheDirectorySize = convertSize(size.toInt())
+                        },
+                        onClick = {
+                            mainViewModel.dohEnabled = !mainViewModel.dohEnabled
+                            mainViewModel.save(USE_DNS_OVER_HTTPS, mainViewModel.dohEnabled)
+                            mainViewModel.renewNetworkInstance(mainViewModel.dohEnabled, mainViewModel.dohProvider)
+                            mainViewModel.refreshNeeded = true
+                        },
+                        interactionSource = dohInteractionSource,
+                        action = {
+                            Switch(
+                                checked = mainViewModel.dohEnabled,
+                                interactionSource = dohInteractionSource,
+                                onCheckedChange = {
+                                    mainViewModel.dohEnabled = !mainViewModel.dohEnabled
+                                    mainViewModel.save(USE_DNS_OVER_HTTPS, mainViewModel.dohEnabled)
+                                    mainViewModel.renewNetworkInstance(mainViewModel.dohEnabled, mainViewModel.dohProvider)
+                                    mainViewModel.refreshNeeded = true
+                                }
+                            )
                         }
+                    )
+                }
+                item {
+                    AnimatedContent(targetState = mainViewModel.dohEnabled) { target ->
+                        if (target)
+                            SettingsOptions(
+                                title = "DNS over HTTPS Provider",
+                                subtitle = selectedDohProvider.value,
+                                items = dohProviders,
+                                selectedItemKey = selectedDohProvider.key,
+                                onItemSelected = {
+                                    selectedDohProvider = it
+                                    mainViewModel.dohProvider = it.key
+                                    mainViewModel.save(DNS_OVER_HTTPS_PROVIDER, mainViewModel.dohProvider)
+                                    mainViewModel.renewNetworkInstance(mainViewModel.dohEnabled, mainViewModel.dohProvider)
+                                    mainViewModel.refreshNeeded = true
+                                }
+                            )
                     }
-                )
-                Spacer(
-                    Modifier
-                        .navigationBarsHeight()
-                        .fillMaxWidth()
-                )
+                }
+                item {
+                    Divider()
+                }
+                item {
+                    SettingsCategory(text = "Miscellaneous")
+                }
+                item {
+                    SettingsItem(
+                        title = "Clear cache",
+                        subtitle = "Remove all cached memory and files\nCache size: $cacheDirectorySize (estimated)",
+                        onClick = {
+                            scope.launch {
+                                mainViewModel.imageLoader.memoryCache.clear()
+                                context.cacheDir.deleteRecursively()
+                                Toast.makeText(context, "Cache successfully cleaned", Toast.LENGTH_SHORT).show()
+                                val size = getFolderSize(context.cacheDir)
+                                cacheDirectorySize = convertSize(size.toInt())
+                            }
+                        }
+                    )
+                }
             }
         }
     }
