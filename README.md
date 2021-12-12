@@ -1,4 +1,7 @@
 # Mejiboard
+
+image (イメージ) + board = メジboard (mejiboard)
+
 An image board client based on [Gelbooru](https://gelbooru.com) for android, made from Jetpack Compose 🚀.
 
 ## Features
