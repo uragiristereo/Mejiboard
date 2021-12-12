@@ -2,11 +2,11 @@ package com.github.uragiristereo.mejiboard.ui.screens.settings
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
@@ -14,25 +14,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.ui.components.SettingsCategory
 import com.github.uragiristereo.mejiboard.ui.components.SettingsItem
 import com.github.uragiristereo.mejiboard.ui.components.SettingsOptions
 import com.github.uragiristereo.mejiboard.ui.components.SettingsOptionsItem
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
-import com.github.uragiristereo.mejiboard.util.DNS_OVER_HTTPS_PROVIDER
+import com.github.uragiristereo.mejiboard.util.*
 import com.github.uragiristereo.mejiboard.util.FileHelper.convertSize
 import com.github.uragiristereo.mejiboard.util.FileHelper.getFolderSize
-import com.github.uragiristereo.mejiboard.util.PREVIEW_SIZE
-import com.github.uragiristereo.mejiboard.util.SAFE_LISTING_ONLY
-import com.github.uragiristereo.mejiboard.util.USE_DNS_OVER_HTTPS
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.rememberInsetsPaddingValues
@@ -40,6 +43,7 @@ import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @ExperimentalAnimationApi
 @Composable
@@ -76,25 +80,62 @@ fun SettingsScreen(
 
     var cacheDirectorySize by remember { mutableStateOf("Loading...") }
     var cacheCleaned by remember { mutableStateOf(false) }
+    var settingsHeaderSize by remember { mutableStateOf(0) }
+    var bigHeader by remember { mutableStateOf(true) }
 
     LaunchedEffect(true) {
         launch {
             val size = getFolderSize(context.cacheDir)
             cacheDirectorySize = convertSize(size.toInt())
         }
+        launch {
+            while (true) {
+                if (settingsHeaderSize > 0) {
+                    val half = (0.6f * settingsHeaderSize).toInt()
+
+                    bigHeader =
+                        if (columnState.firstVisibleItemIndex == 0)
+                            columnState.firstVisibleItemScrollOffset < half
+                        else
+                            false
+
+                    if (columnState.firstVisibleItemIndex == 0 && columnState.firstVisibleItemScrollOffset != 0 && !columnState.isScrollInProgress) {
+                        if (columnState.firstVisibleItemScrollOffset < half)
+                            scope.launch { columnState.animateScrollToItem(0) }
+                        else
+                            scope.launch { columnState.animateScrollToItem(1) }
+                    }
+                }
+                delay(100)
+            }
+        }
     }
+
+    val smallHeaderOpacity by animateFloatAsState(
+        targetValue = if (bigHeader) 0f else 1f,
+        animationSpec = tween(durationMillis = 350),
+    )
+    val bigHeaderOpacity by animateFloatAsState(
+        targetValue = if (bigHeader) 1f else 0f,
+        animationSpec = tween(durationMillis = 350),
+    )
 
     Scaffold(
         topBar = {
             Card(
-                elevation = if (columnState.firstVisibleItemIndex > 0 || columnState.firstVisibleItemScrollOffset >= 60) 4.dp else 0.dp
+                elevation = if (!bigHeader) 4.dp else 0.dp,
+                shape = RectangleShape
             ) {
                 TopAppBar(
                     backgroundColor = Color.Transparent,
                     modifier = Modifier.fillMaxWidth(),
                     elevation = 0.dp,
                     title = {
-                        Text("Settings")
+                        Text(
+                            text = "Settings",
+                            modifier = Modifier
+                                .alpha(smallHeaderOpacity)
+                        )
                     },
                     contentPadding = rememberInsetsPaddingValues(
                         LocalWindowInsets.current.statusBars,
@@ -126,10 +167,38 @@ fun SettingsScreen(
         Box {
             LazyColumn(
                 Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                      detectDragGestures(
+                          onDrag = { _, _ -> },
+                          onDragEnd = {
+                              Timber.i("on drag end")
+                          },
+                          onDragCancel = {
+                              Timber.i("on drag cancel")
+                          }
+                      )
+                    },
                 state = columnState,
                 contentPadding = innerPadding
             ) {
+                item {
+                    Text(
+                        text = "Settings",
+                        modifier = Modifier
+                            .alpha(bigHeaderOpacity)
+                            .onGloballyPositioned {
+                                settingsHeaderSize = it.size.height
+                            }
+                            .padding(
+                                top = 48.dp,
+                                bottom = 12.dp,
+                                start = 16.dp
+                            ),
+                        style = MaterialTheme.typography.h4,
+                        fontSize = 36.sp
+                    )
+                }
                 item {
                     SettingsCategory(text = "Interface")
                 }
@@ -209,13 +278,11 @@ fun SettingsScreen(
                             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
                                 append("explicit")
                             }
-//                        append(" rated posts")
-                            append(" rated posts\n(DISABLED)")
-                            append(" on ")
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                append("alpha")
+                            append(" rated posts\n")
+
+                            withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
+                                append("(Feature not yet toggleable)")
                             }
-                            append(" release")
                         },
                     enabled = false,
                         interactionSource = safeListingOnlyInteractionSource,
@@ -299,27 +366,76 @@ fun SettingsScreen(
                     }
                 }
                 item {
+                    val blockFromRecentsInteractionSource = remember { MutableInteractionSource() }
+                    SettingsItem(
+                        title = "Block content from Recent apps",
+                        subtitle = "Prevent content for showing in Recent apps",
+                        onClick = {
+                            mainViewModel.blockFromRecents = !mainViewModel.blockFromRecents
+                            mainViewModel.save(BLOCK_CONTENT_FROM_RECENTS, mainViewModel.blockFromRecents)
+                        },
+                        interactionSource = blockFromRecentsInteractionSource,
+                        action = {
+                            Switch(
+                                checked = mainViewModel.blockFromRecents,
+                                interactionSource = blockFromRecentsInteractionSource,
+                                onCheckedChange = {
+                                    mainViewModel.blockFromRecents = !mainViewModel.blockFromRecents
+                                    mainViewModel.save(BLOCK_CONTENT_FROM_RECENTS, mainViewModel.blockFromRecents)
+                                }
+                            )
+                        }
+                    )
+                }
+                item {
                     Divider()
                 }
                 item {
                     SettingsCategory(text = "Miscellaneous")
                 }
                 item {
-                    var cacheSubtitleText by remember { mutableStateOf("") }
-
-                    cacheSubtitleText =
-                        if (cacheCleaned)
-                            "Cache successfully cleaned!"
-                        else
-                            "Cache size: $cacheDirectorySize (estimated)"
-
+                    val autoCleanCacheInteractionSource = remember { MutableInteractionSource() }
                     SettingsItem(
-                        title = "Clear cache",
-                        subtitle = "Remove all cached memory and files\n$cacheSubtitleText",
+                        title = "Auto clean cache",
+                        subtitle = "Automatically clean cache that older than 12 hours at startup",
+                        onClick = {
+                            mainViewModel.autoCleanCache = !mainViewModel.autoCleanCache
+                            mainViewModel.save(AUTO_CLEAN_CACHE, mainViewModel.autoCleanCache)
+                        },
+                        interactionSource = autoCleanCacheInteractionSource,
+                        action = {
+                            Switch(
+                                checked = mainViewModel.autoCleanCache,
+                                interactionSource = autoCleanCacheInteractionSource,
+                                onCheckedChange = {
+                                    mainViewModel.autoCleanCache = !mainViewModel.autoCleanCache
+                                    mainViewModel.save(AUTO_CLEAN_CACHE, mainViewModel.autoCleanCache)
+                                }
+                            )
+                        }
+                    )
+                }
+                item {
+                    SettingsItem(
+                        title = "Clear cache now",
+                        subtitle = buildAnnotatedString {
+                            append("Remove all cached memory and files\n")
+
+                            if (cacheCleaned)
+                                append("Cache successfully cleaned!")
+                            else {
+                                append("Cache size: ")
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append(cacheDirectorySize)
+                                }
+                                append(" (estimated)")
+                            }
+                        },
                         onClick = {
                             scope.launch {
                                 mainViewModel.imageLoader.memoryCache.clear()
                                 context.cacheDir.deleteRecursively()
+                                delay(350)
                                 cacheCleaned = true
                                 val size = getFolderSize(context.cacheDir)
                                 cacheDirectorySize = convertSize(size.toInt())

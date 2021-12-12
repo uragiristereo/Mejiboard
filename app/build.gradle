@@ -24,8 +24,8 @@ android {
         applicationId "com.github.uragiristereo.mejiboard"
         minSdk 26
         targetSdk 29
-        versionCode 11003
-        versionName "1.1.0-alpha.3"
+        versionCode 12004
+        versionName "1.2.0-alpha.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -64,21 +64,21 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.6.0'
-    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation 'com.google.android.material:material:1.4.0'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
-    implementation 'androidx.activity:activity-compose:1.3.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
+    implementation 'androidx.activity:activity-compose:1.4.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     // Lifecycle
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0-rc01"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0"
     implementation "androidx.savedstate:savedstate-ktx:1.1.0"
     // Timber
     implementation 'com.jakewharton.timber:timber:5.0.1'
@@ -91,11 +91,11 @@ dependencies {
     kapt "com.google.dagger:hilt-android-compiler:2.38.1"
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0-alpha03'
     // Coil
-    def coil_version = "1.3.2"
+    def coil_version = "1.4.0"
     implementation "io.coil-kt:coil-compose:$coil_version"
     implementation "io.coil-kt:coil-gif:$coil_version"
     // Accompanist
-    def accompanist_version = '0.18.0'
+    def accompanist_version = '0.20.2'
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
     implementation "com.google.accompanist:accompanist-insets-ui:$accompanist_version"
@@ -103,13 +103,14 @@ dependencies {
     implementation "androidx.datastore:datastore-preferences:1.0.0"
     implementation "androidx.datastore:datastore-preferences-core:1.0.0"
     // ExoPlayer
-    implementation 'com.google.android.exoplayer:exoplayer:2.15.1'
-    implementation 'com.google.android.exoplayer:extension-okhttp:2.15.1'
+    implementation 'com.google.android.exoplayer:exoplayer:2.16.1'
+    implementation 'com.google.android.exoplayer:extension-okhttp:2.16.1'
     // TouchImageView
     implementation 'com.github.MikeOrtiz:TouchImageView:3.1.0'
     // Material Motion
-    implementation "com.github.fornewid.material-motion-compose:navigation:0.8.0-alpha06"
-    implementation "com.github.fornewid.material-motion-compose:core:0.8.0-alpha06"
+    def material_motion_version = "0.8.0-alpha06"
+    implementation "com.github.fornewid.material-motion-compose:navigation:$material_motion_version"
+    implementation "com.github.fornewid.material-motion-compose:core:$material_motion_version"
     // Room
     def room_version = "2.3.0"
     implementation "androidx.room:room-runtime:$room_version"

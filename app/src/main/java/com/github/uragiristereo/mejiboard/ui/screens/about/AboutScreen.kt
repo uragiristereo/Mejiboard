@@ -1,9 +1,9 @@
 package com.github.uragiristereo.mejiboard.ui.screens.about
 
 import android.content.Intent
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -12,11 +12,15 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,6 +29,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.LocalImageLoader
+import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.R
@@ -35,14 +42,15 @@ import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
-import com.skydoves.landscapist.coil.CoilImage
 
+@ExperimentalCoilApi
 @Composable
 fun AboutScreen(
     mainNavigation: NavHostController,
     mainViewModel: MainViewModel
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
 
     Scaffold(
         topBar = {
@@ -186,24 +194,28 @@ fun AboutScreen(
                         Modifier
                             .padding(16.dp)
                     ) {
-                        CoilImage(
-                            imageRequest = ImageRequest
-                                .Builder(context)
-                                .data("https://avatars.githubusercontent.com/u/52477630?v=4")
-                                .crossfade(true)
-                                .build(),
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .size(48.dp),
-                            imageLoader = mainViewModel.imageLoader,
-                            loading = {
-                                Box(
-                                    Modifier
-                                        .fillMaxSize()
-                                        .background(Color.DarkGray)
-                                )
-                            }
-                        )
+                        CompositionLocalProvider(LocalImageLoader provides mainViewModel.imageLoader) {
+                            val placeholder = remember { GradientDrawable() }
+                            val size = with (density) { 48.dp.toPx() }.toInt()
+
+                            placeholder.setSize(size, size)
+                            placeholder.setColor(android.graphics.Color.DKGRAY)
+
+                            Image(
+                                painter = rememberImagePainter(
+                                    ImageRequest.Builder(context)
+                                        .data("https://avatars.githubusercontent.com/u/52477630?v=4")
+                                        .placeholder(placeholder)
+                                        .crossfade(200)
+                                        .build()
+                                ),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .size(48.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                         Column(
                             Modifier
                                 .padding(start = 16.dp)
@@ -275,6 +287,7 @@ fun AboutScreen(
     }
 }
 
+@ExperimentalCoilApi
 @Preview
 @Composable
 fun AboutPreview() {

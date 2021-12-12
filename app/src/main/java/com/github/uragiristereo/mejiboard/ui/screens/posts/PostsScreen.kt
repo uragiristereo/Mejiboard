@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.ui.screens.posts
 
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
@@ -14,20 +15,25 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -39,12 +45,14 @@ import com.github.uragiristereo.mejiboard.ui.components.DrawerItem
 import com.github.uragiristereo.mejiboard.ui.components.ThumbPill
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.github.uragiristereo.mejiboard.ui.viewmodel.PostsViewModel
+import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
-import soup.compose.material.motion.MaterialFade
-import soup.compose.material.motion.MotionConstants
 import kotlin.math.roundToInt
 
 @ExperimentalAnimationApi
@@ -61,17 +69,21 @@ fun MainScreen(
     val dropDownExpanded = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val drawerItemSelected = remember { mutableStateOf("home") }
-    val postsData by postsViewModel.postsData
     val gridState = rememberLazyListState()
     val scaffoldState = rememberScaffoldState()
+    val systemUiController = rememberSystemUiController()
 
     var toolbarOffsetHeightPx by remember { mutableStateOf(0f) }
     var confirmExit by remember { mutableStateOf(true) }
+    val activity = (LocalContext.current as? Activity)
 
     if (mainViewModel.refreshNeeded) {
         postsViewModel.getPosts(mainViewModel.searchTags, true, mainViewModel.safeListingOnly)
         mainViewModel.refreshNeeded = false
     }
+
+    if (drawerState.currentValue == BottomDrawerValue.Closed)
+        systemUiController.setNavigationBarColor(Color.Transparent, darkIcons = MaterialTheme.colors.isLight, navigationBarContrastEnforced = false)
 
     BackHandler(
         enabled = drawerState.isOpen && confirmExit
@@ -89,6 +101,12 @@ fun MainScreen(
             scaffoldState.snackbarHostState.showSnackbar("Press BACK again to exit Mejiboard", null, SnackbarDuration.Short)
             confirmExit = true
         }
+    }
+
+    BackHandler(
+        enabled = !confirmExit && drawerState.isClosed
+    ) {
+        activity?.finish()
     }
 
     BottomDrawer(
@@ -179,57 +197,51 @@ fun MainScreen(
     ) {
         Scaffold(
             scaffoldState = scaffoldState,
-            floatingActionButton = {
-                MaterialFade(
-                    visible = postsViewModel.fabVisible,
-                    exitDurationMillis = MotionConstants.motionDurationShort2
-                ) {
-                    FloatingActionButton(
-                        onClick = {
-                            scope.launch {
-                                gridState.animateScrollToItem(0)
-                            }
-                            toolbarOffsetHeightPx = 0f
-                        }
-                    ) {
-                        Icon(Icons.Outlined.KeyboardArrowUp, "Scroll to top")
-                    }
-                }
-            },
             bottomBar = {
                 BottomAppBar(
-                    Modifier
-                        .navigationBarsPadding(),
-                    backgroundColor = MaterialTheme.colors.surface
+                    backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.95f),
+                    contentPadding = rememberInsetsPaddingValues(
+                        LocalWindowInsets.current.navigationBars,
+                        applyTop = false,
+                    ),
                 ) {
                     Row(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
 //                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val navigationBarColor = MaterialTheme.colors.surface.copy(alpha = 0.4f)
                         IconButton(
                             onClick = {
+                                systemUiController.setNavigationBarColor(navigationBarColor)
                                 scope.launch {
                                     drawerState.open()
                                 }
                             }) {
                             Icon(Icons.Default.Menu, "Menu")
                         }
-                        Row {
+                        Row(
+                            Modifier
+                                .weight(1f),
+                            horizontalArrangement = Arrangement.End
+                        ) {
                             Surface(
                                 Modifier
                                     .width(128.dp)
                                     .height(48.dp),
                                 shape = RoundedCornerShape(50),
 //                                color = if (mainViewModel.isDesiredThemeDark) MaterialTheme.colors.surface else MaterialTheme.colors.primary
-                                color = MaterialTheme.colors.surface
+                                color = Color.Transparent
                             ) {
                                 Row(
                                     Modifier
                                         .clickable(onClick = {
 //                                            mainNavigation.popBackStack()
+//                                            mainNavigation.navigate("search")
                                             mainNavigation.navigate("search") {
-//                                                popUpTo("search") { inclusive = true }
+                                                popUpTo("main") { saveState = true }
+//                                                launchSingleTop = true
+//                                                restoreState = true
                                             }
                                         }),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -239,15 +251,14 @@ fun MainScreen(
                                     Text("SEARCH")
                                 }
                             }
-                            IconButton(
-                                onClick = {
-                                    dropDownExpanded.value = true
-                                }) {
-                                Icon(Icons.Default.MoreVert, "More")
-                            }
+                        }
+                        IconButton(
+                            onClick = {
+                                dropDownExpanded.value = true
+                            }) {
+                            Icon(Icons.Default.MoreVert, "More")
                             DropdownMenu(
                                 expanded = dropDownExpanded.value,
-                                offset = DpOffset(52.dp, 0.dp),
                                 onDismissRequest = { dropDownExpanded.value = false }
                             ) {
                                 DropdownMenuItem(
@@ -274,14 +285,31 @@ fun MainScreen(
                     }
                 }
             }
-        ) { innerPadding ->
+        ) {
             val toolbarHeight = 56.dp
             val toolbarHeightPx = with (LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
+
+//            val smoothToolbarOffsetHeightPx by animateFloatAsState(
+//                targetValue = toolbarOffsetHeightPx,
+//                animationSpec = tween(durationMillis = 200),
+//            )
+
+//            LaunchedEffect(gridState.isScrollInProgress) {
+//                delay(400)
+//                if (!gridState.isScrollInProgress && toolbarOffsetHeightPx != -toolbarHeightPx && toolbarOffsetHeightPx != 0f) {
+//                    val half = -toolbarHeightPx / 2
+//
+//                    toolbarOffsetHeightPx =
+//                        if (toolbarOffsetHeightPx >= half)
+//                            0f
+//                        else
+//                            -toolbarHeightPx
+//                }
+//            }
 
             val nestedScrollConnection = remember {
                 object : NestedScrollConnection {
                     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-
                         val delta = available.y
                         val newOffset = toolbarOffsetHeightPx + delta
                         toolbarOffsetHeightPx = newOffset.coerceIn(-toolbarHeightPx, 0f)
@@ -292,15 +320,14 @@ fun MainScreen(
 
             val modifier = Modifier
                 .statusBarsPadding()
-                .padding(innerPadding)
             Box(
-                if (!postsViewModel.postsProgressVisible)
+                if (!postsViewModel.postsProgressVisible && postsViewModel.postsData.size > 4)
                     modifier.nestedScroll(nestedScrollConnection)
                 else
                     modifier
             ) {
                 if (postsViewModel.postsError.isEmpty()) {
-                    PostsGrid(postsData, postsViewModel, mainViewModel, mainNavigation, gridState, toolbarHeight)
+                    PostsGrid(postsViewModel, mainViewModel, mainNavigation, gridState, toolbarHeight)
                 } else {
                     Column(
                         Modifier
@@ -319,12 +346,25 @@ fun MainScreen(
                         )
                     }
                 }
-                Column(
+                Card(
                     Modifier
-                        .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.roundToInt()) }
+                        .alpha(if (toolbarOffsetHeightPx.roundToInt() == -toolbarHeightPx.roundToInt()) 0f else 1f)
+                        .offset {
+                            IntOffset(
+                                x = 0,
+                                y =
+                                    toolbarOffsetHeightPx.roundToInt()
+//                                    if (gridState.isScrollInProgress)
+//                                        toolbarOffsetHeightPx.roundToInt()
+//                                    else
+//                                        smoothToolbarOffsetHeightPx.roundToInt()
+                                )
+                    },
+                    elevation = 4.dp,
+                    shape = RectangleShape
                 ) {
                     TopAppBar(
-                        backgroundColor = MaterialTheme.colors.background,
+                        backgroundColor = Color.Transparent,
                         elevation = 0.dp,
                         modifier = Modifier
                             .height(toolbarHeight),

@@ -6,27 +6,35 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.R
+import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
+import com.github.uragiristereo.mejiboard.util.FileHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun SplashScreen(
     mainNavigation: NavHostController,
-    darkTheme: Boolean
+    mainViewModel: MainViewModel,
+    backgroundColor: Color,
 ) {
+    val context = LocalContext.current
+
     LaunchedEffect(true) {
         launch {
+            if (mainViewModel.autoCleanCache)
+                FileHelper.autoCleanCache(context, 12)
+
             delay(300)
 
             mainNavigation.navigate("main") {
@@ -37,8 +45,7 @@ fun SplashScreen(
     Box(
         Modifier
             .fillMaxSize()
-//            .background(if (darkTheme) MaterialTheme.colors.background else MaterialTheme.colors.primaryVariant),
-            .background(Color.Black),
+            .background(backgroundColor),
         contentAlignment = Alignment.Center
     ) {
         Box(

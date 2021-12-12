@@ -7,6 +7,7 @@ import java.util.*
 @Parcelize
 data class Post(
     val id: Int,
+    val hash: String,
     val image: String,
     val directory: String,
     val width: Int,

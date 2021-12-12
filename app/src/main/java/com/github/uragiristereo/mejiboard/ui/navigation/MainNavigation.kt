@@ -20,11 +20,10 @@ import com.github.uragiristereo.mejiboard.ui.screens.settings.SettingsScreen
 import com.github.uragiristereo.mejiboard.ui.screens.splash.SplashScreen
 import com.github.uragiristereo.mejiboard.ui.theme.MejiboardTheme
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
-import com.github.uragiristereo.mejiboard.util.MiuiHelper.isDeviceMiui
+import com.github.uragiristereo.mejiboard.util.MiuiHelper
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import soup.compose.material.motion.materialSharedAxisXIn
-import soup.compose.material.motion.materialSharedAxisXOut
+import soup.compose.material.motion.*
 import soup.compose.material.motion.navigation.MaterialMotionNavHost
 import soup.compose.material.motion.navigation.composable
 import soup.compose.material.motion.navigation.rememberMaterialMotionNavController
@@ -40,7 +39,6 @@ fun MainNavigation(
 ) {
     val mainNavigation = rememberMaterialMotionNavController()
     val systemUiController = rememberSystemUiController()
-    val isDeviceMiui = isDeviceMiui()
     val context = LocalContext.current
 
     mainViewModel.isDesiredThemeDark =
@@ -67,25 +65,42 @@ fun MainNavigation(
                 MaterialMotionNavHost(navController = mainNavigation, startDestination = if (mainViewModel.splashShown) "main" else "splash") {
                     composable("splash") {
 //                        systemUiController.setSystemBarsColor(if (mainViewModel.isDesiredThemeDark) MaterialTheme.colors.background else MaterialTheme.colors.primaryVariant)
-//                        systemUiController.setSystemBarsColor(Color.Black)
+                        systemUiController.setSystemBarsColor(if (isSystemInDarkTheme()) Color.Black else Color.White)
                         mainViewModel.saveSplashShown()
-                        SplashScreen(mainNavigation, mainViewModel.isDesiredThemeDark)
+                        SplashScreen(mainNavigation, mainViewModel, if (isSystemInDarkTheme()) Color.Black else Color.White)
                     }
-                    composable("main") {
-                        if (isDeviceMiui && !mainViewModel.isDesiredThemeDark) {
+                    composable(
+                        "main",
+                        exitMotionSpec = { _, _ ->
+                            holdOut()
+                        },
+                        popEnterMotionSpec = { initial, _ ->
+                            if (initial.destination.route == "image")
+                                holdIn()
+                            else
+                                materialSharedAxisZIn()
+                        },
+                    ) {
+                        if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
                             systemUiController.setStatusBarColor(Color.Black)
                             systemUiController.setNavigationBarColor(MaterialTheme.colors.surface)
-                        } else
-                            systemUiController.setSystemBarsColor(MaterialTheme.colors.surface)
+                        } else {
+                            if (mainViewModel.isDesiredThemeDark)
+                                systemUiController.setStatusBarColor(Color.Black)
+                            else
+                                systemUiController.setStatusBarColor(MaterialTheme.colors.surface)
+                            systemUiController.setNavigationBarColor(Color.Transparent, darkIcons = MaterialTheme.colors.isLight, navigationBarContrastEnforced = false)
+                        }
 
                         MainScreen(mainNavigation, mainViewModel)
                     }
                     composable(
                         "search",
-                        enterMotionSpec = { _, _ -> materialSharedAxisXIn() },
-                        exitMotionSpec = { _, _ -> materialSharedAxisXOut() },
+                        enterMotionSpec = { _, _ ->
+                            holdIn()
+                        },
                     ) {
-                        if (isDeviceMiui && !mainViewModel.isDesiredThemeDark) {
+                        if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
                             systemUiController.setStatusBarColor(Color.Black)
                             systemUiController.setNavigationBarColor(MaterialTheme.colors.surface)
                         } else
@@ -96,11 +111,11 @@ fun MainNavigation(
                     composable(
                         "settings",
                     ) {
-                        if (isDeviceMiui && !mainViewModel.isDesiredThemeDark) {
+                        if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
                             systemUiController.setStatusBarColor(Color.Black)
                             systemUiController.setNavigationBarColor(MaterialTheme.colors.surface)
                         } else {
-                            systemUiController.setStatusBarColor(MaterialTheme.colors.surface)
+                            systemUiController.setStatusBarColor(Color.Transparent, MaterialTheme.colors.isLight)
                             systemUiController.setNavigationBarColor(MaterialTheme.colors.surface.copy(0.4f))
                         }
 
@@ -108,6 +123,12 @@ fun MainNavigation(
                     }
                     composable(
                         "image",
+                        enterMotionSpec = { _, _ ->
+                            translateYIn({ it }, 200)
+                        },
+                        popExitMotionSpec = { _, _ ->
+                            translateYOut({ it }, 200)
+                        }
                     ) {
                         systemUiController.setSystemBarsColor(Color.Black.copy(0.4f))
                         ImageScreen(mainNavigation, mainViewModel)
@@ -115,7 +136,7 @@ fun MainNavigation(
                     composable(
                         "about",
                     ) {
-                        if (isDeviceMiui && !mainViewModel.isDesiredThemeDark) {
+                        if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
                             systemUiController.setStatusBarColor(Color.Black)
                             systemUiController.setNavigationBarColor(MaterialTheme.colors.surface)
                         } else {

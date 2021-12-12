@@ -3,6 +3,7 @@ package com.github.uragiristereo.mejiboard.ui.screens.search
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
@@ -18,9 +19,13 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -44,12 +49,15 @@ fun SearchScreen(
     val scope = rememberCoroutineScope()
     val columnState = rememberLazyListState()
 
-    val query = remember { mutableStateOf(TextFieldValue(mainViewModel.searchTags, TextRange(mainViewModel.searchTags.length))) }
+    var query by remember { mutableStateOf(TextFieldValue(mainViewModel.searchTags, TextRange(mainViewModel.searchTags.length))) }
     val focusRequester = remember { FocusRequester() }
     var searchAllowed by remember { mutableStateOf(true) }
     var startQueryIndex by remember { mutableStateOf(0) }
     var endQueryIndex by remember { mutableStateOf(0) }
     var delimiter by remember { mutableStateOf("") }
+    var lastQuery = remember { TextFieldValue("") }
+    var wordInCursor by remember { mutableStateOf("") }
+    var boldWord by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -63,54 +71,62 @@ fun SearchScreen(
                     if (it.text == "")
                         searchViewModel.clearSearches()
 
-                    if (query.value.text != it.text) {
-                        query.value = it
+                    if (searchAllowed && it.text != lastQuery.text) {
+                        if (it.selection.end > 0) {
+                            val keywords = arrayOf(" ", "{", "}", "~")
+                            val match = keywords.filter { keyword ->
+                                keyword in it.text[it.selection.end - 1].toString()
+                            }
 
-                        if (searchAllowed) {
-                            if (it.selection.end > 0) {
-                                val keywords = arrayOf(" ", "{", "}", "~")
-                                val match = keywords.filter { keyword ->
-                                    keyword in it.text[it.selection.end - 1].toString()
-                                }
+                            if (match.isEmpty()) {
+                                val result = getWordInPosition(it.text, it.selection.end)
+                                wordInCursor = result.first
 
-                                if (match.isEmpty()) {
-                                    val result = getWordInPosition(it.text, it.selection.end)
-                                    if (result.first.isNotEmpty() && result.first != "-") {
-                                        delimiter = if (result.first.take(1) == "-") "-" else ""
-                                        startQueryIndex = result.second
-                                        endQueryIndex = result.third
-                                        searchViewModel.getTags(result.first)
-                                        scope.launch {
-                                            columnState.animateScrollToItem(0)
-                                        }
+                                if (wordInCursor.isNotEmpty() && wordInCursor != "-") {
+                                    delimiter = if (wordInCursor.take(1) == "-") "-" else ""
+                                    startQueryIndex = result.second
+                                    endQueryIndex = result.third
+                                    searchViewModel.getTags(wordInCursor)
+                                    scope.launch {
+                                        columnState.animateScrollToItem(0)
                                     }
-                                } else searchViewModel.clearSearches()
-                            } else searchViewModel.clearSearches()
-                        } else searchAllowed = true
+                                }
+                            } else {
+                                searchViewModel.clearSearches()
+                                wordInCursor = ""
+                            }
+                        } else {
+                            searchViewModel.clearSearches()
+                            wordInCursor = ""
+                        }
                     }
+
+                    lastQuery = query
+                    query = it
                 },
                 onBackPressed = {
                     keyboardController!!.hide()
                     mainNavigation.navigateUp()
+                    searchAllowed = false
                 },
                 onQueryTextSubmit = {
-                    val submitQuery = it.text.replace("\\s+".toRegex(), " ")
+                    var submitQuery = it.text
+                        .replace("\\s+".toRegex(), " ")
+                        .replace("{ ", "{")
+                        .replace(" }", "}")
+
+                    if (submitQuery.isNotEmpty())
+                        if (submitQuery[submitQuery.length - 1] != ' ')
+                            submitQuery = "$submitQuery "
+
+                    if (submitQuery == " ")
+                        submitQuery = ""
 
                     mainViewModel.searchTags = submitQuery
                     mainViewModel.refreshNeeded = true
 
                     keyboardController!!.hide()
-//                    mainNavigation.navigate("main") {
-//                        popUpTo("splash") { inclusive = true }
-//                        launchSingleTop = true
-//                    }
-//                    mainNavigation.navigateUp()
-                    mainNavigation.popBackStack()
-                    mainNavigation.navigate("main") {
-                        popUpTo("main") { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    mainNavigation.navigate("main")
                 }
             )
 
@@ -126,93 +142,410 @@ fun SearchScreen(
         ) {
             Column(
                 Modifier
-                    .fillMaxWidth()
-                    .navigationBarsWithImePadding()
+                    .fillMaxSize()
+                    .navigationBarsWithImePadding(),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
                 LinearProgressIndicator(
                     Modifier
                         .alpha(if (searchViewModel.searchProgressVisible) 1f else 0f)
                         .fillMaxWidth()
                 )
-                if (searchViewModel.searchError == "") {
-                    if (query.value.text.isNotEmpty()) {
-                        LazyColumn(
+                LazyColumn(
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f, true),
+                    state = columnState,
+                    verticalArrangement = if (searchViewModel.searchError.isEmpty()) Arrangement.Top else Arrangement.Center
+                ) {
+                    var submitQuery = query.text
+                        .replace("\\s+".toRegex(), " ")
+                        .replace("{ ", "{")
+                        .replace(" }", "}")
+
+                    if (submitQuery == " ")
+                        submitQuery = ""
+
+                    submitQuery = submitQuery.trim()
+
+                    item {
+                        Row(
                             Modifier
-                                .fillMaxWidth(),
-                            state = columnState
+                                .fillMaxWidth()
+                                .clickable(onClick = {
+                                    if (submitQuery.isNotEmpty())
+                                        if (submitQuery[submitQuery.length - 1] != ' ')
+                                            submitQuery = "$submitQuery "
+
+                                    if (submitQuery == " ")
+                                        submitQuery = ""
+
+                                    mainViewModel.searchTags = submitQuery
+                                    mainViewModel.refreshNeeded = true
+
+                                    keyboardController!!.hide()
+                                    mainNavigation.navigate("main")
+                                })
+                                .padding(
+                                    top = 12.dp,
+                                    bottom = 12.dp,
+                                    start = 16.dp,
+                                    end = 16.dp
+                                ),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            itemsIndexed(searchViewModel.searchData) { _, item ->
+                            Text(
+                                buildAnnotatedString {
+                                    append("Browse: ")
+                                    withStyle(
+                                        style = SpanStyle(
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    ) {
+                                        append(if (submitQuery.isNotEmpty()) submitQuery else "All posts")
+                                    }
+                                },
+                                Modifier
+                                    .weight(1f, true)
+                                    .padding(end = 16.dp),
+                            )
+                            Icon(
+                                Icons.Outlined.Search,
+                                "Search"
+                            )
+                        }
+                    }
+
+                    item { Spacer(Modifier.padding(bottom = 8.dp)) }
+                    if (wordInCursor.isNotEmpty()) {
+                        if (!searchViewModel.searchProgressVisible)
+                            boldWord = wordInCursor
+
+                        itemsIndexed(searchViewModel.searchData) { _, item ->
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable(onClick = {
+                                        searchAllowed = false
+
+                                        val result = query.text.replaceRange(
+                                            startQueryIndex,
+                                            endQueryIndex,
+                                            "$delimiter${item.value} "
+                                        )
+
+                                        val newQuery =
+                                            "$result "
+                                                .replace("\\s+".toRegex(), " ")
+
+                                        query = TextFieldValue(newQuery, TextRange(newQuery.length))
+                                        searchViewModel.clearSearches()
+                                        searchAllowed = true
+                                    })
+                                    .padding(
+                                        top = 12.dp,
+                                        bottom = 12.dp,
+                                        start = 16.dp,
+                                        end = 16.dp
+                                    ),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Outlined.Search,
+                                    "Search"
+                                )
                                 Row(
                                     Modifier
-                                        .fillMaxWidth()
-                                        .clickable(onClick = {
-                                            searchAllowed = false
-
-                                            val result = query.value.text.replaceRange(
-                                                startQueryIndex,
-                                                endQueryIndex,
-                                                "$delimiter${item.value} "
-                                            )
-
-                                            val newQuery = "$result ".replace("\\s+".toRegex(), " ")
-
-                                            query.value = TextFieldValue(newQuery, TextRange(newQuery.length))
-                                            searchViewModel.clearSearches()
-                                            searchAllowed = true
-                                        })
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                        .weight(1f, true)
+                                        .padding(start = 16.dp, end = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        Icons.Outlined.Search,
-                                        "Search",
-                                        Modifier
-                                            .weight(1f)
+                                    Text(
+//                                        "$delimiter${item.value}",
+                                        buildAnnotatedString {
+                                            val newQuery = "$delimiter${item.value}"
+
+                                             withStyle(
+                                                 style = SpanStyle(fontWeight = FontWeight.Bold)
+                                             ) {
+                                                 append(if (newQuery.contains(boldWord)) boldWord else "")
+                                             }
+
+                                            append(newQuery.replace(boldWord, ""))
+                                        },
+                                        Modifier.weight(6f)
                                     )
-                                    Row(
-                                        Modifier
-                                            .weight(8f)
-                                            .padding(start = 16.dp, end = 16.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            "$delimiter${item.value}",
-                                            Modifier.weight(6f)
-                                        )
-                                        Text(
-                                            item.post_count.toString(),
-                                            Modifier.weight(2f),
-                                            textAlign = TextAlign.Right,
-                                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                                        )
-                                    }
-                                    Icon(
-                                        painterResource(R.drawable.north_west),
-                                        "Append search",
-                                        Modifier
-                                            .weight(1f)
+                                    Text(
+                                        item.post_count.toString(),
+                                        Modifier.weight(2f),
+                                        textAlign = TextAlign.Right,
+                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
                                     )
                                 }
+                                Icon(
+                                    painterResource(R.drawable.north_west),
+                                    "Append search",
+                                )
                             }
                         }
                     }
-                } else {
-                    Column(
+
+                    item { Spacer(Modifier.padding(bottom = 8.dp)) }
+
+                    if (searchViewModel.searchError.isNotEmpty()) {
+                        item {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                                    .weight(1f, true),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Outlined.Warning, null)
+                            }
+                        }
+                        item {
+                            Text(
+                                "Error:\n(${searchViewModel.searchError})",
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+
+                val minWidth = 48.dp
+                Card(
+                    elevation = 2.dp
+                ) {
+                    LazyRow(
                         Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .fillMaxWidth()
                     ) {
-                        Icon(
-                            Icons.Outlined.Warning,
-                            "Error",
-                            Modifier.padding(16.dp)
-                        )
-                        Text(
-                            "Error:\n(${searchViewModel.searchError})",
-                            textAlign = TextAlign.Center
-                        )
+                        item {
+                            TextButton(
+                                onClick = { query = TextFieldValue("") },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text("CLEAR") }
+                        }
+                        item { Divider(
+                            Modifier
+                                .height(36.dp)
+                                .width(1.dp)) }
+                        item {
+                            TextButton(
+                                onClick = {
+                                    val queryStartIndex = query.selection.start
+                                    val previousQuery = query.text
+                                    query = TextFieldValue(
+                                        previousQuery.replaceRange(queryStartIndex, queryStartIndex, " "),
+                                        TextRange(queryStartIndex + 1)
+                                    )
+                                },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text("SPACE") }
+                        }
+                        item { Divider(
+                            Modifier
+                                .height(36.dp)
+                                .width(1.dp)) }
+                        item {
+                            TextButton(
+                                onClick = {
+                                    val queryStartIndex = query.selection.start
+                                    val previousQuery = query.text
+                                    query = TextFieldValue(
+                                        previousQuery.replaceRange(queryStartIndex, queryStartIndex, "_"),
+                                        TextRange(queryStartIndex + 1)
+                                    )
+                                },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text("_") }
+                        }
+                        item { Divider(
+                            Modifier
+                                .height(36.dp)
+                                .width(1.dp)) }
+                        item {
+                            TextButton(
+                                onClick = {
+                                    val queryStartIndex = query.selection.start
+                                    val previousQuery = query.text
+                                    query = TextFieldValue(
+                                        previousQuery.replaceRange(queryStartIndex, queryStartIndex, "-"),
+                                        TextRange(queryStartIndex + 1)
+                                    )
+                                },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text("-") }
+                        }
+                        item { Divider(
+                            Modifier
+                                .height(36.dp)
+                                .width(1.dp)) }
+                        item {
+                            TextButton(
+                                onClick = {
+                                    val queryStartIndex = query.selection.start
+                                    val previousQuery = query.text
+                                    query = TextFieldValue(
+                                        previousQuery.replaceRange(queryStartIndex, queryStartIndex, ":"),
+                                        TextRange(queryStartIndex + 1)
+                                    )
+                                },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text(":") }
+                        }
+                        item { Divider(
+                            Modifier
+                                .height(36.dp)
+                                .width(1.dp)) }
+                        item {
+                            TextButton(
+                                onClick = {
+                                    val queryStartIndex = query.selection.start
+                                    val previousQuery = query.text
+                                    query = TextFieldValue(
+                                        previousQuery.replaceRange(queryStartIndex, queryStartIndex, "("),
+                                        TextRange(queryStartIndex + 1)
+                                    )
+                                },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text("(") }
+                        }
+                        item { Divider(
+                            Modifier
+                                .height(36.dp)
+                                .width(1.dp)) }
+                        item {
+                            TextButton(
+                                onClick = {
+                                    val queryStartIndex = query.selection.start
+                                    val previousQuery = query.text
+                                    query = TextFieldValue(
+                                        previousQuery.replaceRange(queryStartIndex, queryStartIndex, ")"),
+                                        TextRange(queryStartIndex + 1)
+                                    )
+                                },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text(")") }
+                        }
+                        item { Divider(
+                            Modifier
+                                .height(36.dp)
+                                .width(1.dp)) }
+                        item {
+                            TextButton(
+                                onClick = {
+                                    val queryStartIndex = query.selection.start
+                                    val previousQuery = query.text
+                                    var replacement = "{"
+
+                                    if (queryStartIndex > 0)
+                                        replacement = if (previousQuery[queryStartIndex - 1] == ' ') "{" else " {"
+
+                                    query = TextFieldValue(
+                                        previousQuery.replaceRange(queryStartIndex, queryStartIndex, replacement),
+                                        TextRange(queryStartIndex + replacement.length)
+                                    )
+                                },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text("{") }
+                        }
+                        item { Divider(
+                            Modifier
+                                .height(36.dp)
+                                .width(1.dp)) }
+                        item {
+                            TextButton(
+                                onClick = {
+                                    var queryStartIndex = query.selection.start
+                                    val queryEndIndex = query.selection.end
+                                    val previousQuery = query.text
+                                    var replacement = "} "
+
+                                    if (queryStartIndex < previousQuery.length)
+                                        replacement = if (previousQuery[queryStartIndex] == ' ') "}" else "} "
+
+                                    if (queryStartIndex > 0)
+                                        if (previousQuery[queryStartIndex - 1] == ' ')
+                                            queryStartIndex -= 1
+
+                                    query = TextFieldValue(
+                                        previousQuery.replaceRange(queryStartIndex, queryEndIndex, replacement),
+                                        TextRange(queryStartIndex + replacement.length)
+                                    )
+                                },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text("}") }
+                        }
+                        item { Divider(
+                            Modifier
+                                .height(36.dp)
+                                .width(1.dp)) }
+                        item {
+                            TextButton(
+                                onClick = {
+                                    val queryStartIndex = query.selection.start
+                                    val previousQuery = query.text
+                                    var replacement = "~ "
+
+                                    if (queryStartIndex < previousQuery.length)
+                                        replacement = if (previousQuery[queryStartIndex] == ' ') "~" else "~ "
+
+                                    if (queryStartIndex > 0)
+                                        if (previousQuery[queryStartIndex - 1] != ' ')
+                                            replacement = " $replacement"
+
+                                    query = TextFieldValue(
+                                        previousQuery.replaceRange(queryStartIndex, queryStartIndex, replacement),
+                                        TextRange(queryStartIndex + replacement.length)
+                                    )
+                                },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text("~") }
+                        }
+                        item { Divider(
+                            Modifier
+                                .height(36.dp)
+                                .width(1.dp)) }
+                        item {
+                            TextButton(
+                                onClick = {
+                                    val queryStartIndex = query.selection.start
+                                    val previousQuery = query.text
+                                    query = TextFieldValue(
+                                        previousQuery.replaceRange(queryStartIndex, queryStartIndex, "*"),
+                                        TextRange(queryStartIndex + 1)
+                                    )
+                                },
+                                Modifier
+                                    .widthIn(minWidth)
+                                    .height(36.dp)
+                            ) { Text("*") }
+                        }
                     }
                 }
             }

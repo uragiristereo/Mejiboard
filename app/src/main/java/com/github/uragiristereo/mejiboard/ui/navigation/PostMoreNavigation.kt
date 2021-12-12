@@ -1,6 +1,5 @@
 package com.github.uragiristereo.mejiboard.ui.navigation
 
-import android.app.PendingIntent
 import android.content.ClipData
 import android.content.Intent
 import android.net.Uri
@@ -26,15 +25,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.model.network.DownloadInfo
 import com.github.uragiristereo.mejiboard.model.network.Post
-import com.github.uragiristereo.mejiboard.model.network.download.DownloadBroadcastReceiver
 import com.github.uragiristereo.mejiboard.ui.components.SheetInfoItem
 import com.github.uragiristereo.mejiboard.ui.components.SheetItem
 import com.github.uragiristereo.mejiboard.ui.components.TagInfoItem
@@ -47,6 +43,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.materialSharedAxisXIn
 import soup.compose.material.motion.materialSharedAxisXOut
+import soup.compose.material.motion.materialSharedAxisZIn
+import soup.compose.material.motion.materialSharedAxisZOut
 import soup.compose.material.motion.navigation.MaterialMotionNavHost
 import soup.compose.material.motion.navigation.composable
 import java.io.File
@@ -68,7 +66,6 @@ fun PostMoreNavigation(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val notificationManager = NotificationManagerCompat.from(context)
     var shareDownloadInfo by remember { mutableStateOf(DownloadInfo()) }
     var shareDownloadSpeed by remember { mutableStateOf(0) }
     var dialogShown by remember { mutableStateOf(false)  }
@@ -91,9 +88,9 @@ fun PostMoreNavigation(
                             .clip(RoundedCornerShape(4.dp))
                             .clickable {
                                 dialogShown = false
-                                val instance = imageViewModel.getInstance(post.id)
+                                val instance = mainViewModel.getInstance(post.id)
                                 instance?.cancel()
-                                imageViewModel.removeInstance(post.id)
+                                mainViewModel.removeInstance(post.id)
                             }
                             .padding(8.dp)
                     ) {
@@ -144,7 +141,21 @@ fun PostMoreNavigation(
     }
 
     MaterialMotionNavHost(navController = moreNavigation, startDestination = "main") {
-        composable("main") {
+        composable(
+            "main",
+            enterMotionSpec = { initial, _ ->
+                if (initial.destination.route == "share")
+                    materialSharedAxisXIn()
+                else
+                    materialSharedAxisZIn()
+            },
+            exitMotionSpec = { initial, _ ->
+                if (initial.destination.route == "share")
+                    materialSharedAxisXOut()
+                else
+                    materialSharedAxisZOut()
+            }
+        ) {
             Column {
                 SheetItem(
                     text = "Post info",
@@ -202,75 +213,16 @@ fun PostMoreNavigation(
                             if (!downloadLocation.isDirectory)
                                 downloadLocation.mkdir()
 
-                            val instance = imageViewModel.newDownloadInstance(context, post.id, originalUrl, downloadLocation)
+                            val instance = mainViewModel.newDownloadInstance(context, post.id, originalUrl, downloadLocation)
 
                             if (instance == null) {
                                 Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
                             } else {
-                                val notificationId = mainViewModel.getNewNotificationCount()
-                                val cancelDownloadIntent = Intent(context, DownloadBroadcastReceiver::class.java).apply {
-                                    action = post.id.toString()
-                                    putExtra("notificationId", notificationId)
-                                }
-                                val cancelDownloadPendingIntent = PendingIntent.getBroadcast(
+                                mainViewModel.trackDownloadProgress(
                                     context,
-                                    0,
-                                    cancelDownloadIntent,
-                                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
+                                    post,
+                                    instance
                                 )
-
-                                val notification = NotificationCompat.Builder(context, "downloads")
-                                    .setSmallIcon(android.R.drawable.stat_sys_download)
-                                    .setContentTitle("Downloading post ${post.id}")
-                                    .setPriority(NotificationCompat.PRIORITY_LOW)
-                                    .setOngoing(true)
-                                    .setOnlyAlertOnce(true)
-                                    .setAutoCancel(true)
-                                    .addAction(R.drawable.cancel, "Cancel", cancelDownloadPendingIntent)
-
-                                var downloadSpeed = 0
-                                var lastDownloaded: Long
-
-                                while (instance.info.status == "downloading") {
-                                    notificationManager.apply {
-                                        notification
-                                            .setProgress(100, instance.info.progress.times(100).toInt(), instance.info.progress == 0f)
-                                            .setSubText("${instance.info.progress.times(100).toInt()}% - ${convertSize(downloadSpeed)}/s")
-                                            .setContentText("${convertSize(instance.info.downloaded.toInt())} / ${convertSize(instance.info.length.toInt())}")
-                                        notify(notificationId, notification.build())
-                                    }
-                                    lastDownloaded = instance.info.downloaded
-                                    delay(1300)
-                                    downloadSpeed = ((instance.info.downloaded - lastDownloaded) / 1.3f).toInt()
-                                }
-
-                                val openDownloadedFileIntent = Intent().apply {
-                                    action = Intent.ACTION_VIEW
-                                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", File(instance.info.path))
-                                    val contentResolver = context.contentResolver
-                                    setDataAndType(uri, contentResolver.getType(uri))
-                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                }
-
-                                val pendingOpenDownloadedFileIntent = PendingIntent.getActivity(context, 0, openDownloadedFileIntent, PendingIntent.FLAG_IMMUTABLE)
-
-                                if (instance.info.status == "completed") {
-                                    imageViewModel.removeInstance(post.id)
-                                    notificationManager.apply {
-                                        notification
-                                            .setSmallIcon(R.drawable.file_download_done)
-                                            .setContentTitle("Download completed")
-                                            .setProgress(0, 0, false)
-                                            .setSubText(null)
-                                            .setContentText("Post ${post.id} has been successfully downloaded.")
-                                            .setOngoing(false)
-                                            .setAutoCancel(true)
-                                            .setOnlyAlertOnce(false)
-                                            .clearActions()
-                                            .setContentIntent(pendingOpenDownloadedFileIntent)
-                                        notify(notificationId, notification.build())
-                                    }
-                                }
                             }
                         }
                     }
@@ -385,7 +337,7 @@ fun PostMoreNavigation(
                                 if (!tempDir.isDirectory)
                                     tempDir.mkdir()
 
-                                val instance = imageViewModel.newDownloadInstance(context, post.id, url, tempDir)
+                                val instance = mainViewModel.newDownloadInstance(context, post.id, url, tempDir)
 
                                 if (instance == null) {
                                     Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
@@ -400,7 +352,7 @@ fun PostMoreNavigation(
                                     }
                                     dialogShown = false
                                     if (instance.info.status == "completed") {
-                                        imageViewModel.removeInstance(post.id)
+                                        mainViewModel.removeInstance(post.id)
                                         val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", File(instance.info.path))
 
                                         val shareIntent = Intent().apply {
@@ -442,7 +394,7 @@ fun PostMoreNavigation(
                             if (!tempDir.isDirectory)
                                 tempDir.mkdir()
 
-                            val instance = imageViewModel.newDownloadInstance(context, post.id, originalUrl, tempDir)
+                            val instance = mainViewModel.newDownloadInstance(context, post.id, originalUrl, tempDir)
 
                             if (instance == null) {
                                 Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
@@ -457,7 +409,7 @@ fun PostMoreNavigation(
                                 }
                                 dialogShown = false
                                 if (instance.info.status == "completed") {
-                                    imageViewModel.removeInstance(post.id)
+                                    mainViewModel.removeInstance(post.id)
                                     val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", File(instance.info.path))
 
                                     val shareIntent = Intent().apply {

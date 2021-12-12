@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -50,5 +51,18 @@ class MainActivity : ComponentActivity() {
         } else {
             preferencesManager.setPermissionState("denied")
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        if (preferencesManager.getBlockFromRecents())
+            window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 }

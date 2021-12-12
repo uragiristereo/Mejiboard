@@ -44,9 +44,9 @@ class SearchViewModel @Inject constructor(
                         } else {
                             searchError = response.code().toString()
                         }
-                    }
 
-                    searchProgressVisible = false
+                        searchProgressVisible = false
+                    }
                 }
 
                 override fun onFailure(call: Call<List<Search>>, t: Throwable) {

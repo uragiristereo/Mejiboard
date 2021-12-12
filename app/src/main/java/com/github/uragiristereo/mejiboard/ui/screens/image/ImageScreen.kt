@@ -1,6 +1,8 @@
 package com.github.uragiristereo.mejiboard.ui.screens.image
 
 import android.app.Activity
+import android.view.GestureDetector.OnDoubleTapListener
+import android.view.MotionEvent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -42,8 +44,8 @@ import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.insets.ui.TopAppBar
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerView
@@ -102,6 +104,7 @@ fun ImageScreen(
     DisposableEffect(Unit) {
         onDispose {
             Timber.i("disposed ${imageDisposable == null}")
+            Timber.i("disposed ${originalImageDisposable == null}")
             window.showSystemBars()
             imageDisposable?.dispose()
             originalImageDisposable?.dispose()
@@ -122,13 +125,15 @@ fun ImageScreen(
         }
     }
 
-    val originalUrl = "https://img3.gelbooru.com/images/" + post.directory + "/" + post.image
+//    val originalUrl = "https://img3.gelbooru.com/images/" + post.directory + "/" + post.image
+    val originalUrl = "https://img3.gelbooru.com/images/" + post.directory + "/" + post.hash + "." + imageType
 
     if (imageType in supportedTypesAnimation) {
-        val videoUrl = "https://video-cdn3.gelbooru.com/images/" + post.directory + "/" + post.image
+//        val videoUrl = "https://video-cdn3.gelbooru.com/images/" + post.directory + "/" + post.image
+        val videoUrl = "https://video-cdn3.gelbooru.com/images/" + post.directory + "/" + post.hash + "." + imageType
 
         val exoPlayer =
-            SimpleExoPlayer.Builder(context)
+            ExoPlayer.Builder(context)
                 .setMediaSourceFactory(
                     DefaultMediaSourceFactory(
                         OkHttpDataSource.Factory(
@@ -197,11 +202,17 @@ fun ImageScreen(
         }
     }
 
+//    url =
+//        if (post.sample == 1 && imageType != "gif")
+//            "https://img3.gelbooru.com/samples/" + post.directory + "/sample_" + post.image.replace(imageType, "jpg")
+//        else
+//            "https://img3.gelbooru.com/images/" + post.directory + "/" + post.image
+
     url =
         if (post.sample == 1 && imageType != "gif")
-            "https://img3.gelbooru.com/samples/" + post.directory + "/sample_" + post.image.replace(imageType, "jpg")
+            "https://img3.gelbooru.com/samples/" + post.directory + "/sample_" + post.hash + ".jpg"
         else
-            "https://img3.gelbooru.com/images/" + post.directory + "/" + post.image
+            "https://img3.gelbooru.com/images/" + post.directory + "/" + post.hash + "." + imageType
 
     if (imageType in supportedTypesImage) {
         val touchImageView = TouchImageView(context)
@@ -227,7 +238,22 @@ fun ImageScreen(
                     return@setOnLongClickListener false
                 }
 
-                maxZoom = 4f
+                maxZoom = 5f
+                doubleTapScale = 2f
+
+                setOnDoubleTapListener(object : OnDoubleTapListener {
+                    override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                        return true
+                    }
+
+                    override fun onDoubleTap(e: MotionEvent): Boolean {
+                        return false
+                    }
+
+                    override fun onDoubleTapEvent(e: MotionEvent): Boolean {
+                        return false
+                    }
+                })
 
                 imageDisposable = load(
                     uri = url,
@@ -347,7 +373,7 @@ fun ImageScreen(
                 )
         )
         TopAppBar(
-            title = { Text("Post: ${post.id}") },
+            title = { Text("Post ${post.id}") },
             navigationIcon = {
                 IconButton(onClick = {
                     mainNavigation.navigateUp()

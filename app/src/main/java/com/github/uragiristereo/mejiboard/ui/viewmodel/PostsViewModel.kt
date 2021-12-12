@@ -1,6 +1,7 @@
 package com.github.uragiristereo.mejiboard.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -10,18 +11,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class PostsViewModel @Inject constructor(
     private val networkInstance: NetworkInstance
 ) : ViewModel() {
-    val postsData = mutableStateOf<ArrayList<Post>>(arrayListOf())
+    val postsData = mutableStateListOf<Post>()
     var postsProgressVisible by mutableStateOf(false)
     var page by mutableStateOf(0)
     var newSearch by mutableStateOf(true)
-    var fabVisible by mutableStateOf(false)
     var postsError by mutableStateOf("")
 
     fun getPosts(searchTags: String, refresh: Boolean, safeListingOnly: Boolean) {
@@ -30,9 +29,12 @@ class PostsViewModel @Inject constructor(
 
         if (refresh) {
             page = 0
-            postsData.value = arrayListOf()
+            postsData.clear()
             newSearch = true
-        } else newSearch = false
+        } else {
+            newSearch = false
+            page += 1
+        }
 
         val tags = if (safeListingOnly) "$searchTags rating:safe" else searchTags
 
@@ -40,14 +42,9 @@ class PostsViewModel @Inject constructor(
             override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
                 postsProgressVisible = false
 
-                if (refresh) {
-                    postsData.value = arrayListOf()
-                    page = 0
-                } else page += 1
-
                 if (response.code() == 200) {
                     postsError = ""
-                    postsData.value.addAll(response.body()!!)
+                    postsData.addAll(response.body()!!)
                 } else {
                     postsError = response.code().toString()
                 }

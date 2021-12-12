@@ -10,6 +10,7 @@ class PreferencesManager(context: Context) {
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
     val dataStore: DataStore<Preferences> = context.dataStore
     private var permissionState = ""
+    private var blockFromRecents = false
 
     fun setPermissionState(state: String) {
         permissionState = state
@@ -17,5 +18,13 @@ class PreferencesManager(context: Context) {
 
     fun getPermissionState(): String {
         return permissionState
+    }
+
+    fun setBlockFromRecents(value: Boolean) {
+        blockFromRecents = value
+    }
+
+    fun getBlockFromRecents(): Boolean {
+        return blockFromRecents
     }
 }
