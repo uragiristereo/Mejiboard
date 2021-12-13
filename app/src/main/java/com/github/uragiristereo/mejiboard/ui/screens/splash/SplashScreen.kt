@@ -35,8 +35,6 @@ fun SplashScreen(
             if (mainViewModel.autoCleanCache)
                 FileHelper.autoCleanCache(context, 12)
 
-            delay(300)
-
             mainNavigation.navigate("main") {
                 popUpTo("splash") { inclusive = true }
             }

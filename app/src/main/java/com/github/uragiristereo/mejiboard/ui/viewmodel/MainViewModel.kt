@@ -81,9 +81,6 @@ class MainViewModel @Inject constructor(
     // image
     private var notificationCount = 0
 
-    // splash
-    var splashShown = savedStateHandle.get<Boolean>(STATE_KEY_SPLASH_SHOWN) ?: false
-
     init {
         // load saved state from system
         savedStateHandle.get<Post>(STATE_KEY_SELECTED_POST)?.let {
@@ -195,10 +192,6 @@ class MainViewModel @Inject constructor(
 
     fun getPermissionState(): String {
         return preferencesManager.getPermissionState()
-    }
-
-    fun saveSplashShown() {
-        savedStateHandle.set(STATE_KEY_SPLASH_SHOWN, true)
     }
 
     private fun download(

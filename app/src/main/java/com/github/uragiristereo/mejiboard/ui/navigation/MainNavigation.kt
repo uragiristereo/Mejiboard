@@ -62,11 +62,10 @@ fun MainNavigation(
             blackTheme = mainViewModel.blackTheme
         ) {
             Surface(color = MaterialTheme.colors.background) {
-                MaterialMotionNavHost(navController = mainNavigation, startDestination = if (mainViewModel.splashShown) "main" else "splash") {
+                MaterialMotionNavHost(navController = mainNavigation, startDestination = "splash") {
                     composable("splash") {
 //                        systemUiController.setSystemBarsColor(if (mainViewModel.isDesiredThemeDark) MaterialTheme.colors.background else MaterialTheme.colors.primaryVariant)
                         systemUiController.setSystemBarsColor(if (isSystemInDarkTheme()) Color.Black else Color.White)
-                        mainViewModel.saveSplashShown()
                         SplashScreen(mainNavigation, mainViewModel, if (isSystemInDarkTheme()) Color.Black else Color.White)
                     }
                     composable(
