@@ -48,6 +48,7 @@ import soup.compose.material.motion.materialSharedAxisZOut
 import soup.compose.material.motion.navigation.MaterialMotionNavHost
 import soup.compose.material.motion.navigation.composable
 import java.io.File
+import java.text.DateFormat
 import java.util.*
 
 
@@ -468,9 +469,10 @@ fun PostMoreNavigation(
                         )
                     }
                     item {
+                        val df = DateFormat.getDateTimeInstance()
                         SheetInfoItem(
                             "Date posted",
-                            "${post.created_at}"
+                            df.format(post.created_at)
                         )
                     }
                     item {
@@ -532,8 +534,7 @@ fun PostMoreNavigation(
                         Divider(
                             Modifier
                                 .padding(
-                                    top = 8.dp,
-                                    bottom = 8.dp
+                                    top = 8.dp
                                 )
                         )
                     }
