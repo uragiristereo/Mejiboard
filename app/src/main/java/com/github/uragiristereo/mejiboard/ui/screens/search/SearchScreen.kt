@@ -157,7 +157,8 @@ fun SearchScreen(
                         .fillMaxWidth()
                         .weight(1f, true),
                     state = columnState,
-                    verticalArrangement = if (searchViewModel.searchError.isEmpty()) Arrangement.Top else Arrangement.Center
+//                    verticalArrangement = if (searchViewModel.searchError.isEmpty()) Arrangement.Top else Arrangement.Center
+                    verticalArrangement = Arrangement.Top
                 ) {
                     var submitQuery = query.text
                         .replace("\\s+".toRegex(), " ")
@@ -298,21 +299,20 @@ fun SearchScreen(
 
                     if (searchViewModel.searchError.isNotEmpty()) {
                         item {
-                            Box(
+                            Column(
                                 Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
-                                    .weight(1f, true),
-                                contentAlignment = Alignment.Center
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Icon(Icons.Outlined.Warning, null)
+                                Text(
+                                    "Error:\n(${searchViewModel.searchError})",
+                                    modifier = Modifier.padding(top = 16.dp),
+                                    textAlign = TextAlign.Center
+                                )
                             }
-                        }
-                        item {
-                            Text(
-                                "Error:\n(${searchViewModel.searchError})",
-                                textAlign = TextAlign.Center
-                            )
                         }
                     }
                 }
