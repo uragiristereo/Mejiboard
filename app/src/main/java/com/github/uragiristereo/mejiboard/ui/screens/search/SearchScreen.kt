@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -318,7 +319,8 @@ fun SearchScreen(
 
                 val minWidth = 48.dp
                 Card(
-                    elevation = 2.dp
+                    elevation = 2.dp,
+                    shape = RectangleShape,
                 ) {
                     LazyRow(
                         Modifier
