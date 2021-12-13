@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -30,12 +31,18 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
@@ -288,6 +295,7 @@ fun MainScreen(
         ) {
             val toolbarHeight = 56.dp
             val toolbarHeightPx = with (LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
+            var browseHeightPx by remember { mutableStateOf(0) }
 
 //            val smoothToolbarOffsetHeightPx by animateFloatAsState(
 //                targetValue = toolbarOffsetHeightPx,
@@ -312,7 +320,7 @@ fun MainScreen(
                     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                         val delta = available.y
                         val newOffset = toolbarOffsetHeightPx + delta
-                        toolbarOffsetHeightPx = newOffset.coerceIn(-toolbarHeightPx, 0f)
+                        toolbarOffsetHeightPx = newOffset.coerceIn(-toolbarHeightPx + -browseHeightPx, 0f)
                         return Offset.Zero
                     }
                 }
@@ -327,7 +335,7 @@ fun MainScreen(
                     modifier
             ) {
                 if (postsViewModel.postsError.isEmpty()) {
-                    PostsGrid(postsViewModel, mainViewModel, mainNavigation, gridState, toolbarHeight)
+                    PostsGrid(postsViewModel, mainViewModel, mainNavigation, gridState, toolbarHeight, browseHeightPx)
                 } else {
                     Column(
                         Modifier
@@ -348,7 +356,7 @@ fun MainScreen(
                 }
                 Card(
                     Modifier
-                        .alpha(if (toolbarOffsetHeightPx.roundToInt() == -toolbarHeightPx.roundToInt()) 0f else 1f)
+                        .alpha(if (toolbarOffsetHeightPx.roundToInt() == -toolbarHeightPx.roundToInt() + -browseHeightPx) 0f else 1f)
                         .offset {
                             IntOffset(
                                 x = 0,
@@ -363,26 +371,50 @@ fun MainScreen(
                     elevation = 4.dp,
                     shape = RectangleShape
                 ) {
-                    TopAppBar(
-                        backgroundColor = Color.Transparent,
-                        elevation = 0.dp,
-                        modifier = Modifier
-                            .height(toolbarHeight),
-                        title = { Text("Mejiboard") },
-                        navigationIcon = {
-                            Surface(
-                                Modifier
-                                    .padding(8.dp),
-                                shape = CircleShape,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f)
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.not_like_tsugu),
-                                    contentDescription = "App icon"
-                                )
+                    Column {
+                        TopAppBar(
+                            backgroundColor = Color.Transparent,
+                            elevation = 0.dp,
+                            modifier = Modifier
+                                .height(toolbarHeight),
+                            title = { Text("Mejiboard") },
+                            navigationIcon = {
+                                Surface(
+                                    Modifier
+                                        .padding(8.dp),
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f)
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.not_like_tsugu),
+                                        contentDescription = "App icon"
+                                    )
+                                }
                             }
-                        }
-                    )
+                        )
+                        Text(
+                            buildAnnotatedString {
+                                append("Browse: ")
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    if (mainViewModel.searchTags.isEmpty())
+                                        append("All posts")
+                                    else
+                                        append(mainViewModel.searchTags)
+                                }
+                            },
+                            modifier = Modifier
+                                .onGloballyPositioned { browseHeightPx = it.size.height }
+                                .background(MaterialTheme.colors.background)
+                                .fillMaxWidth()
+                                .padding(
+                                    top = 4.dp,
+                                    bottom = 8.dp,
+                                    start = 8.dp,
+                                    end = 8.dp
+                                ),
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }

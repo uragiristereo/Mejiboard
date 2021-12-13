@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -44,9 +44,11 @@ fun PostsGrid(
     mainViewModel: MainViewModel,
     mainNavigation: NavHostController,
     gridState: LazyListState,
-    toolbarHeight: Dp
+    toolbarHeight: Dp,
+    browseHeightPx: Int,
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
     val gridCount = 2
 
     LaunchedEffect(postsViewModel.newSearch) {
@@ -69,17 +71,10 @@ fun PostsGrid(
 
     LazyColumn(
         state = gridState,
-        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 0.dp, top = toolbarHeight)
+        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 0.dp, top = toolbarHeight + with(density) { browseHeightPx.toDp() } )
     ) {
         val supportedTypesAnimation = listOf("gif", "webm", "mp4")
 
-        item {
-            Text(
-                if (mainViewModel.searchTags == "") "Browse: All posts" else "Browse: ${mainViewModel.searchTags}",
-                modifier = Modifier.padding(bottom = 8.dp),
-                style = MaterialTheme.typography.subtitle1
-            )
-        }
         itemsIndexed(postsViewModel.postsData) { index, _ ->
             if (index % gridCount == 0) {
                 Row(
@@ -95,9 +90,6 @@ fun PostsGrid(
 
                     items.forEachIndexed { index, item ->
                         val imageType = File(item.image).extension
-
-//                        val url =
-//                            "https://img3.gelbooru.com/thumbnails/" + item.directory + "/thumbnail_" + item.image.replace(imageType, "jpg")
 
                         val url =
                             "https://img3.gelbooru.com/thumbnails/" + item.directory + "/thumbnail_" + item.hash + ".jpg"
@@ -169,17 +161,12 @@ fun PostsGrid(
                 }
             }
         }
-        if (postsViewModel.postsProgressVisible) {
+        if (postsViewModel.postsProgressVisible && postsViewModel.postsData.isNotEmpty()) {
             item {
                 Box(
-                    if (postsViewModel.postsData.isEmpty())
-                        Modifier
-                            .fillMaxWidth()
-                            .fillParentMaxHeight(0.9f)
-                    else
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -190,4 +177,13 @@ fun PostsGrid(
             Spacer(Modifier.navigationBarsHeight(56.dp))
         }
     }
+    if (postsViewModel.postsProgressVisible && postsViewModel.postsData.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    }
+
 }
