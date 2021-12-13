@@ -125,11 +125,9 @@ fun ImageScreen(
         }
     }
 
-//    val originalUrl = "https://img3.gelbooru.com/images/" + post.directory + "/" + post.image
     val originalUrl = "https://img3.gelbooru.com/images/" + post.directory + "/" + post.hash + "." + imageType
 
     if (imageType in supportedTypesAnimation) {
-//        val videoUrl = "https://video-cdn3.gelbooru.com/images/" + post.directory + "/" + post.image
         val videoUrl = "https://video-cdn3.gelbooru.com/images/" + post.directory + "/" + post.hash + "." + imageType
 
         val exoPlayer =
@@ -202,12 +200,6 @@ fun ImageScreen(
         }
     }
 
-//    url =
-//        if (post.sample == 1 && imageType != "gif")
-//            "https://img3.gelbooru.com/samples/" + post.directory + "/sample_" + post.image.replace(imageType, "jpg")
-//        else
-//            "https://img3.gelbooru.com/images/" + post.directory + "/" + post.image
-
     url =
         if (post.sample == 1 && imageType != "gif")
             "https://img3.gelbooru.com/samples/" + post.directory + "/sample_" + post.hash + ".jpg"
@@ -240,20 +232,6 @@ fun ImageScreen(
 
                 maxZoom = 5f
                 doubleTapScale = 2f
-
-                setOnDoubleTapListener(object : OnDoubleTapListener {
-                    override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                        return true
-                    }
-
-                    override fun onDoubleTap(e: MotionEvent): Boolean {
-                        return false
-                    }
-
-                    override fun onDoubleTapEvent(e: MotionEvent): Boolean {
-                        return false
-                    }
-                })
 
                 imageDisposable = load(
                     uri = url,
