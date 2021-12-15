@@ -16,10 +16,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -59,7 +56,10 @@ import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import soup.compose.material.motion.MaterialFade
+import soup.compose.material.motion.MotionConstants
 import kotlin.math.roundToInt
 
 @ExperimentalAnimationApi
@@ -83,14 +83,31 @@ fun MainScreen(
     var toolbarOffsetHeightPx by remember { mutableStateOf(0f) }
     var confirmExit by remember { mutableStateOf(true) }
     val activity = (LocalContext.current as? Activity)
+    val isLight = MaterialTheme.colors.isLight
+    var fabVisible by remember { mutableStateOf(false) }
 
-    if (mainViewModel.refreshNeeded) {
-        postsViewModel.getPosts(mainViewModel.searchTags, true, mainViewModel.safeListingOnly)
-        mainViewModel.refreshNeeded = false
+    LaunchedEffect(mainViewModel.refreshNeeded) {
+        if (mainViewModel.refreshNeeded) {
+            postsViewModel.getPosts(mainViewModel.searchTags, true, mainViewModel.safeListingOnly)
+            mainViewModel.refreshNeeded = false
+        }
+
     }
 
-    if (drawerState.currentValue == BottomDrawerValue.Closed)
-        systemUiController.setNavigationBarColor(Color.Transparent, darkIcons = MaterialTheme.colors.isLight, navigationBarContrastEnforced = false)
+    LaunchedEffect(drawerState.currentValue) {
+        if (drawerState.currentValue == BottomDrawerValue.Closed)
+            systemUiController.setNavigationBarColor(Color.Transparent, darkIcons = isLight, navigationBarContrastEnforced = false)
+    }
+
+    LaunchedEffect(true) {
+        launch {
+            while (true) {
+                fabVisible = (toolbarOffsetHeightPx.toInt() == 0 && gridState.firstVisibleItemIndex >= 5)
+
+                delay(100)
+            }
+        }
+    }
 
     BackHandler(
         enabled = drawerState.isOpen && confirmExit
@@ -204,6 +221,22 @@ fun MainScreen(
     ) {
         Scaffold(
             scaffoldState = scaffoldState,
+            floatingActionButton = {
+                MaterialFade(
+                    visible = fabVisible,
+                    exitDurationMillis = MotionConstants.motionDurationShort2
+                ) {
+                    FloatingActionButton(
+                        onClick = {
+                            scope.launch {
+                                gridState.animateScrollToItem(0)
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Outlined.KeyboardArrowUp, "Scroll to top")
+                    }
+                }
+            },
             bottomBar = {
                 BottomAppBar(
                     backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.95f),
