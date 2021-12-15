@@ -25,7 +25,6 @@ Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) sectio
 - [Retrofit2](https://github.com/square/retrofit): A type-safe HTTP client for Android and the JVM
 - [Hilt](https://developer.android.com/training/dependency-injection/hilt-android): A dependency injection library for Android that reduces the boilerplate of doing manual dependency injection in your project.
 - [Coil](https://github.com/coil-kt/coil): Image loading for Android backed by Kotlin Coroutines.
-- [Landscapist](https://github.com/skydoves/Landscapist): Jetpack Compose image loading library which can fetch and display network images using Glide, Coil, and Fresco.
 - [Accompanist](https://github.com/google/accompanist): A collection of extension libraries for Jetpack Compose.
 - [Timber](https://github.com/JakeWharton/timber): A logger with a small, extensible API which provides utility on top of Android's normal Log class.
 - [ExoPlayer](https://github.com/google/ExoPlayer): An extensible media player for Android.
@@ -33,4 +32,16 @@ Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) sectio
 - [Material Motion for Jetpack Compose](https://github.com/fornewid/material-motion-compose): Creates intuitive animation and transition based on [Material Motion](https://material.io/design/motion/the-motion-system.html) guidelines.
 
 ## License
-> Coming soon
+    Copyright 2021 Agung Watanabe
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
