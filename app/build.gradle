@@ -24,8 +24,8 @@ android {
         applicationId "com.github.uragiristereo.mejiboard"
         minSdk 26
         targetSdk 29
-        versionCode 12004
-        versionName "1.2.0-alpha.4"
+        versionCode 12015
+        versionName "1.2.1-alpha.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

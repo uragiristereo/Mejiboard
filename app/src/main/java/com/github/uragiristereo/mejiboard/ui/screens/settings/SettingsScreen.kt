@@ -284,7 +284,7 @@ fun SettingsScreen(
                                 append("(Feature not yet toggleable)")
                             }
                         },
-                    enabled = false,
+                        enabled = false,
                         interactionSource = safeListingOnlyInteractionSource,
                         onClick = {
                             mainViewModel.safeListingOnly = !mainViewModel.safeListingOnly
@@ -294,7 +294,7 @@ fun SettingsScreen(
                         action = {
                             Switch(
                                 checked = mainViewModel.safeListingOnly,
-                            enabled = false,
+                                enabled = false,
                                 interactionSource = safeListingOnlyInteractionSource,
                                 onCheckedChange = {
                                     mainViewModel.safeListingOnly = !mainViewModel.safeListingOnly
