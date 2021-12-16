@@ -1,0 +1,30 @@
+{
+    "variant": "alpha",
+    "releases": [
+        {
+            "versionCode": 12015,
+            "versionName": "v1.2.1-alpha.5",
+            "updateRequired": false
+        },
+        {
+            "versionCode": 12004,
+            "versionName": "v1.2.0-alpha.4",
+            "updateRequired": true
+        },
+        {
+            "versionCode": 11003,
+            "versionName": "v1.1.0-alpha.3",
+            "updateRequired": true
+        },
+        {
+            "versionCode": 10002,
+            "versionName": "v1.0.0-alpha.2",
+            "updateRequired": false
+        },
+        {
+            "versionCode": 10001,
+            "versionName": "v1.0.0-alpha.1",
+            "updateRequired": false
+        }
+    ]
+}
