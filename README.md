@@ -15,10 +15,31 @@ An image board client based on [Gelbooru](https://gelbooru.com) for android, mad
 - DNS over HTTPS enabled by default
 
 ## Download
-Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section.
+Latest **alpha** variant:
+- Version: `v1.2.0-alpha.4`
+- Date: 2021-12-12
+- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.2.0-alpha.4) • [direct](https://github.com/uragiristereo/Mejiboard/releases/download/v1.2.0-alpha.4/Mejiboard_v1.2.0.alpha.4.apk)
+
+Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more.
 
 ## Screenshots
 <img src="https://github.com/uragiristereo/Mejiboard/raw/alpha/screenshots/Screenshots_combined.jpg">
+
+## To-Dos
+**Note: not in ordered list.**
+- [ ] Use stagerred grid layout
+- [ ] Use definitive progress bar for image loading
+- [ ] Refactor the code
+- [ ] Join home screen with search screen
+- [ ] Back press returns to previous browsed tags instead exiting
+- [ ] Generate filename from tags
+- [ ] Tweak double-tap-to-zoom behavior
+- [ ] Implement search autocomplete filter
+- [ ] Implement favourites
+- [ ] Implement search history
+- [ ] Implement tags blacklisting
+- [ ] Implement check for update
+- [ ] Enable safe listing toggle
 
 ## Libraries used
 - [OkHttp](https://github.com/square/okhttp): Square’s meticulous HTTP client for the JVM, Android, and GraalVM.
