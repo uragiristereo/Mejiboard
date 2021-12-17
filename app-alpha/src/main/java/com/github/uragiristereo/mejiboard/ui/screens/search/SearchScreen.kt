@@ -123,7 +123,7 @@ fun SearchScreen(
                     if (submitQuery == " ")
                         submitQuery = ""
 
-                    mainViewModel.searchTags = submitQuery
+                    mainViewModel.searchTags = submitQuery.lowercase()
                     mainViewModel.refreshNeeded = true
 
                     keyboardController!!.hide()
@@ -170,7 +170,7 @@ fun SearchScreen(
                     if (submitQuery == " ")
                         submitQuery = ""
 
-                    submitQuery = submitQuery.trim()
+                    submitQuery = submitQuery.trim().lowercase()
 
                     item {
                         Row(
@@ -226,7 +226,7 @@ fun SearchScreen(
                     item { Spacer(Modifier.padding(bottom = 8.dp)) }
                     if (wordInCursor.isNotEmpty()) {
                         if (!searchViewModel.searchProgressVisible)
-                            boldWord = wordInCursor
+                            boldWord = wordInCursor.lowercase()
 
                         itemsIndexed(searchViewModel.searchData) { _, item ->
                             Row(
@@ -270,9 +270,8 @@ fun SearchScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-//                                        "$delimiter${item.value}",
                                         buildAnnotatedString {
-                                            val newQuery = "$delimiter${item.value}"
+                                            val newQuery = "$delimiter${item.value}".lowercase()
 
                                              withStyle(
                                                  style = SpanStyle(fontWeight = FontWeight.Bold)
