@@ -127,7 +127,9 @@ fun SearchScreen(
                     mainViewModel.refreshNeeded = true
 
                     keyboardController!!.hide()
-                    mainNavigation.navigate("main")
+                    mainNavigation.navigate("main") {
+                        popUpTo(0)
+                    }
                 }
             )
 
@@ -186,7 +188,9 @@ fun SearchScreen(
                                     mainViewModel.refreshNeeded = true
 
                                     keyboardController!!.hide()
-                                    mainNavigation.navigate("main")
+                                    mainNavigation.navigate("main") {
+                                        popUpTo(0)
+                                    }
                                 })
                                 .padding(
                                     top = 12.dp,
