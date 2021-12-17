@@ -16,9 +16,9 @@ An image board client based on [Gelbooru](https://gelbooru.com) for android, mad
 
 ## Download
 Latest **alpha** variant:
-- Version: `v1.2.1-alpha.5`
-- Date: 2021-12-16
-- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.2.1-alpha.5) • [direct](https://github.com/uragiristereo/Mejiboard/releases/download/v1.2.1-alpha.5/Mejiboard_v1.2.1.alpha.5.apk)
+- Version: `v1.2.2-alpha.6`
+- Date: 2021-12-17
+- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.2.2-alpha.6) • [direct](https://github.com/uragiristereo/Mejiboard/releases/download/v1.2.2-alpha.6/Mejiboard_v1.2.2-alpha.6.apk)
 
 Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more.
 
@@ -27,6 +27,7 @@ Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) sectio
 
 ## To-Dos
 **Note: not in ordered list.**
+- [x] Implement check for update
 - [ ] Use staggered grid layout
 - [ ] Use definitive progress bar for image loading
 - [ ] Use Storage Access Framework (SAF)
@@ -42,7 +43,6 @@ Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) sectio
 - [ ] Implement favourites
 - [ ] Implement search history
 - [ ] Implement tags blacklisting
-- [ ] Implement check for update
 - [ ] Enable safe listing toggle
 
 ## Libraries used
