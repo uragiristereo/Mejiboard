@@ -23,7 +23,7 @@ Latest **alpha** variant:
 Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more.
 
 ## Screenshots
-<img src="https://github.com/uragiristereo/Mejiboard/raw/alpha/screenshots/Screenshots_combined.jpg">
+<img src="https://github.com/uragiristereo/Mejiboard/raw/main/app-alpha/screenshots.jpg">
 
 ## To-Dos
 **Note: not in ordered list.**

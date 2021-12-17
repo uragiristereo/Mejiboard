@@ -22,5 +22,5 @@ interface DataServices {
     fun getTagsInfo(@Query("names") names: String): Call<List<Tag>>
 
     @GET
-    fun checkForUpdate(@Url url: String = "https://raw.githubusercontent.com/uragiristereo/Mejiboard/alpha/app/update.json"): Call<AppUpdate>
+    fun checkForUpdate(@Url url: String = "https://raw.githubusercontent.com/uragiristereo/Mejiboard/main/app-alpha/update.json"): Call<AppUpdate>
 }

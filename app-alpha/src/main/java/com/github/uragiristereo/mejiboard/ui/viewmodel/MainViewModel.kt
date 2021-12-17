@@ -395,7 +395,8 @@ class MainViewModel @Inject constructor(
 
                             Timber.i(updateStatus)
                         }
-                    }
+                    } else
+                        updateStatus = "failed"
                 }
 
                 override fun onFailure(call: Call<AppUpdate>, t: Throwable) {
