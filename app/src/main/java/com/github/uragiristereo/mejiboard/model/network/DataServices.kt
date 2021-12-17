@@ -20,4 +20,7 @@ interface DataServices {
 
     @GET("/index.php?page=dapi&s=tag&q=index&json=1&")
     fun getTagsInfo(@Query("names") names: String): Call<List<Tag>>
+
+    @GET
+    fun checkForUpdate(@Url url: String = "https://raw.githubusercontent.com/uragiristereo/Mejiboard/alpha/app/update.json"): Call<AppUpdate>
 }

@@ -27,6 +27,7 @@ import soup.compose.material.motion.*
 import soup.compose.material.motion.navigation.MaterialMotionNavHost
 import soup.compose.material.motion.navigation.composable
 import soup.compose.material.motion.navigation.rememberMaterialMotionNavController
+import timber.log.Timber
 import java.io.File
 
 @ExperimentalAnimationApi

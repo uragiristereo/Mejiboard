@@ -15,12 +15,11 @@ import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.model.database.AppDatabase
 import com.github.uragiristereo.mejiboard.model.database.Bookmark
-import com.github.uragiristereo.mejiboard.model.network.DownloadInfo
-import com.github.uragiristereo.mejiboard.model.network.NetworkInstance
-import com.github.uragiristereo.mejiboard.model.network.Post
+import com.github.uragiristereo.mejiboard.model.network.*
 import com.github.uragiristereo.mejiboard.model.network.download.DownloadBroadcastReceiver
 import com.github.uragiristereo.mejiboard.model.network.download.DownloadInstance
 import com.github.uragiristereo.mejiboard.model.network.download.DownloadRepository
@@ -81,6 +80,14 @@ class MainViewModel @Inject constructor(
     // image
     private var notificationCount = 0
 
+    // update
+    var updateStatus by mutableStateOf("idle")
+    var latestVersion by mutableStateOf(ReleaseInfo(BuildConfig.VERSION_CODE, "v${BuildConfig.VERSION_NAME}", false))
+    var updateDialogVisible by mutableStateOf(false)
+    var splashShown by mutableStateOf(false)
+    var remindLaterCounter by mutableStateOf(0)
+
+
     init {
         // load saved state from system
         savedStateHandle.get<Post>(STATE_KEY_SELECTED_POST)?.let {
@@ -101,13 +108,14 @@ class MainViewModel @Inject constructor(
                 dohProvider = map { it[DNS_OVER_HTTPS_PROVIDER] ?: "cloudflare" }.first()
                 autoCleanCache = map { it[AUTO_CLEAN_CACHE] ?: true }.first()
                 blockFromRecents = map { it[BLOCK_CONTENT_FROM_RECENTS] ?: false }.first()
+                remindLaterCounter = map { it[REMIND_LATER_UPDATE_COUNTER] ?: -1 }.first()
             }
 
 //            insertBookmark(10)
 
-            renewNetworkInstance(dohEnabled, dohProvider)
-
             refreshNeeded = true
+            renewNetworkInstance(dohEnabled, dohProvider)
+            incrementLaterCounter()
         }
 
         viewModelScope.launch {
@@ -153,6 +161,14 @@ class MainViewModel @Inject constructor(
     }
 
     fun save(key: Preferences.Key<Boolean>, value: Boolean) {
+        viewModelScope.launch {
+            preferencesManager.dataStore.edit {
+                it[key] = value
+            }
+        }
+    }
+
+    fun save(key: Preferences.Key<Int>, value: Int) {
         viewModelScope.launch {
             preferencesManager.dataStore.edit {
                 it[key] = value
@@ -348,5 +364,54 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun checkForUpdate() {
+        updateStatus = "checking"
+
+        networkInstance.api.checkForUpdate().enqueue(
+            object : Callback<AppUpdate> {
+                override fun onResponse(call: Call<AppUpdate>, response: Response<AppUpdate>) {
+                    if (response.isSuccessful) {
+                        val currentVersion = BuildConfig.VERSION_CODE
+//                        val currentVersion = 12004
+
+                        response.body()?.let { appUpdate ->
+                            val releases = appUpdate.releases.sortedByDescending { it.versionCode }
+                            val releasesNewerThanCurrent = releases.filter { it.versionCode > currentVersion }
+                            val updateRequired = releasesNewerThanCurrent.any { it.updateRequired }
+//                            updateStatus = "update_available"
+
+                            if (releasesNewerThanCurrent.isNotEmpty()) {
+                                latestVersion = releasesNewerThanCurrent[0]
+
+                                updateStatus =
+                                    if (updateRequired)
+                                        "update_required"
+                                    else
+                                        "update_available"
+                            } else
+                                updateStatus = "latest"
+
+                            Timber.i(updateStatus)
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<AppUpdate>, t: Throwable) {
+                    updateStatus = "failed"
+                }
+            }
+        )
+    }
+
+    private fun incrementLaterCounter() {
+        if (remindLaterCounter >= 10)
+            remindLaterCounter = -1
+        else
+            if (remindLaterCounter != -1)
+                remindLaterCounter += 1
+
+        save(REMIND_LATER_UPDATE_COUNTER, remindLaterCounter)
     }
 }

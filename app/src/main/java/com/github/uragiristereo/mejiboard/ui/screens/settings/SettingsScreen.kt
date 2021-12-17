@@ -1,5 +1,7 @@
 package com.github.uragiristereo.mejiboard.ui.screens.settings
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
@@ -28,6 +30,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.ui.components.SettingsCategory
 import com.github.uragiristereo.mejiboard.ui.components.SettingsItem
 import com.github.uragiristereo.mejiboard.ui.components.SettingsOptions
@@ -109,6 +112,7 @@ fun SettingsScreen(
                 delay(100)
             }
         }
+        mainViewModel.checkForUpdate()
     }
 
     val smallHeaderOpacity by animateFloatAsState(
@@ -322,9 +326,7 @@ fun SettingsScreen(
                                 style = SpanStyle(fontWeight = FontWeight.Bold)
                             ) {
                                 append("(recommended)")
-//                            append("(recommended)\nRestart")
                             }
-//                        append(" is required to takes effect")
                         },
                         onClick = {
                             mainViewModel.dohEnabled = !mainViewModel.dohEnabled
@@ -442,6 +444,50 @@ fun SettingsScreen(
                                 delay(4000)
                                 cacheCleaned = false
                             }
+                        }
+                    )
+                }
+                item {
+                    SettingsItem(
+                        title = "Check for update",
+                        subtitle = buildAnnotatedString {
+                            val showLatest = mainViewModel.updateStatus == "update_available" || mainViewModel.updateStatus == "update_required" || mainViewModel.updateStatus == "latest"
+
+                            append("Current version: ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("v${BuildConfig.VERSION_NAME}\n")
+                            }
+                            append("Latest version: ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                if (showLatest)
+                                    append("${mainViewModel.latestVersion.versionName}\n\n")
+                                else
+                                    append("···\n\n")
+                            }
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                when (mainViewModel.updateStatus) {
+                                    "checking" -> append("Checking for update...")
+                                    "update_available" -> append("Update available, tap here to download")
+                                    "update_required" -> append("Update available, tap here to download")
+                                    "latest" -> append("You're using the latest version!")
+                                    "failed" -> append("Failed to check for update, please check your internet connection")
+                                }
+                            }
+                        },
+                        onClick = {
+                            if (mainViewModel.updateStatus == "update_available" || mainViewModel.updateStatus == "update_required") {
+                                val intent = Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("https://github.com/uragiristereo/Mejiboard/releases/tag/${mainViewModel.latestVersion.versionName}")
+                                )
+                                context.startActivity(intent)
+                            } else
+                                scope.launch {
+                                    delay(350)
+                                    mainViewModel.updateStatus = "checking"
+                                    delay(1000)
+                                    mainViewModel.checkForUpdate()
+                                }
                         }
                     )
                 }

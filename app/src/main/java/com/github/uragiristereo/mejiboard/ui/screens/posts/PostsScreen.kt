@@ -1,6 +1,9 @@
 package com.github.uragiristereo.mejiboard.ui.screens.posts
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
@@ -49,6 +52,7 @@ import com.github.uragiristereo.mejiboard.ui.components.DrawerItem
 import com.github.uragiristereo.mejiboard.ui.components.ThumbPill
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.github.uragiristereo.mejiboard.ui.viewmodel.PostsViewModel
+import com.github.uragiristereo.mejiboard.util.REMIND_LATER_UPDATE_COUNTER
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.rememberInsetsPaddingValues
@@ -60,6 +64,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.MaterialFade
 import soup.compose.material.motion.MotionConstants
+import timber.log.Timber
 import kotlin.math.roundToInt
 
 @ExperimentalAnimationApi
@@ -82,7 +87,7 @@ fun MainScreen(
 
     var toolbarOffsetHeightPx by remember { mutableStateOf(0f) }
     var confirmExit by remember { mutableStateOf(true) }
-    val activity = (LocalContext.current as? Activity)
+    val context = LocalContext.current
     val isLight = MaterialTheme.colors.isLight
     var fabVisible by remember { mutableStateOf(false) }
 
@@ -109,6 +114,17 @@ fun MainScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        if (mainViewModel.splashShown) {
+            launch {
+                delay(1500)
+                mainViewModel.updateDialogVisible = mainViewModel.updateStatus == "update_available"
+
+                mainViewModel.splashShown = false
+            }
+        }
+    }
+
     BackHandler(
         enabled = drawerState.isOpen && confirmExit
     ) {
@@ -127,10 +143,86 @@ fun MainScreen(
         }
     }
 
-    BackHandler(
-        enabled = !confirmExit && drawerState.isClosed
-    ) {
-        activity?.finish()
+    if (mainViewModel.updateDialogVisible && mainViewModel.remindLaterCounter == -1) {
+        AlertDialog(
+            onDismissRequest = {
+                mainViewModel.updateDialogVisible = false
+            },
+            title = { Text("New update available!") },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        buildAnnotatedString {
+                            append("Current version: ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("v${BuildConfig.VERSION_NAME}")
+                            }
+                        }
+                    )
+                    Text(
+                        buildAnnotatedString {
+                            append("Latest version: ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append(mainViewModel.latestVersion.versionName)
+                            }
+                        }
+                    )
+                }
+            },
+            buttons = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 8.dp
+                        ),
+                    horizontalAlignment = Alignment.End
+                ) {
+                    TextButton(
+                        onClick = {
+                            mainViewModel.updateDialogVisible = false
+
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("https://github.com/uragiristereo/Mejiboard/releases/tag/${mainViewModel.latestVersion.versionName}")
+                            )
+                            context.startActivity(intent)
+                        }
+                    ) {
+                        Text("Download update".uppercase())
+                    }
+
+                    TextButton(
+                        onClick = {
+                            mainViewModel.updateDialogVisible = false
+                            mainViewModel.remindLaterCounter = 0
+                            mainViewModel.save(REMIND_LATER_UPDATE_COUNTER, 0)
+                            Toast.makeText(context, "You can check for update manually at:\nSettings > Check for update", Toast.LENGTH_LONG).show()
+                        }
+                    ) {
+                        Text(
+                            text = "Remind me later".uppercase(),
+                            color = MaterialTheme.colors.primary.copy(alpha = 0.7f)
+                        )
+                    }
+
+                    TextButton(
+                        onClick = {
+                            mainViewModel.updateDialogVisible = false
+                        }
+                    ) {
+                        Text(
+                            text = "Dismiss".uppercase(),
+                            color = MaterialTheme.colors.primary.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            },
+        )
     }
 
     BottomDrawer(
@@ -327,7 +419,7 @@ fun MainScreen(
             }
         ) {
             val toolbarHeight = 56.dp
-            val toolbarHeightPx = with (LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
+            val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
             var browseHeightPx by remember { mutableStateOf(0) }
 
 //            val smoothToolbarOffsetHeightPx by animateFloatAsState(
@@ -394,13 +486,13 @@ fun MainScreen(
                             IntOffset(
                                 x = 0,
                                 y =
-                                    toolbarOffsetHeightPx.roundToInt()
+                                toolbarOffsetHeightPx.roundToInt()
 //                                    if (gridState.isScrollInProgress)
 //                                        toolbarOffsetHeightPx.roundToInt()
 //                                    else
 //                                        smoothToolbarOffsetHeightPx.roundToInt()
-                                )
-                    },
+                            )
+                        },
                     elevation = 4.dp,
                     shape = RectangleShape
                 ) {
