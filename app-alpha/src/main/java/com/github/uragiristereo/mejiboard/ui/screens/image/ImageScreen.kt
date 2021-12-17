@@ -108,6 +108,8 @@ fun ImageScreen(
             window.showSystemBars()
             imageDisposable?.dispose()
             originalImageDisposable?.dispose()
+            val tempDirectory = File(context.cacheDir.absolutePath + "/temp/")
+            tempDirectory.deleteRecursively()
         }
     }
 
