@@ -46,10 +46,6 @@ fun SplashScreen(
     LaunchedEffect(Unit) {
         mainViewModel.checkForUpdate()
 
-//        mainNavigation.navigate("main") {
-//            popUpTo("splash") { inclusive = true }
-//        }
-
         if (mainViewModel.autoCleanCache)
             FileHelper.autoCleanCache(context, 12)
     }
@@ -115,7 +111,7 @@ fun SplashScreen(
                         text = buildAnnotatedString {
                             append("Latest version: ")
                             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                append(latestVersion)
+                                append("v$latestVersion")
                             }
                         },
                         modifier = Modifier.padding(bottom = 16.dp)
@@ -124,7 +120,7 @@ fun SplashScreen(
                         onClick = {
                             val intent = Intent(
                                 Intent.ACTION_VIEW,
-                                Uri.parse("https://github.com/uragiristereo/Mejiboard/releases/tag/$latestVersion")
+                                Uri.parse("https://github.com/uragiristereo/Mejiboard/releases/tag/v$latestVersion")
                             )
                             context.startActivity(intent)
                         }

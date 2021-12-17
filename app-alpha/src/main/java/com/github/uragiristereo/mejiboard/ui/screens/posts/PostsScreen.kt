@@ -165,7 +165,7 @@ fun MainScreen(
                         buildAnnotatedString {
                             append("Latest version: ")
                             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                append(mainViewModel.latestVersion.versionName)
+                                append("v${mainViewModel.latestVersion.versionName}")
                             }
                         }
                     )

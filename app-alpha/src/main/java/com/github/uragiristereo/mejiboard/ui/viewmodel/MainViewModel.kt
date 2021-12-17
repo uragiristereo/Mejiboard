@@ -82,7 +82,7 @@ class MainViewModel @Inject constructor(
 
     // update
     var updateStatus by mutableStateOf("idle")
-    var latestVersion by mutableStateOf(ReleaseInfo(BuildConfig.VERSION_CODE, "v${BuildConfig.VERSION_NAME}", false))
+    var latestVersion by mutableStateOf(ReleaseInfo(BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME, false))
     var updateDialogVisible by mutableStateOf(false)
     var splashShown by mutableStateOf(false)
     var remindLaterCounter by mutableStateOf(0)

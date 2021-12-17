@@ -460,7 +460,7 @@ fun SettingsScreen(
                             append("Latest version: ")
                             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
                                 if (showLatest)
-                                    append("${mainViewModel.latestVersion.versionName}\n\n")
+                                    append("v${mainViewModel.latestVersion.versionName}\n\n")
                                 else
                                     append("···\n\n")
                             }
@@ -478,7 +478,7 @@ fun SettingsScreen(
                             if (mainViewModel.updateStatus == "update_available" || mainViewModel.updateStatus == "update_required") {
                                 val intent = Intent(
                                     Intent.ACTION_VIEW,
-                                    Uri.parse("https://github.com/uragiristereo/Mejiboard/releases/tag/${mainViewModel.latestVersion.versionName}")
+                                    Uri.parse("https://github.com/uragiristereo/Mejiboard/releases/tag/v${mainViewModel.latestVersion.versionName}")
                                 )
                                 context.startActivity(intent)
                             } else
