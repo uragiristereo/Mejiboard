@@ -1,8 +1,6 @@
 package com.github.uragiristereo.mejiboard.ui.screens.image
 
 import android.app.Activity
-import android.view.GestureDetector.OnDoubleTapListener
-import android.view.MotionEvent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -46,9 +44,14 @@ import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.insets.ui.TopAppBar
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.upstream.DefaultDataSource
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.ortiz.touchview.TouchImageView
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.navigation.rememberMaterialMotionNavController
@@ -132,42 +135,60 @@ fun ImageScreen(
     if (imageType in supportedTypesAnimation) {
         val videoUrl = "https://video-cdn3.gelbooru.com/images/" + post.directory + "/" + post.hash + "." + imageType
 
+        val cacheFactory = CacheDataSource.Factory().apply {
+            setCache(imageViewModel.exoPlayerCache)
+            setUpstreamDataSourceFactory(
+                DefaultDataSource.Factory(
+                    context,
+                    DefaultHttpDataSource.Factory()
+                        .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0")
+                )
+            )
+        }
+
         val exoPlayer =
             ExoPlayer.Builder(context)
                 .setMediaSourceFactory(
                     DefaultMediaSourceFactory(
-                        OkHttpDataSource.Factory(
-                            mainViewModel.okHttpClient
-                        )
+                        OkHttpDataSource.Factory(mainViewModel.okHttpClient)
                     )
                 )
                 .build()
 
-        DisposableEffect(Unit) {
-            onDispose {
-                exoPlayer.release()
-            }
-        }
-
         val playerView = PlayerView(context)
         val mediaItem = MediaItem.fromUri(videoUrl)
 
-        exoPlayer.setMediaItem(mediaItem)
-        playerView.player = exoPlayer
-        playerView.setOnLongClickListener {
-            scope.launch {
-                if (!appBarVisible) {
-                    window.showSystemBars()
-                    appBarVisible = true
-                }
-                sheetState.animateTo(ModalBottomSheetValue.Expanded)
-            }
-            return@setOnLongClickListener true
+        exoPlayer.apply {
+            setMediaItem(mediaItem)
+            setMediaSource(
+                ProgressiveMediaSource.Factory(cacheFactory)
+                    .createMediaSource(mediaItem)
+            )
+            repeatMode = Player.REPEAT_MODE_ONE
+            playWhenReady = true
         }
 
-        LaunchedEffect(true) {
+        playerView.apply {
+            player = exoPlayer
+            videoSurfaceView?.isHapticFeedbackEnabled = false
+            videoSurfaceView?.setOnLongClickListener {
+                scope.launch {
+                    if (!appBarVisible) {
+                        window.showSystemBars()
+                        appBarVisible = true
+                    }
+                    sheetState.animateTo(ModalBottomSheetValue.Expanded)
+                }
+                return@setOnLongClickListener true
+            }
+        }
+
+        DisposableEffect(Unit) {
             exoPlayer.prepare()
-            exoPlayer.playWhenReady = true
+
+            onDispose {
+                exoPlayer.release()
+            }
         }
 
         Box(

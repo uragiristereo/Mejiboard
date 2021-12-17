@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.github.uragiristereo.mejiboard.model.network.NetworkInstance
 import com.github.uragiristereo.mejiboard.model.network.Tag
 import com.github.uragiristereo.mejiboard.util.FileHelper.convertSize
+import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import dagger.hilt.android.lifecycle.HiltViewModel
 import retrofit2.Call
 import retrofit2.Callback
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ImageViewModel @Inject constructor(
-    private val networkInstance: NetworkInstance
+    private val networkInstance: NetworkInstance,
+    val exoPlayerCache: SimpleCache
 ) : ViewModel() {
     var imageSize by mutableStateOf("")
     var originalImageSize by mutableStateOf("")

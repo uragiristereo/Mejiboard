@@ -1,6 +1,5 @@
 package com.github.uragiristereo.mejiboard.ui.screens.posts
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -64,7 +63,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.MaterialFade
 import soup.compose.material.motion.MotionConstants
-import timber.log.Timber
 import kotlin.math.roundToInt
 
 @ExperimentalAnimationApi

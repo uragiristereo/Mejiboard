@@ -15,7 +15,6 @@ import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.model.preferences.PreferencesManager
 import com.github.uragiristereo.mejiboard.ui.navigation.MainNavigation
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
 import javax.inject.Inject
 
 @ExperimentalCoilApi
