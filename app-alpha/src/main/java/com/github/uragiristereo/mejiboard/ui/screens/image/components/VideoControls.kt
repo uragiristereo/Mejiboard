@@ -36,27 +36,127 @@ import kotlin.math.roundToLong
 fun VideoControls(
     player: ExoPlayer,
     controlsVisible: Boolean,
-    volumeSliderVisible: Boolean,
-    setVolumeSliderVisible: (Boolean) -> Unit,
+    volumeSliderVisible: MutableState<Boolean>,
+) {
+    val videoPlayed = remember { mutableStateOf(true) }
+
+    AnimatedVisibility(
+        visible = controlsVisible,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+        ) {
+            Column(
+                verticalArrangement = Arrangement.Bottom,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(
+                        start = 8.dp,
+                        end = 8.dp,
+                        bottom = 8.dp
+                    )
+            ) {
+                VolumeSlider(
+                    player = player,
+                    volumeSliderVisible = volumeSliderVisible,
+                )
+                PlayerSlider(
+                    player = player,
+                    videoPlayed = videoPlayed,
+                    volumeSliderVisible = volumeSliderVisible,
+                )
+            }
+        }
+
+        PlayPauseButton(
+            player = player,
+            videoPlayed = videoPlayed,
+            volumeSliderVisible = volumeSliderVisible,
+        )
+    }
+}
+
+@Composable
+private fun VolumeSlider(
+    player: ExoPlayer,
+    volumeSliderVisible: MutableState<Boolean>,
+) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp
+    var videoVolume by remember { mutableStateOf(0.5f) }
+
+    LaunchedEffect(key1 = videoVolume) {
+        player.volume = videoVolume
+    }
+
+    Row {
+        IconButton(
+            onClick = { volumeSliderVisible.value = !volumeSliderVisible.value },
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.volume_up),
+                contentDescription = null,
+                tint = Color.White,
+            )
+        }
+        AnimatedVisibility(
+            visible = volumeSliderVisible.value,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            Card(
+                elevation = 4.dp,
+                modifier = Modifier
+                    .width((screenWidth / 2).dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = "${videoVolume.times(100).roundToInt()}%",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .width(36.dp)
+                    )
+                    Slider(
+                        value = videoVolume,
+                        onValueChange = { videoVolume = it },
+                        onValueChangeFinished = { player.volume = videoVolume },
+                        modifier = Modifier
+                            .weight(weight = 1f, fill = true)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlayerSlider(
+    player: ExoPlayer,
+    videoPlayed: MutableState<Boolean>,
+    volumeSliderVisible: MutableState<Boolean>,
 ) {
     val scope = rememberCoroutineScope()
     val sliderInteraction = remember { MutableInteractionSource() }
     val sliderDragged by sliderInteraction.collectIsDraggedAsState()
     val sliderPressed by sliderInteraction.collectIsPressedAsState()
-    val screenWidth = LocalConfiguration.current.screenWidthDp
 
     var videoProgress by remember { mutableStateOf(0f) }
-    var videoPlayed by remember { mutableStateOf(true) }
     var videoPosition by remember { mutableStateOf(0L) }
     var videoPositionFmt by remember { mutableStateOf("") }
     var videoDuration by remember { mutableStateOf(0L) }
-    var videoDurationFmt by remember { mutableStateOf("") }
-    var videoVolume by remember { mutableStateOf(0.5f) }
-    
+
     LaunchedEffect(key1 = Unit) {
         scope.launch {
             while (true) {
-                if (!sliderDragged && !sliderPressed && videoPlayed) {
+                if (!sliderDragged && !sliderPressed && videoPlayed.value) {
                     videoProgress = player.currentPosition.toFloat() / player.duration.toFloat()
                     videoPosition = player.currentPosition
                 }
@@ -74,142 +174,74 @@ fun VideoControls(
                 TimeHelper.formatMillis((videoProgress * videoDuration).roundToLong())
             else
                 TimeHelper.formatMillis(videoPosition)
-
-        videoDurationFmt = TimeHelper.formatMillis(videoDuration)
     }
 
     LaunchedEffect(key1 = sliderDragged, key2 = sliderPressed) {
         if (sliderDragged || sliderPressed)
-            setVolumeSliderVisible(false)
+            volumeSliderVisible.value = false
     }
 
-    LaunchedEffect(key1 = videoVolume) {
-        player.volume = videoVolume
-    }
-
-    AnimatedVisibility( // video controls
-        visible = controlsVisible,
-        enter = fadeIn(),
-        exit = fadeOut(),
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box( // video controls (with navbar padding)
+        Text(
+            text = videoPositionFmt,
+            color = Color.White,
+            textAlign = TextAlign.Center,
             modifier = Modifier
-                .fillMaxSize()
-                .navigationBarsPadding()
-        ) {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.Bottom,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(
-                        start = 8.dp,
-                        end = 8.dp,
-                        bottom = 8.dp
-                    ),
-            ) {
-                AnimatedVisibility( // volume slider
-                    visible = volumeSliderVisible,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    Card(
-                        elevation = 4.dp,
-                        modifier = Modifier
-                            .width((screenWidth / 2).dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            Text(
-                                text = "${videoVolume.times(100).roundToInt()}%",
-                                modifier = Modifier
-                                    .padding(end = 8.dp)
-                                    .width(36.dp)
-                            )
-                            Slider(
-                                value = videoVolume,
-                                onValueChange = { videoVolume = it },
-                                onValueChangeFinished = { player.volume = videoVolume },
-                                modifier = Modifier
-                                    .weight(weight = 1f, fill = true)
-                            )
-                        }
-                    }
-                }
-                Row( // main video controls
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = videoPositionFmt,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .width(44.dp)
-                    )
-                    Slider(
-                        value = videoProgress,
-                        onValueChange = {
-                            videoProgress = it
-                        },
-                        interactionSource = sliderInteraction,
-                        onValueChangeFinished = {
-                            val newPosition = (player.duration * videoProgress).roundToLong()
+                .width(48.dp)
+        )
+        Slider(
+            value = videoProgress,
+            onValueChange = { videoProgress = it },
+            interactionSource = sliderInteraction,
+            onValueChangeFinished = {
+                val newPosition = (player.duration * videoProgress).roundToLong()
 
-                            player.seekTo(newPosition)
-                            videoPositionFmt = TimeHelper.formatMillis(newPosition)
-                            videoDurationFmt = TimeHelper.formatMillis(newPosition)
-                        },
-                        modifier = Modifier
-                            .weight(1f, true)
-                            .padding(horizontal = 8.dp)
-                    )
-                    Text(
-                        text = videoDurationFmt,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .width(44.dp)
-                    )
-                    IconButton(
-                        onClick = { setVolumeSliderVisible(!volumeSliderVisible) },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.volume_up),
-                            contentDescription = null,
-                            tint = Color.White,
-                        )
-                    }
-                }
-            }
-        }
+                player.seekTo(newPosition)
+                videoDuration = newPosition
+            },
+            modifier = Modifier
+                .weight(1f, true)
+        )
+        Text(
+            text = TimeHelper.formatMillis(videoDuration),
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .width(48.dp)
+        )
+    }
+}
 
-        Box( // play/pause control
-            modifier = Modifier.fillMaxSize()
+@Composable
+private fun PlayPauseButton(
+    player: ExoPlayer,
+    videoPlayed: MutableState<Boolean>,
+    volumeSliderVisible: MutableState<Boolean>,
+) {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        IconButton(
+            onClick = {
+                volumeSliderVisible.value = false
+                videoPlayed.value = !videoPlayed.value
+                player.playWhenReady = videoPlayed.value
+            },
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(52.dp)
+                .clip(CircleShape)
+                .background(Color.Black.copy(0.2f))
         ) {
-            IconButton(
-                onClick = {
-                    setVolumeSliderVisible(false)
-                    videoPlayed = !videoPlayed
-                    player.playWhenReady = videoPlayed
-                },
+            Icon(
+                painter = if (videoPlayed.value) painterResource(R.drawable.pause) else rememberVectorPainter(Icons.Outlined.PlayArrow),
+                contentDescription = null,
+                tint = Color.White,
                 modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(52.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(0.2f))
-            ) {
-                Icon(
-                    painter = if (videoPlayed) painterResource(R.drawable.pause) else rememberVectorPainter(Icons.Outlined.PlayArrow),
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(40.dp)
-                )
-            }
+                    .size(40.dp)
+            )
         }
     }
 }

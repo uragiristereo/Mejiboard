@@ -136,7 +136,7 @@ fun ImageScreen(
 
     if (imageType in supportedTypesAnimation) {
         val videoUrl = remember { "https://video-cdn3.gelbooru.com/images/" + post.directory + "/" + post.hash + "." + imageType }
-        var volumeSliderVisible by remember { mutableStateOf(false) }
+        val volumeSliderVisible = remember { mutableStateOf(false) }
         val playerView = remember { PlayerView(context) }
         val exoPlayer = remember {
             ExoPlayer.Builder(context)
@@ -181,16 +181,16 @@ fun ImageScreen(
                 videoSurfaceView?.setOnLongClickListener {
                     scope.launch {
                         appBarVisible = true
-                        volumeSliderVisible = false
+                        volumeSliderVisible.value = false
                         sheetState.animateTo(ModalBottomSheetValue.Expanded)
                     }
                     return@setOnLongClickListener true
                 }
                 videoSurfaceView?.setOnClickListener {
-                    if (!volumeSliderVisible)
+                    if (!volumeSliderVisible.value)
                         appBarVisible = !appBarVisible
                     else
-                        volumeSliderVisible = false
+                        volumeSliderVisible.value = false
                 }
             }
 
@@ -207,15 +207,15 @@ fun ImageScreen(
         VideoPlayer(
             playerView = playerView,
             onPress = {
-                if (!volumeSliderVisible)
+                if (!volumeSliderVisible.value)
                     appBarVisible = !appBarVisible
                 else
-                    volumeSliderVisible = false
+                    volumeSliderVisible.value = false
             },
             onLongPress = {
                 scope.launch {
                     appBarVisible = true
-                    volumeSliderVisible = false
+                    volumeSliderVisible.value = false
                     sheetState.animateTo(ModalBottomSheetValue.Expanded)
                 }
             }
@@ -225,7 +225,6 @@ fun ImageScreen(
             player = exoPlayer,
             controlsVisible = appBarVisible,
             volumeSliderVisible = volumeSliderVisible,
-            setVolumeSliderVisible = { volumeSliderVisible = it }
         )
     }
 
