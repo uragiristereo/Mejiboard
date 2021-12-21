@@ -71,7 +71,7 @@ fun PostsGrid(
 
     LazyColumn(
         state = gridState,
-        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 0.dp, top = toolbarHeight + with(density) { browseHeightPx.toDp() } )
+        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 0.dp, top = toolbarHeight + with(density) { browseHeightPx.toDp() } + if (mainViewModel.isDesiredThemeDark) 0.dp else 8.dp )
     ) {
         val supportedTypesAnimation = listOf("gif", "webm", "mp4")
 

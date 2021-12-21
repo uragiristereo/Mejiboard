@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.ui.viewmodel
+package com.github.uragiristereo.mejiboard.ui.screens.image
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

@@ -34,7 +34,7 @@ import com.github.uragiristereo.mejiboard.model.network.Post
 import com.github.uragiristereo.mejiboard.ui.components.SheetInfoItem
 import com.github.uragiristereo.mejiboard.ui.components.SheetItem
 import com.github.uragiristereo.mejiboard.ui.components.TagInfoItem
-import com.github.uragiristereo.mejiboard.ui.viewmodel.ImageViewModel
+import com.github.uragiristereo.mejiboard.ui.screens.image.ImageViewModel
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.github.uragiristereo.mejiboard.util.FileHelper.convertSize
 import com.github.uragiristereo.mejiboard.util.PermissionHelper

@@ -2,10 +2,7 @@ package com.github.uragiristereo.mejiboard.ui.screens.image
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -33,14 +30,12 @@ import coil.request.Disposable
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.ui.components.ThumbPill
 import com.github.uragiristereo.mejiboard.ui.navigation.PostMoreNavigation
-import com.github.uragiristereo.mejiboard.ui.viewmodel.ImageViewModel
+import com.github.uragiristereo.mejiboard.ui.screens.image.components.VideoControls
+import com.github.uragiristereo.mejiboard.ui.screens.image.components.VideoPlayer
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
 import com.github.uragiristereo.mejiboard.util.hideSystemBars
 import com.github.uragiristereo.mejiboard.util.showSystemBars
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.insets.rememberInsetsPaddingValues
-import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.insets.*
 import com.google.accompanist.insets.ui.TopAppBar
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
@@ -130,23 +125,20 @@ fun ImageScreen(
         }
     }
 
+    LaunchedEffect(appBarVisible) {
+        if (appBarVisible)
+            window.showSystemBars()
+        else
+            window.hideSystemBars()
+    }
+
     val originalUrl = "https://img3.gelbooru.com/images/" + post.directory + "/" + post.hash + "." + imageType
 
     if (imageType in supportedTypesAnimation) {
-        val videoUrl = "https://video-cdn3.gelbooru.com/images/" + post.directory + "/" + post.hash + "." + imageType
-
-        val cacheFactory = CacheDataSource.Factory().apply {
-            setCache(imageViewModel.exoPlayerCache)
-            setUpstreamDataSourceFactory(
-                DefaultDataSource.Factory(
-                    context,
-                    DefaultHttpDataSource.Factory()
-                        .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0")
-                )
-            )
-        }
-
-        val exoPlayer =
+        val videoUrl = remember { "https://video-cdn3.gelbooru.com/images/" + post.directory + "/" + post.hash + "." + imageType }
+        var volumeSliderVisible by remember { mutableStateOf(false) }
+        val playerView = remember { PlayerView(context) }
+        val exoPlayer = remember {
             ExoPlayer.Builder(context)
                 .setMediaSourceFactory(
                     DefaultMediaSourceFactory(
@@ -154,73 +146,87 @@ fun ImageScreen(
                     )
                 )
                 .build()
-
-        val playerView = PlayerView(context)
-        val mediaItem = MediaItem.fromUri(videoUrl)
-
-        exoPlayer.apply {
-            setMediaItem(mediaItem)
-            setMediaSource(
-                ProgressiveMediaSource.Factory(cacheFactory)
-                    .createMediaSource(mediaItem)
-            )
-            repeatMode = Player.REPEAT_MODE_ONE
-            playWhenReady = true
         }
 
-        playerView.apply {
-            player = exoPlayer
-            videoSurfaceView?.isHapticFeedbackEnabled = false
-            videoSurfaceView?.setOnLongClickListener {
-                scope.launch {
-                    if (!appBarVisible) {
-                        window.showSystemBars()
-                        appBarVisible = true
-                    }
-                    sheetState.animateTo(ModalBottomSheetValue.Expanded)
-                }
-                return@setOnLongClickListener true
+        DisposableEffect(key1 = Unit) {
+            val cacheFactory = CacheDataSource.Factory().apply {
+                setCache(imageViewModel.exoPlayerCache)
+                setUpstreamDataSourceFactory(
+                    DefaultDataSource.Factory(
+                        context,
+                        DefaultHttpDataSource.Factory()
+                            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0")
+                    )
+                )
             }
-        }
+            val mediaItem = MediaItem.fromUri(videoUrl)
 
-        DisposableEffect(Unit) {
-            exoPlayer.prepare()
+            exoPlayer.apply {
+                setMediaItem(mediaItem)
+                setMediaSource(
+                    ProgressiveMediaSource.Factory(cacheFactory)
+                        .createMediaSource(mediaItem)
+                )
+                repeatMode = Player.REPEAT_MODE_ONE
+                playWhenReady = true
+            }
+
+
+            playerView.apply {
+                player = exoPlayer
+                useController = false
+                controllerAutoShow = false
+
+                videoSurfaceView?.isHapticFeedbackEnabled = false
+                videoSurfaceView?.setOnLongClickListener {
+                    scope.launch {
+                        appBarVisible = true
+                        volumeSliderVisible = false
+                        sheetState.animateTo(ModalBottomSheetValue.Expanded)
+                    }
+                    return@setOnLongClickListener true
+                }
+                videoSurfaceView?.setOnClickListener {
+                    if (!volumeSliderVisible)
+                        appBarVisible = !appBarVisible
+                    else
+                        volumeSliderVisible = false
+                }
+            }
+
+            exoPlayer.apply {
+                volume = 0.5f
+                prepare()
+            }
 
             onDispose {
                 exoPlayer.release()
             }
         }
 
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onLongPress = {
-                            scope.launch {
-                                if (!appBarVisible) {
-                                    window.showSystemBars()
-                                    appBarVisible = true
-                                }
-                                sheetState.animateTo(ModalBottomSheetValue.Expanded)
-                            }
-                        }
-                    )
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            AndroidView(
-                factory = {
-                    playerView
-                },
-                update = {
+        VideoPlayer(
+            playerView = playerView,
+            onPress = {
+                if (!volumeSliderVisible)
+                    appBarVisible = !appBarVisible
+                else
+                    volumeSliderVisible = false
+            },
+            onLongPress = {
+                scope.launch {
+                    appBarVisible = true
+                    volumeSliderVisible = false
+                    sheetState.animateTo(ModalBottomSheetValue.Expanded)
+                }
+            }
+        )
 
-                },
-                modifier = Modifier
-                    .navigationBarsPadding()
-            )
-        }
+        VideoControls(
+            player = exoPlayer,
+            controlsVisible = appBarVisible,
+            volumeSliderVisible = volumeSliderVisible,
+            setVolumeSliderVisible = { volumeSliderVisible = it }
+        )
     }
 
     url =
@@ -235,19 +241,11 @@ fun ImageScreen(
         LaunchedEffect(true) {
             touchImageView.apply {
                 setOnClickListener {
-                    if (appBarVisible)
-                        window.hideSystemBars()
-                    else
-                        window.showSystemBars()
-
                     appBarVisible = !appBarVisible
                 }
                 setOnLongClickListener {
                     scope.launch {
-                        if (!appBarVisible) {
-                            window.showSystemBars()
-                            appBarVisible = true
-                        }
+                        appBarVisible = true
                         sheetState.animateTo(ModalBottomSheetValue.Expanded)
                     }
                     return@setOnLongClickListener false
@@ -344,10 +342,7 @@ fun ImageScreen(
                     detectTapGestures(
                         onLongPress = {
                             scope.launch {
-                                if (!appBarVisible) {
-                                    window.showSystemBars()
-                                    appBarVisible = true
-                                }
+                                appBarVisible = true
                                 sheetState.animateTo(ModalBottomSheetValue.Expanded)
                             }
                         }
