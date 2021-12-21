@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.ui.screens.image.components
+package com.github.uragiristereo.mejiboard.ui.screens.image.components.video
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures

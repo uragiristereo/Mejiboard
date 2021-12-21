@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.ui.screens.image.components
+package com.github.uragiristereo.mejiboard.ui.screens.image.components.video
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.util.TimeHelper
@@ -37,6 +38,7 @@ fun VideoControls(
     player: ExoPlayer,
     controlsVisible: Boolean,
     volumeSliderVisible: MutableState<Boolean>,
+    isVideoHasAudio: MutableState<Boolean>,
 ) {
     val videoPlayed = remember { mutableStateOf(true) }
 
@@ -64,6 +66,7 @@ fun VideoControls(
                 VolumeSlider(
                     player = player,
                     volumeSliderVisible = volumeSliderVisible,
+                    isVideoHasAudio = isVideoHasAudio,
                 )
                 PlayerSlider(
                     player = player,
@@ -85,6 +88,7 @@ fun VideoControls(
 private fun VolumeSlider(
     player: ExoPlayer,
     volumeSliderVisible: MutableState<Boolean>,
+    isVideoHasAudio: MutableState<Boolean>,
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp
     var videoVolume by remember { mutableStateOf(0.5f) }
@@ -98,7 +102,15 @@ private fun VolumeSlider(
             onClick = { volumeSliderVisible.value = !volumeSliderVisible.value },
         ) {
             Icon(
-                painter = painterResource(R.drawable.volume_up),
+                painter =
+                    if (isVideoHasAudio.value)
+                        when {
+                            videoVolume >= 0.5f -> painterResource(id = R.drawable.volume_up)
+                            videoVolume == 0f -> painterResource(id = R.drawable.volume_mute)
+                            else -> painterResource(id = R.drawable.volume_down)
+                        }
+                    else
+                        painterResource(id = R.drawable.volume_off),
                 contentDescription = null,
                 tint = Color.White,
             )
@@ -111,26 +123,37 @@ private fun VolumeSlider(
             Card(
                 elevation = 4.dp,
                 modifier = Modifier
-                    .width((screenWidth / 2).dp)
+                    .width(if (isVideoHasAudio.value) (screenWidth / 2).dp else Dp.Unspecified)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Text(
-                        text = "${videoVolume.times(100).roundToInt()}%",
+                if (isVideoHasAudio.value) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(end = 8.dp)
-                            .width(36.dp)
-                    )
-                    Slider(
-                        value = videoVolume,
-                        onValueChange = { videoVolume = it },
-                        onValueChangeFinished = { player.volume = videoVolume },
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Text(
+                            text = "${videoVolume.times(100).roundToInt()}%",
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .width(36.dp)
+                        )
+                        Slider(
+                            value = videoVolume,
+                            onValueChange = { videoVolume = it },
+                            onValueChangeFinished = { player.volume = videoVolume },
+                            modifier = Modifier
+                                .weight(weight = 1f, fill = true)
+                        )
+                    }
+                } else {
+                    Box(
+                        contentAlignment = Alignment.CenterStart,
                         modifier = Modifier
-                            .weight(weight = 1f, fill = true)
-                    )
+                            .height(48.dp)
+                            .padding(all = 16.dp)
+                    ) {
+                        Text(text = "Video has no audio")
+                    }
                 }
             }
         }
@@ -168,7 +191,11 @@ private fun PlayerSlider(
         }
     }
 
-    LaunchedEffect(key1 = videoPosition, key2 = sliderDragged, key3 = sliderPressed) {
+    LaunchedEffect(
+        key1 = videoPosition,
+        key2 = sliderDragged,
+        key3 = sliderPressed,
+    ) {
         videoPositionFmt =
             if (sliderDragged || sliderPressed)
                 TimeHelper.formatMillis((videoProgress * videoDuration).roundToLong())
@@ -176,7 +203,10 @@ private fun PlayerSlider(
                 TimeHelper.formatMillis(videoPosition)
     }
 
-    LaunchedEffect(key1 = sliderDragged, key2 = sliderPressed) {
+    LaunchedEffect(
+        key1 = sliderDragged,
+        key2 = sliderPressed,
+    ) {
         if (sliderDragged || sliderPressed)
             volumeSliderVisible.value = false
     }
@@ -193,13 +223,16 @@ private fun PlayerSlider(
         )
         Slider(
             value = videoProgress,
-            onValueChange = { videoProgress = it },
+            onValueChange = {
+                videoPositionFmt = TimeHelper.formatMillis((it * videoDuration).roundToLong())
+                videoProgress = it
+            },
             interactionSource = sliderInteraction,
             onValueChangeFinished = {
                 val newPosition = (player.duration * videoProgress).roundToLong()
 
                 player.seekTo(newPosition)
-                videoDuration = newPosition
+                videoPosition = newPosition
             },
             modifier = Modifier
                 .weight(1f, true)
