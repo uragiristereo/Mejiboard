@@ -64,6 +64,7 @@ class MainViewModel @Inject constructor(
     var dohProvider by mutableStateOf("cloudflare")
     var autoCleanCache by mutableStateOf(true)
     var blockFromRecents by mutableStateOf(true)
+    var videoVolume by mutableStateOf(0.5f)
 
     // posts, search & settings
     var refreshNeeded by mutableStateOf(false)
@@ -109,6 +110,7 @@ class MainViewModel @Inject constructor(
                 autoCleanCache = map { it[AUTO_CLEAN_CACHE] ?: true }.first()
                 blockFromRecents = map { it[BLOCK_CONTENT_FROM_RECENTS] ?: false }.first()
                 remindLaterCounter = map { it[REMIND_LATER_UPDATE_COUNTER] ?: -1 }.first()
+                videoVolume = map { it[VIDEO_VOLUME] ?: 0.5f }.first()
             }
 
 //            insertBookmark(10)
@@ -169,6 +171,14 @@ class MainViewModel @Inject constructor(
     }
 
     fun save(key: Preferences.Key<Int>, value: Int) {
+        viewModelScope.launch {
+            preferencesManager.dataStore.edit {
+                it[key] = value
+            }
+        }
+    }
+
+    fun save(key: Preferences.Key<Float>, value: Float) {
         viewModelScope.launch {
             preferencesManager.dataStore.edit {
                 it[key] = value

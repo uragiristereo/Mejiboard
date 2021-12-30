@@ -13,6 +13,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,10 +38,13 @@ import kotlin.math.roundToLong
 fun VideoControls(
     player: ExoPlayer,
     controlsVisible: Boolean,
-    volumeSliderVisible: MutableState<Boolean>,
-    isVideoHasAudio: MutableState<Boolean>,
+    volumeSliderVisible: Boolean,
+    onVolumeSliderVisibleChange: (Boolean) -> Unit,
+    isVideoHasAudio: Boolean,
+    videoVolume: Float,
+    onVideoVolumeChange: (Float) -> Unit,
 ) {
-    val videoPlayed = remember { mutableStateOf(true) }
+    var videoPlayed by rememberSaveable { mutableStateOf(true) }
 
     AnimatedVisibility(
         visible = controlsVisible,
@@ -66,12 +70,15 @@ fun VideoControls(
                 VolumeSlider(
                     player = player,
                     volumeSliderVisible = volumeSliderVisible,
+                    onVolumeSliderVisibleChange = onVolumeSliderVisibleChange,
                     isVideoHasAudio = isVideoHasAudio,
+                    videoVolume = videoVolume,
+                    onVideoVolumeChange = onVideoVolumeChange,
                 )
                 PlayerSlider(
                     player = player,
                     videoPlayed = videoPlayed,
-                    volumeSliderVisible = volumeSliderVisible,
+                    onVolumeSliderVisibleChange = onVolumeSliderVisibleChange,
                 )
             }
         }
@@ -79,7 +86,8 @@ fun VideoControls(
         PlayPauseButton(
             player = player,
             videoPlayed = videoPlayed,
-            volumeSliderVisible = volumeSliderVisible,
+            onVideoPlayedChange = { videoPlayed = it },
+            onVolumeSliderVisibleChange = onVolumeSliderVisibleChange,
         )
     }
 }
@@ -87,11 +95,13 @@ fun VideoControls(
 @Composable
 private fun VolumeSlider(
     player: ExoPlayer,
-    volumeSliderVisible: MutableState<Boolean>,
-    isVideoHasAudio: MutableState<Boolean>,
+    volumeSliderVisible: Boolean,
+    onVolumeSliderVisibleChange: (Boolean) -> Unit,
+    isVideoHasAudio: Boolean,
+    videoVolume: Float,
+    onVideoVolumeChange: (Float) -> Unit,
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp
-    var videoVolume by remember { mutableStateOf(0.5f) }
 
     LaunchedEffect(key1 = videoVolume) {
         player.volume = videoVolume
@@ -99,11 +109,11 @@ private fun VolumeSlider(
 
     Row {
         IconButton(
-            onClick = { volumeSliderVisible.value = !volumeSliderVisible.value },
+            onClick = { onVolumeSliderVisibleChange(!volumeSliderVisible) },
         ) {
             Icon(
                 painter =
-                    if (isVideoHasAudio.value)
+                    if (isVideoHasAudio)
                         when {
                             videoVolume >= 0.5f -> painterResource(id = R.drawable.volume_up)
                             videoVolume == 0f -> painterResource(id = R.drawable.volume_mute)
@@ -116,16 +126,16 @@ private fun VolumeSlider(
             )
         }
         AnimatedVisibility(
-            visible = volumeSliderVisible.value,
+            visible = volumeSliderVisible,
             enter = fadeIn(),
             exit = fadeOut(),
         ) {
             Card(
                 elevation = 4.dp,
                 modifier = Modifier
-                    .width(if (isVideoHasAudio.value) (screenWidth / 2).dp else Dp.Unspecified)
+                    .width(if (isVideoHasAudio) (screenWidth / 2).dp else Dp.Unspecified)
             ) {
-                if (isVideoHasAudio.value) {
+                if (isVideoHasAudio) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -139,7 +149,7 @@ private fun VolumeSlider(
                         )
                         Slider(
                             value = videoVolume,
-                            onValueChange = { videoVolume = it },
+                            onValueChange = onVideoVolumeChange,
                             onValueChangeFinished = { player.volume = videoVolume },
                             modifier = Modifier
                                 .weight(weight = 1f, fill = true)
@@ -163,8 +173,8 @@ private fun VolumeSlider(
 @Composable
 private fun PlayerSlider(
     player: ExoPlayer,
-    videoPlayed: MutableState<Boolean>,
-    volumeSliderVisible: MutableState<Boolean>,
+    videoPlayed: Boolean,
+    onVolumeSliderVisibleChange: (Boolean) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val sliderInteraction = remember { MutableInteractionSource() }
@@ -179,7 +189,7 @@ private fun PlayerSlider(
     LaunchedEffect(key1 = Unit) {
         scope.launch {
             while (true) {
-                if (!sliderDragged && !sliderPressed && videoPlayed.value) {
+                if (!sliderDragged && !sliderPressed && videoPlayed) {
                     videoProgress = player.currentPosition.toFloat() / player.duration.toFloat()
                     videoPosition = player.currentPosition
                 }
@@ -208,7 +218,7 @@ private fun PlayerSlider(
         key2 = sliderPressed,
     ) {
         if (sliderDragged || sliderPressed)
-            volumeSliderVisible.value = false
+            onVolumeSliderVisibleChange(false)
     }
 
     Row(
@@ -250,17 +260,18 @@ private fun PlayerSlider(
 @Composable
 private fun PlayPauseButton(
     player: ExoPlayer,
-    videoPlayed: MutableState<Boolean>,
-    volumeSliderVisible: MutableState<Boolean>,
+    videoPlayed: Boolean,
+    onVideoPlayedChange: (Boolean) -> Unit,
+    onVolumeSliderVisibleChange: (Boolean) -> Unit,
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
         IconButton(
             onClick = {
-                volumeSliderVisible.value = false
-                videoPlayed.value = !videoPlayed.value
-                player.playWhenReady = videoPlayed.value
+                onVideoPlayedChange(!videoPlayed)
+                onVolumeSliderVisibleChange(false)
+                player.playWhenReady = !videoPlayed
             },
             modifier = Modifier
                 .align(Alignment.Center)
@@ -269,7 +280,7 @@ private fun PlayPauseButton(
                 .background(Color.Black.copy(0.2f))
         ) {
             Icon(
-                painter = if (videoPlayed.value) painterResource(R.drawable.pause) else rememberVectorPainter(Icons.Outlined.PlayArrow),
+                painter = if (videoPlayed) painterResource(R.drawable.pause) else rememberVectorPainter(Icons.Outlined.PlayArrow),
                 contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier

@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.github.uragiristereo.mejiboard.model.network.Post
 import com.github.uragiristereo.mejiboard.ui.screens.image.ImageViewModel
 import com.github.uragiristereo.mejiboard.ui.viewmodel.MainViewModel
+import com.github.uragiristereo.mejiboard.util.VIDEO_VOLUME
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -36,8 +37,8 @@ fun VideoPost(
 
     val imageType = remember { File(post.image).extension }
     val videoUrl = remember { "https://video-cdn3.gelbooru.com/images/${post.directory}/${post.hash}.$imageType" }
-    val volumeSliderVisible = remember { mutableStateOf(false) }
-    val isVideoHasAudio = remember { mutableStateOf(false) }
+    var volumeSliderVisible by remember { mutableStateOf(false) }
+    var isVideoHasAudio by remember { mutableStateOf(false) }
     val playerView = remember { PlayerView(context) }
     val exoPlayer = remember {
         ExoPlayer.Builder(context)
@@ -70,18 +71,18 @@ fun VideoPost(
             )
             repeatMode = Player.REPEAT_MODE_ONE
             playWhenReady = true
-            volume = 0.5f
+            volume = mainViewModel.videoVolume
             addListener(object : Player.Listener {
                 override fun onTracksInfoChanged(tracksInfo: TracksInfo) {
                     super.onTracksInfoChanged(tracksInfo)
 
-                    isVideoHasAudio.value = false
+                    isVideoHasAudio = false
 
                     tracksInfo.trackGroupInfos.forEach {
                         for (i in 0 until it.trackGroup.length) {
                             val trackMimeType = it.trackGroup.getFormat(i).sampleMimeType
                             if (trackMimeType?.contains("audio") == true)
-                                isVideoHasAudio.value = true
+                                isVideoHasAudio = true
                         }
                     }
                 }
@@ -96,17 +97,17 @@ fun VideoPost(
             videoSurfaceView?.isHapticFeedbackEnabled = false
             videoSurfaceView?.setOnLongClickListener {
                 scope.launch {
-                    appBarVisible.value
-                    volumeSliderVisible.value = false
+                    appBarVisible.value = true
+                    volumeSliderVisible = false
                     sheetState.animateTo(ModalBottomSheetValue.Expanded)
                 }
                 return@setOnLongClickListener true
             }
             videoSurfaceView?.setOnClickListener {
-                if (!volumeSliderVisible.value)
+                if (!volumeSliderVisible)
                     appBarVisible.value = !appBarVisible.value
                 else
-                    volumeSliderVisible.value = false
+                    volumeSliderVisible = false
             }
         }
 
@@ -117,18 +118,23 @@ fun VideoPost(
         }
     }
 
+    LaunchedEffect(key1 = mainViewModel.videoVolume) {
+        exoPlayer.volume = mainViewModel.videoVolume
+        mainViewModel.save(VIDEO_VOLUME, mainViewModel.videoVolume)
+    }
+
     VideoPlayer(
         playerView = playerView,
         onPress = {
-            if (!volumeSliderVisible.value)
+            if (!volumeSliderVisible)
                 appBarVisible.value = !appBarVisible.value
             else
-                volumeSliderVisible.value = false
+                volumeSliderVisible = false
         },
         onLongPress = {
             scope.launch {
                 appBarVisible.value = true
-                volumeSliderVisible.value = false
+                volumeSliderVisible = false
                 sheetState.animateTo(ModalBottomSheetValue.Expanded)
             }
         }
@@ -138,6 +144,9 @@ fun VideoPost(
         player = exoPlayer,
         controlsVisible = appBarVisible.value,
         volumeSliderVisible = volumeSliderVisible,
+        onVolumeSliderVisibleChange = { volumeSliderVisible = it },
         isVideoHasAudio = isVideoHasAudio,
+        videoVolume = mainViewModel.videoVolume,
+        onVideoVolumeChange = { mainViewModel.videoVolume = it },
     )
 }

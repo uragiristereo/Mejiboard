@@ -1,6 +1,7 @@
 package com.github.uragiristereo.mejiboard.ui.navigation
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -70,14 +71,17 @@ fun MainNavigation(
                     }
                     composable(
                         "main",
-                        exitMotionSpec = { _, _ ->
-                            holdOut()
+                        exitMotionSpec = { _, target ->
+                            when (target.destination.route) {
+                                "image" -> materialElevationScaleOut()
+                                else -> materialSharedAxisZOut()
+                            }
                         },
                         popEnterMotionSpec = { initial, _ ->
-                            if (initial.destination.route == "image")
-                                holdIn()
-                            else
-                                materialSharedAxisZIn()
+                            when (initial.destination.route) {
+                                "image" -> materialElevationScaleIn()
+                                else -> materialSharedAxisZIn()
+                            }
                         },
                     ) {
                         if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
@@ -123,10 +127,10 @@ fun MainNavigation(
                     composable(
                         "image",
                         enterMotionSpec = { _, _ ->
-                            translateYIn({ it }, 200)
+                            translateYIn({ it }, 250)
                         },
                         popExitMotionSpec = { _, _ ->
-                            translateYOut({ it }, 200)
+                            translateYOut({ it }, 250)
                         }
                     ) {
                         systemUiController.setSystemBarsColor(Color.Black.copy(0.4f))

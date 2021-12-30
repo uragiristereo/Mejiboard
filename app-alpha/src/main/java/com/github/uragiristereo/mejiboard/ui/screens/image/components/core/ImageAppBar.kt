@@ -62,23 +62,26 @@ fun ImageAppBar(
                 .fillMaxWidth()
                 .height(82.dp)
                 .background(
-                    brush = Brush.verticalGradient(listOf(Color.Black, Color.Transparent)),
+                    brush = Brush.verticalGradient(colors = listOf(Color.Black, Color.Transparent)),
                     alpha = 0.5f
                 )
         )
         TopAppBar(
-            title = { Text("Post ${post.id}") },
+            title = { Text(text = "Post ${post.id}") },
             navigationIcon = {
                 IconButton(
-                    onClick = { mainNavigation.navigateUp() }
+                    onClick = { mainNavigation.navigateUp() },
                 ) {
-                    Icon(Icons.Default.ArrowBack, "Back")
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = null,
+                    )
                 }
             },
             actions = {
                 if (post.sample == 1 && !imageViewModel.showOriginalImage && imageType != "gif") {
                     IconButton(
-                        onClick = { imageViewModel.showOriginalImage = true }
+                        onClick = { imageViewModel.showOriginalImage = true },
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.open_in_full),
@@ -88,11 +91,13 @@ fun ImageAppBar(
                     }
                 }
                 IconButton(
-                    onClick = {
-                        scope.launch { sheetState.animateTo(ModalBottomSheetValue.Expanded) }
-                    }
+                    onClick = { scope.launch { sheetState.animateTo(ModalBottomSheetValue.Expanded) } },
                 ) {
-                    Icon(Icons.Default.MoreVert, "Back", tint = Color.White)
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                    )
                 }
             },
             elevation = 0.dp,

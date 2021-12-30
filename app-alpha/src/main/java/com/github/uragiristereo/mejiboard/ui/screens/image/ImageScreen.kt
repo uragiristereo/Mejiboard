@@ -42,13 +42,13 @@ fun ImageScreen(
     val supportedTypesAnimation = remember { listOf("webm", "mp4") }
     val imageType = remember { File(post.image).extension }
 
-    imageViewModel.showOriginalImage = mainViewModel.previewSize == "original"
-
     BackHandler(enabled = sheetState.isVisible) {
         scope.launch { sheetState.hide() }
     }
 
     DisposableEffect(key1 = Unit) {
+        imageViewModel.showOriginalImage = mainViewModel.previewSize == "original"
+
         onDispose {
             val tempDirectory = File("${context.cacheDir.absolutePath}/temp/")
 
