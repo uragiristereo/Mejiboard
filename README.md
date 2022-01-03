@@ -2,7 +2,7 @@
 
 image (イメージ) + board = メジboard (mejiboard)
 
-An image board client based on [Gelbooru](https://gelbooru.com) for android, made from Jetpack Compose 🚀.
+An image board ~~client~~ viewer based on [Gelbooru](https://gelbooru.com) for android, made from Jetpack Compose 🚀.
 
 ## Features
 - Material Design UI
@@ -16,9 +16,9 @@ An image board client based on [Gelbooru](https://gelbooru.com) for android, mad
 
 ## Download
 Latest **alpha** variant:
-- Version: `v1.2.2-alpha.6`
-- Date: 2021-12-17
-- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.2.2-alpha.6) • [direct](https://github.com/uragiristereo/Mejiboard/releases/download/v1.2.2-alpha.6/Mejiboard_v1.2.2-alpha.6.apk)
+- Version: `v1.2.3-alpha.7`
+- Date: 2022-01-03
+- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.2.3-alpha.7) • [direct](https://github.com/uragiristereo/Mejiboard/releases/download/v1.2.3-alpha.7/Mejiboard_v1.2.3-alpha.7.apk)
 
 Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more.
 
@@ -28,18 +28,18 @@ Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) sectio
 ## To-Dos
 **Note: not in ordered list.**
 - [x] Implement check for update
+- [x] Implement custom video player controls
+- [x] Migrate to clean architecture
 - [ ] Use staggered grid layout
 - [ ] Use definitive progress bar for image loading
 - [ ] Use Storage Access Framework (SAF)
 - [ ] Change app icon
-- [ ] Refactor the code
 - [ ] Join home screen with search screen
 - [ ] Back press returns to previous browsed tags instead exiting
 - [ ] Generate filename from tags
 - [ ] Tweak double-tap-to-zoom behavior
 - [ ] Implement search autocomplete filter
 - [ ] Implement search guide
-- [ ] Implement custom video player controls
 - [ ] Implement favourites
 - [ ] Implement search history
 - [ ] Implement tags blacklisting

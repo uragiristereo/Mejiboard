@@ -12,7 +12,7 @@ android {
         debug {
             Properties properties = new Properties()
             properties.load(project.rootProject.file('signing.properties').newDataInputStream())
-            
+
             storeFile file(properties.getProperty('STORE_FILE'))
             keyAlias properties.getProperty('KEY_ALIAS')
             storePassword properties.getProperty('STORE_PASSWORD')
@@ -24,8 +24,8 @@ android {
         applicationId "com.github.uragiristereo.mejiboard"
         minSdk 26
         targetSdk 29
-        versionCode 12206
-        versionName "1.2.2-alpha.6"
+        versionCode 12307
+        versionName "1.2.3-alpha.7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
