@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-path name="mejiboard_downloads" path="./Pictures/Mejiboard/"/>
-    <cache-path name="mejiboard_temp" path="./temp/" />
+    <external-path
+        name="mejiboard_downloads"
+        path="./Pictures/Mejiboard/" />
+    <cache-path
+        name="mejiboard_temp"
+        path="./temp/" />
 </paths>

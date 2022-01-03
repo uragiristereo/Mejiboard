@@ -3,9 +3,8 @@
     <item android:drawable="@color/black" />
 
     <item
-        android:gravity="center"
-        android:drawable="@drawable/not_like_tsugu_round"
         android:width="92dp"
         android:height="92dp"
-        />
+        android:drawable="@drawable/not_like_tsugu_round"
+        android:gravity="center" />
 </layer-list>

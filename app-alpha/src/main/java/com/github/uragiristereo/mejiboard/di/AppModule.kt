@@ -2,8 +2,8 @@ package com.github.uragiristereo.mejiboard.di
 
 import android.content.Context
 import androidx.room.Room
-import com.github.uragiristereo.mejiboard.model.database.AppDatabase
-import com.github.uragiristereo.mejiboard.model.preferences.PreferencesManager
+import com.github.uragiristereo.mejiboard.data.database.AppDatabase
+import com.github.uragiristereo.mejiboard.data.repository.PreferencesRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,7 +16,7 @@ import javax.inject.Singleton
 object AppModule {
     @Provides
     @Singleton
-    fun provideDataManager(@ApplicationContext context: Context) = PreferencesManager(context)
+    fun providePreferencesRepository(@ApplicationContext context: Context) = PreferencesRepository(context)
 
     @Provides
     @Singleton

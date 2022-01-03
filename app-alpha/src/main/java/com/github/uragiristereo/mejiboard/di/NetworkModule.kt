@@ -2,8 +2,8 @@ package com.github.uragiristereo.mejiboard.di
 
 import android.content.Context
 import coil.util.CoilUtils
-import com.github.uragiristereo.mejiboard.model.network.NetworkInstance
-import com.github.uragiristereo.mejiboard.model.network.download.DownloadRepository
+import com.github.uragiristereo.mejiboard.data.repository.DownloadRepository
+import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
 import com.google.android.exoplayer2.database.StandaloneDatabaseProvider
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
@@ -12,7 +12,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
 import javax.inject.Singleton
@@ -22,14 +21,23 @@ import javax.inject.Singleton
 object NetworkModule {
     @Provides
     @Singleton
-    fun providesOkHttpClient(@ApplicationContext context: Context) = OkHttpClient.Builder()
-        .cache(CoilUtils.createDefaultCache(context))
-        .cache(Cache(File(context.cacheDir, "video_cache"), 1024 * 1024 * 256L))
-        .build()
+    fun providesOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
+        return OkHttpClient.Builder()
+            .cache(CoilUtils.createDefaultCache(context))
+            .build()
+    }
 
     @Provides
     @Singleton
-    fun provideNetworkInstance(@ApplicationContext context: Context, bootstrapOkHttpClient: OkHttpClient) = NetworkInstance(context, bootstrapOkHttpClient)
+    fun provideNetworkRepository(
+        @ApplicationContext context: Context,
+        okHttpClient: OkHttpClient,
+    ): NetworkRepository {
+        return NetworkRepository(
+            context = context,
+            bootstrapOkHttpClient = okHttpClient,
+        )
+    }
 
     @Provides
     @Singleton
@@ -37,11 +45,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providesExoPlayerCache(@ApplicationContext context: Context): SimpleCache =
-        SimpleCache(
+    fun providesExoPlayerCache(@ApplicationContext context: Context): SimpleCache {
+        return SimpleCache(
             File(context.cacheDir, "video_cache"),
             LeastRecentlyUsedCacheEvictor(1024 * 1024 * 256L),
             StandaloneDatabaseProvider(context)
         )
-
+    }
 }
