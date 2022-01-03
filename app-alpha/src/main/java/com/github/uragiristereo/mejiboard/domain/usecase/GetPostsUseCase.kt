@@ -26,7 +26,7 @@ class GetPostsUseCase @Inject constructor(
 
             if (response.isSuccessful)
                 response.body()?.let { result ->
-                    val posts = result.map { it.toPost() }
+                    val posts = result.post.map { it.toPost() }
                     emit(Resource.Success(posts))
                 }
             else
