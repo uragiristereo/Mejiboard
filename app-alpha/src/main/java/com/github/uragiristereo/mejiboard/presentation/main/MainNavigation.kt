@@ -4,28 +4,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
-import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.presentation.about.AboutScreen
 import com.github.uragiristereo.mejiboard.presentation.image.ImageScreen
@@ -36,7 +24,6 @@ import com.github.uragiristereo.mejiboard.presentation.splash.SplashScreen
 import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import kotlinx.coroutines.delay
 import soup.compose.material.motion.*
 import soup.compose.material.motion.navigation.MaterialMotionNavHost
 import soup.compose.material.motion.navigation.composable
@@ -55,8 +42,6 @@ fun MainNavigation(
     val systemUiController = rememberSystemUiController()
     val context = LocalContext.current
     val isSystemDarkTheme = isSystemInDarkTheme()
-
-    var showSplash by remember { mutableStateOf(true) }
 
     LaunchedEffect(key1 = mainViewModel.isDesiredThemeDark) {
         mainViewModel.isDesiredThemeDark =
@@ -89,7 +74,7 @@ fun MainNavigation(
                         SideEffect {
                             systemUiController.setSystemBarsColor(if (systemDarkTheme) Color.Black else Color.White)
                         }
-                        SplashScreen(mainNavigation, mainViewModel, if (isSystemInDarkTheme()) Color.Black else Color.White)
+                        SplashScreen(mainViewModel, if (isSystemInDarkTheme()) Color.Black else Color.White)
                     }
                     composable(
                         "main",
@@ -195,34 +180,14 @@ fun MainNavigation(
             }
 
             AnimatedVisibility(
-                visible = showSplash,
+                visible = !mainViewModel.splashShown,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
-                LaunchedEffect(key1 = Unit) {
-                    delay(300)
-                    showSplash = false
-                }
-
-                Box {
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .background(if (isSystemInDarkTheme()) Color.Black else Color.White),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Box(
-                            Modifier.clip(CircleShape)
-                        ) {
-                            Image(
-                                painterResource(R.drawable.not_like_tsugu),
-                                "Logo",
-                                Modifier
-                                    .size(92.dp)
-                            )
-                        }
-                    }
-                }
+                SplashScreen(
+                    mainViewModel = mainViewModel,
+                    backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White,
+                )
             }
         }
     }

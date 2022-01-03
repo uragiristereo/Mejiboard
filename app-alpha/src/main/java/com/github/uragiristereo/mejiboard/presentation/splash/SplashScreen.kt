@@ -9,7 +9,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
@@ -29,23 +28,22 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.helper.FileHelper
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlinx.coroutines.delay
 
 @ExperimentalAnimationApi
 @Composable
 fun SplashScreen(
-    mainNavigation: NavHostController,
     mainViewModel: MainViewModel,
     backgroundColor: Color,
 ) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
+        delay(300)
         mainViewModel.checkForUpdate()
 
         if (mainViewModel.autoCleanCache)
@@ -58,10 +56,6 @@ fun SplashScreen(
                 Toast.makeText(context, "Failed to check for update,\nplease check your internet connection", Toast.LENGTH_LONG).show()
 
             mainViewModel.splashShown = true
-
-            mainNavigation.navigate("main") {
-                popUpTo("splash") { inclusive = true }
-            }
         }
 
         onDispose { }
