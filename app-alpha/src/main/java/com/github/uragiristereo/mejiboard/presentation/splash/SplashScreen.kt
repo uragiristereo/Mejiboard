@@ -101,7 +101,8 @@ fun SplashScreen(
                         text = "Update required",
                         modifier = Modifier.padding(bottom = 8.dp),
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.h6
+                        style = MaterialTheme.typography.h6,
+                        color = MaterialTheme.colors.onSurface,
                     )
                     Text(
                         text = buildAnnotatedString {
@@ -110,7 +111,8 @@ fun SplashScreen(
                                 append("v$latestVersion")
                             }
                         },
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        color = MaterialTheme.colors.onSurface,
                     )
                     Button(
                         onClick = {
