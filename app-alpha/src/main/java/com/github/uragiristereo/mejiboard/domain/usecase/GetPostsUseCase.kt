@@ -26,8 +26,10 @@ class GetPostsUseCase @Inject constructor(
 
             if (response.isSuccessful)
                 response.body()?.let { result ->
-                    val posts = result.post.map { it.toPost() }
-                    emit(Resource.Success(posts))
+                    if (result.post != null)
+                        emit(Resource.Success(result.post.map { it.toPost() }))
+                    else
+                        emit(Resource.Success(emptyList<Post>()))
                 }
             else
                 emit(Resource.Error<List<Post>>(response.errorBody().toString()))

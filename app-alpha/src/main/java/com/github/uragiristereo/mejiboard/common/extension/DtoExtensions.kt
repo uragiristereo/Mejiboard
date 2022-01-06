@@ -1,7 +1,7 @@
 package com.github.uragiristereo.mejiboard.common.extension
 
 import com.github.uragiristereo.mejiboard.data.dto.api.SearchDto
-import com.github.uragiristereo.mejiboard.data.dto.api.TagDto
+import com.github.uragiristereo.mejiboard.data.dto.api.tag.TagDto
 import com.github.uragiristereo.mejiboard.data.dto.api.post.PostDto
 import com.github.uragiristereo.mejiboard.domain.entity.Post
 import com.github.uragiristereo.mejiboard.domain.entity.Search
@@ -40,6 +40,6 @@ fun SearchDto.toSearch() = Search(
 fun TagDto.toTag() = Tag(
     count = count,
     id = id,
-    tag = tag,
+    name = name,
     type = type,
 )

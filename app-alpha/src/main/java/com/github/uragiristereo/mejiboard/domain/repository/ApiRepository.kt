@@ -2,7 +2,7 @@ package com.github.uragiristereo.mejiboard.domain.repository
 
 import com.github.uragiristereo.mejiboard.data.dto.api.PostDto
 import com.github.uragiristereo.mejiboard.data.dto.api.SearchDto
-import com.github.uragiristereo.mejiboard.data.dto.api.TagDto
+import com.github.uragiristereo.mejiboard.data.dto.api.tag.TagDto
 import okhttp3.ResponseBody
 
 interface ApiRepository {

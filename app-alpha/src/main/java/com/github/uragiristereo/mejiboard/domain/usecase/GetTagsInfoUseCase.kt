@@ -20,8 +20,10 @@ class GetTagsInfoUseCase @Inject constructor(
 
             if (response.isSuccessful)
                 response.body()?.let { result ->
-                    val tags = result.map { it.toTag() }
-                    emit(Resource.Success(tags))
+                    if (result.tag != null)
+                        emit(Resource.Success(result.tag.map { it.toTag() }))
+                    else
+                        emit(Resource.Success(emptyList<Tag>()))
                 }
             else
                 emit(Resource.Error<List<Tag>>(response.errorBody().toString()))

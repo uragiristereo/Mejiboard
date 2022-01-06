@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.data.dto.api.post
+package com.github.uragiristereo.mejiboard.data.dto.api.common
 
 data class Attributes(
     val count: Int,

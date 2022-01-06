@@ -566,20 +566,22 @@ fun PostMoreNavigation(
                     }
 
                     if (imageViewModel.infoData.value.isNotEmpty() && !imageViewModel.infoProgressVisible && !imageViewModel.showTagsIsCollapsed) {
-                        var artists = imageViewModel.infoData.value.filter { it.type == "artist" }
+                        // 2 = ???
+                        // 6 = deprecated
+                        var artists = imageViewModel.infoData.value.filter { it.type == 1 }
                         var characters =
-                            imageViewModel.infoData.value.filter { it.type == "character" }
+                            imageViewModel.infoData.value.filter { it.type == 4 }
                         var copyrights =
-                            imageViewModel.infoData.value.filter { it.type == "copyright" }
+                            imageViewModel.infoData.value.filter { it.type == 3 }
                         var metadatas =
-                            imageViewModel.infoData.value.filter { it.type == "metadata" }
-                        var tags = imageViewModel.infoData.value.filter { it.type == "tag" }
+                            imageViewModel.infoData.value.filter { it.type == 5 }
+                        var tags = imageViewModel.infoData.value.filter { it.type == 0 }
 
-                        artists = artists.sortedBy { it.tag }
-                        characters = characters.sortedBy { it.tag }
-                        copyrights = copyrights.sortedBy { it.tag }
-                        metadatas = metadatas.sortedBy { it.tag }
-                        tags = tags.sortedBy { it.tag }
+                        artists = artists.sortedBy { it.name }
+                        characters = characters.sortedBy { it.name }
+                        copyrights = copyrights.sortedBy { it.name }
+                        metadatas = metadatas.sortedBy { it.name }
+                        tags = tags.sortedBy { it.name }
 
                         item {
                             Text(
@@ -611,7 +613,7 @@ fun PostMoreNavigation(
 
                             items(artists) { item ->
                                 TagInfoItem(
-                                    tag = item.tag,
+                                    tag = item.name,
                                     count = item.count
                                 )
                             }
@@ -634,7 +636,7 @@ fun PostMoreNavigation(
 
                             items(characters) { item ->
                                 TagInfoItem(
-                                    tag = item.tag,
+                                    tag = item.name,
                                     count = item.count
                                 )
                             }
@@ -657,7 +659,7 @@ fun PostMoreNavigation(
 
                             items(copyrights) { item ->
                                 TagInfoItem(
-                                    tag = item.tag,
+                                    tag = item.name,
                                     count = item.count
                                 )
                             }
@@ -680,7 +682,7 @@ fun PostMoreNavigation(
 
                             items(metadatas) { item ->
                                 TagInfoItem(
-                                    tag = item.tag,
+                                    tag = item.name,
                                     count = item.count
                                 )
                             }
@@ -703,7 +705,7 @@ fun PostMoreNavigation(
 
                             items(tags) { item ->
                                 TagInfoItem(
-                                    tag = item.tag,
+                                    tag = item.name,
                                     count = item.count
                                 )
                             }

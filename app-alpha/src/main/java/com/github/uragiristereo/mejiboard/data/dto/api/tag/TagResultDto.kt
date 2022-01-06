@@ -1,10 +1,10 @@
-package com.github.uragiristereo.mejiboard.data.dto.api.post
+package com.github.uragiristereo.mejiboard.data.dto.api.tag
 
 import com.github.uragiristereo.mejiboard.data.dto.api.common.Attributes
 import com.squareup.moshi.Json
 
-data class PostResultDto(
+data class TagResultDto(
     @field:Json(name = "@attributes")
     val attributes: Attributes,
-    val post: List<PostDto>?,
+    val tag: List<TagDto>?,
 )

@@ -1,9 +1,8 @@
 package com.github.uragiristereo.mejiboard.data.remote.api
 
-import com.github.uragiristereo.mejiboard.data.dto.api.PostDto
 import com.github.uragiristereo.mejiboard.data.dto.api.SearchDto
-import com.github.uragiristereo.mejiboard.data.dto.api.TagDto
 import com.github.uragiristereo.mejiboard.data.dto.api.post.PostResultDto
+import com.github.uragiristereo.mejiboard.data.dto.api.tag.TagResultDto
 import com.github.uragiristereo.mejiboard.data.model.AppUpdate
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -21,7 +20,7 @@ interface BoardApi {
     suspend fun getTags(@Query("term") term: String): Response<List<SearchDto>>
 
     @GET("/index.php?page=dapi&s=tag&q=index&json=1")
-    suspend fun getTagsInfo(@Query("names") names: String): Response<List<TagDto>>
+    suspend fun getTagsInfo(@Query("names") names: String): Response<TagResultDto>
 
     @Streaming
     @GET
