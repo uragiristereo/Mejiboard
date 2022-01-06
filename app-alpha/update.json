@@ -2,6 +2,11 @@
     "variant": "alpha",
     "releases": [
         {
+            "versionCode": 12408,
+            "versionName": "1.2.4-alpha.8",
+            "updateRequired": true
+        },
+        {
             "versionCode": 12307,
             "versionName": "1.2.3-alpha.7",
             "updateRequired": true
