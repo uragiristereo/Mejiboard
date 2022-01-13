@@ -1,11 +1,13 @@
 package com.github.uragiristereo.mejiboard.presentation.image.components.image
 
+import android.os.Build.VERSION.SDK_INT
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import coil.load
 import coil.request.Disposable
 import com.github.uragiristereo.mejiboard.common.helper.ImageHelper
@@ -53,7 +55,10 @@ fun ImagePost(
                 imageLoader = mainViewModel.imageLoader,
                 builder = {
                     if (imageType == "gif")
-                        decoder(GifDecoder())
+                        if (SDK_INT >= 28)
+                            decoder(ImageDecoderDecoder(context))
+                        else
+                            decoder(GifDecoder())
 
                     val resized = ImageHelper.resizeImage(post = post)
                     size(
