@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-@Suppress("RemoveExplicitTypeArguments")
 class GetPostsUseCase @Inject constructor(
     private val networkRepository: NetworkRepository,
 ) {
@@ -19,20 +18,24 @@ class GetPostsUseCase @Inject constructor(
         return flow {
             emit(Resource.Loading())
 
-            val response = networkRepository.api.getPosts(
-                pid = pageId,
-                tags = searchTags,
-            )
+            try {
+                val response = networkRepository.api.getPosts(
+                    pid = pageId,
+                    tags = searchTags,
+                )
 
-            if (response.isSuccessful)
-                response.body()?.let { result ->
-                    if (result.post != null)
-                        emit(Resource.Success(result.post.map { it.toPost() }))
-                    else
-                        emit(Resource.Success(emptyList<Post>()))
-                }
-            else
-                emit(Resource.Error<List<Post>>(response.errorBody().toString()))
+                if (response.isSuccessful)
+                    response.body()?.let { result ->
+                        if (result.post != null)
+                            emit(Resource.Success(result.post.map { it.toPost() }))
+                        else
+                            emit(Resource.Success(emptyList()))
+                    }
+                else
+                    emit(Resource.Error(response.errorBody().toString()))
+            } catch (t: Throwable) {
+                emit(Resource.Error(t.toString()))
+            }
         }
     }
 }

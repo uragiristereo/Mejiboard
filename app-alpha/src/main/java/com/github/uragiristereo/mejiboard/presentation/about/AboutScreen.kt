@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,13 +40,14 @@ import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.R
-import com.github.uragiristereo.mejiboard.presentation.common.LinkIconButton
+import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @ExperimentalCoilApi
 @Composable
@@ -55,6 +57,21 @@ fun AboutScreen(
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
+    val systemUiController = rememberSystemUiController()
+
+    val surfaceColor = MaterialTheme.colors.surface
+
+    DisposableEffect(key1 = Unit) {
+        if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
+            systemUiController.setStatusBarColor(Color.Black)
+            systemUiController.setNavigationBarColor(surfaceColor)
+        } else {
+            systemUiController.setStatusBarColor(surfaceColor)
+            systemUiController.setNavigationBarColor(surfaceColor.copy(0.4f))
+        }
+
+        onDispose { }
+    }
 
     Scaffold(
         topBar = {

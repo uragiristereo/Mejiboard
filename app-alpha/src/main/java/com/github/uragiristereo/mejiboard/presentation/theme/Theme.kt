@@ -6,6 +6,7 @@ import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorPalette = darkColors(
@@ -42,15 +43,15 @@ private val LightColorPalette = lightColors(
 
 @Composable
 fun MejiboardTheme(
-    theme: String = "system",
+    theme: Theme = Theme.System,
     blackTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colors =
         when (theme) {
-            "light" -> LightColorPalette
-            "dark" -> if (blackTheme) BlackColorPalette else DarkColorPalette
-            "system" -> {
+            Theme.Light -> LightColorPalette
+            Theme.Dark -> if (blackTheme) BlackColorPalette else DarkColorPalette
+            Theme.System -> {
                 if (isSystemInDarkTheme())
                     if (blackTheme)
                         BlackColorPalette
@@ -59,7 +60,6 @@ fun MejiboardTheme(
                 else
                     LightColorPalette
             }
-            else -> LightColorPalette
         }
 
     rememberSystemUiController().setStatusBarColor(color = colors.surface)

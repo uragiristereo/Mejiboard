@@ -22,8 +22,11 @@ object AppModule {
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room
-            .databaseBuilder(context, AppDatabase::class.java, "mejiboard-database")
-            .allowMainThreadQueries()
+            .databaseBuilder(
+                context,
+                AppDatabase::class.java,
+                "mejiboard-database",
+            )
             .build()
     }
 }

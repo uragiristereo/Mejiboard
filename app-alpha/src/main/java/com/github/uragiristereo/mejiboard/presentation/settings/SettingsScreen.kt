@@ -33,20 +33,25 @@ import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.common.helper.FileHelper.convertSize
 import com.github.uragiristereo.mejiboard.common.helper.FileHelper.getFolderSize
-import com.github.uragiristereo.mejiboard.data.model.preferences.PreferencesObj
+import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
+import com.github.uragiristereo.mejiboard.data.preferences.enums.DohProvider
+import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
+import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
 import com.github.uragiristereo.mejiboard.presentation.common.SettingsCategory
 import com.github.uragiristereo.mejiboard.presentation.common.SettingsItem
 import com.github.uragiristereo.mejiboard.presentation.common.SettingsOptions
-import com.github.uragiristereo.mejiboard.presentation.common.SettingsOptionsItem
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
+
+const val ENABLE_SAFE_LISTING_TOGGLE = false
 
 @ExperimentalAnimationApi
 @Composable
@@ -57,40 +62,27 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val columnState = rememberLazyListState()
+    val systemUiController = rememberSystemUiController()
+    val preferences = mainViewModel.preferences
 
-    val themes = listOf(
-        SettingsOptionsItem("system", "System default"),
-        SettingsOptionsItem("dark", "Dark"),
-        SettingsOptionsItem("light", "Light")
-    )
-    val selectedThemeFromViewModel = themes.filter { it.key == mainViewModel.theme }[0]
-    var selectedTheme by remember { mutableStateOf(selectedThemeFromViewModel) }
+    val surfaceColor = MaterialTheme.colors.surface
+    val isLight = MaterialTheme.colors.isLight
 
-    val previewSizes = listOf(
-        SettingsOptionsItem("sample", "Compressed (sample)"),
-        SettingsOptionsItem("original", "Full size (original)")
-    )
-    val selectedPreviewSizeFromViewModel = previewSizes.filter { it.key == mainViewModel.previewSize }[0]
-    var selectedPreviewSize by remember { mutableStateOf(selectedPreviewSizeFromViewModel) }
-
-    val dohProviders = listOf(
-        SettingsOptionsItem("cloudflare", "Cloudflare"),
-        SettingsOptionsItem("google", "Google"),
-        SettingsOptionsItem("tuna", "Tuna (for China Mainland)")
-    )
-    val selectedDohProviderFromViewModel = dohProviders.filter { it.key == mainViewModel.dohProvider }[0]
-    var selectedDohProvider by remember { mutableStateOf(selectedDohProviderFromViewModel) }
+    val themes = remember { Theme::class.sealedSubclasses.map { it.objectInstance as Theme } }
+    val previewSizes = remember { PreviewSize::class.sealedSubclasses.map { it.objectInstance as PreviewSize } }
+    val dohProviders = remember { DohProvider::class.sealedSubclasses.map { it.objectInstance as DohProvider } }
 
     var cacheDirectorySize by remember { mutableStateOf("Loading...") }
     var cacheCleaned by remember { mutableStateOf(false) }
     var settingsHeaderSize by remember { mutableStateOf(0) }
     var bigHeader by remember { mutableStateOf(true) }
 
-    LaunchedEffect(true) {
+    LaunchedEffect(key1 = Unit) {
         launch {
             val size = getFolderSize(context.cacheDir)
             cacheDirectorySize = convertSize(size.toInt())
         }
+
         launch {
             while (true) {
                 if (settingsHeaderSize > 0) {
@@ -113,6 +105,18 @@ fun SettingsScreen(
             }
         }
         mainViewModel.checkForUpdate()
+    }
+
+    DisposableEffect(key1 = surfaceColor, key2 = isLight) {
+        if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
+            systemUiController.setStatusBarColor(Color.Black)
+            systemUiController.setNavigationBarColor(surfaceColor)
+        } else {
+            systemUiController.setStatusBarColor(Color.Transparent, isLight)
+            systemUiController.setNavigationBarColor(surfaceColor.copy(0.4f))
+        }
+
+        onDispose { }
     }
 
     val smallHeaderOpacity by animateFloatAsState(
@@ -209,12 +213,14 @@ fun SettingsScreen(
                 item {
                     SettingsOptions(
                         title = "Theme",
-                        subtitle = selectedTheme.value,
                         items = themes,
-                        selectedItemKey = selectedTheme.key,
+                        selectedItem = preferences.theme,
                         onItemSelected = {
-                            selectedTheme = it
-                            mainViewModel.setTheme(selectedTheme.key, mainViewModel.blackTheme)
+                            mainViewModel.updatePreferences(
+                                newData = preferences.copy(
+                                    theme = it,
+                                )
+                            )
                         }
                     )
                 }
@@ -227,21 +233,21 @@ fun SettingsScreen(
                                 subtitle = "Use pitch black theme instead of regular dark theme, useful for OLED screens",
                                 interactionSource = blackThemeInteractionSource,
                                 onClick = {
-                                    mainViewModel.blackTheme = !mainViewModel.blackTheme
-                                    mainViewModel.setTheme(
-                                        if (mainViewModel.isDesiredThemeDark) "dark" else "light",
-                                        mainViewModel.blackTheme
+                                    mainViewModel.updatePreferences(
+                                        newData = preferences.copy(
+                                            blackTheme = !preferences.blackTheme,
+                                        )
                                     )
                                 },
                                 action = {
                                     Switch(
-                                        checked = mainViewModel.blackTheme,
+                                        checked = preferences.blackTheme,
                                         interactionSource = blackThemeInteractionSource,
                                         onCheckedChange = {
-                                            mainViewModel.blackTheme = !mainViewModel.blackTheme
-                                            mainViewModel.setTheme(
-                                                if (mainViewModel.isDesiredThemeDark) "dark" else "light",
-                                                mainViewModel.blackTheme
+                                            mainViewModel.updatePreferences(
+                                                newData = preferences.copy(
+                                                    blackTheme = !preferences.blackTheme,
+                                                )
                                             )
                                         }
                                     )
@@ -259,55 +265,63 @@ fun SettingsScreen(
                 item {
                     SettingsOptions(
                         title = "Preview size",
-                        subtitle = selectedPreviewSize.value,
                         items = previewSizes,
-                        selectedItemKey = selectedPreviewSize.key,
+                        selectedItem = preferences.previewSize,
                         onItemSelected = {
-                            selectedPreviewSize = it
-                            mainViewModel.previewSize = it.key
-                            mainViewModel.editPreferences(PreferencesObj.previewSize, it.key)
-                        }
-                    )
-                }
-                item {
-                    val safeListingOnlyInteractionSource = remember { MutableInteractionSource() }
-                    SettingsItem(
-                        title = "Safe listing only mode",
-                        subtitle = buildAnnotatedString {
-                            append("Filter ")
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                append("questionable")
-                            }
-                            append(" & ")
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                append("explicit")
-                            }
-                            append(" rated posts\n")
-
-                            withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
-                                append("(Feature not yet toggleable)")
-                            }
-                        },
-                        enabled = false,
-                        interactionSource = safeListingOnlyInteractionSource,
-                        onClick = {
-                            mainViewModel.safeListingOnly = !mainViewModel.safeListingOnly
-                            mainViewModel.refreshNeeded = true
-                            mainViewModel.editPreferences(PreferencesObj.safeListingOnly, mainViewModel.safeListingOnly)
-                        },
-                        action = {
-                            Switch(
-                                checked = mainViewModel.safeListingOnly,
-                                enabled = false,
-                                interactionSource = safeListingOnlyInteractionSource,
-                                onCheckedChange = {
-                                    mainViewModel.safeListingOnly = !mainViewModel.safeListingOnly
-                                    mainViewModel.refreshNeeded = true
-                                    mainViewModel.editPreferences(PreferencesObj.safeListingOnly, mainViewModel.safeListingOnly)
-                                }
+                            mainViewModel.updatePreferences(
+                                newData = preferences.copy(
+                                    previewSize = it,
+                                )
                             )
                         }
                     )
+                }
+
+                if (ENABLE_SAFE_LISTING_TOGGLE) {
+                    item {
+                        val safeListingOnlyInteractionSource = remember { MutableInteractionSource() }
+                        SettingsItem(
+                            title = "Safe listing only mode",
+                            subtitle = buildAnnotatedString {
+                                append("Filter ")
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append("questionable")
+                                }
+                                append(" & ")
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append("explicit")
+                                }
+                                append(" rated posts\n")
+
+                                withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
+                                    append("(Feature not yet toggleable)")
+                                }
+                            },
+                            interactionSource = safeListingOnlyInteractionSource,
+                            onClick = {
+                                mainViewModel.updatePreferences(
+                                    newData = preferences.copy(
+                                        safeListingOnly = !preferences.safeListingOnly,
+                                    )
+                                )
+                                mainViewModel.refreshNeeded = true
+                            },
+                            action = {
+                                Switch(
+                                    checked = preferences.safeListingOnly,
+                                    interactionSource = safeListingOnlyInteractionSource,
+                                    onCheckedChange = {
+                                        mainViewModel.updatePreferences(
+                                            newData = preferences.copy(
+                                                safeListingOnly = !preferences.safeListingOnly,
+                                            )
+                                        )
+                                        mainViewModel.refreshNeeded = true
+                                    }
+                                )
+                            }
+                        )
+                    }
                 }
                 item {
                     Divider()
@@ -329,20 +343,26 @@ fun SettingsScreen(
                             }
                         },
                         onClick = {
-                            mainViewModel.dohEnabled = !mainViewModel.dohEnabled
-                            mainViewModel.editPreferences(PreferencesObj.dohEnabled, mainViewModel.dohEnabled)
-                            mainViewModel.renewNetworkInstance(mainViewModel.dohEnabled, mainViewModel.dohProvider)
+                            mainViewModel.updatePreferences(
+                                newData = preferences.copy(
+                                    useDnsOverHttps = !preferences.useDnsOverHttps,
+                                )
+                            )
+                            mainViewModel.renewNetworkInstance(preferences.useDnsOverHttps, preferences.dohProvider.name)
                             mainViewModel.refreshNeeded = true
                         },
                         interactionSource = dohInteractionSource,
                         action = {
                             Switch(
-                                checked = mainViewModel.dohEnabled,
+                                checked = preferences.useDnsOverHttps,
                                 interactionSource = dohInteractionSource,
                                 onCheckedChange = {
-                                    mainViewModel.dohEnabled = !mainViewModel.dohEnabled
-                                    mainViewModel.editPreferences(PreferencesObj.dohEnabled, mainViewModel.dohEnabled)
-                                    mainViewModel.renewNetworkInstance(mainViewModel.dohEnabled, mainViewModel.dohProvider)
+                                    mainViewModel.updatePreferences(
+                                        newData = preferences.copy(
+                                            useDnsOverHttps = !preferences.useDnsOverHttps,
+                                        )
+                                    )
+                                    mainViewModel.renewNetworkInstance(preferences.useDnsOverHttps, preferences.dohProvider.name)
                                     mainViewModel.refreshNeeded = true
                                 }
                             )
@@ -350,19 +370,18 @@ fun SettingsScreen(
                     )
                 }
                 item {
-                    AnimatedContent(targetState = mainViewModel.dohEnabled) { target ->
+                    AnimatedContent(targetState = preferences.useDnsOverHttps) { target ->
                         if (target)
                             SettingsOptions(
-                                title = "DNS over HTTPS Provider",
-                                subtitle = selectedDohProvider.value,
+                                title = "DNS over HTTPS provider",
                                 items = dohProviders,
-                                selectedItemKey = selectedDohProvider.key,
+                                selectedItem = preferences.dohProvider,
                                 onItemSelected = {
-                                    selectedDohProvider = it
-                                    mainViewModel.dohProvider = it.key
-                                    mainViewModel.editPreferences(PreferencesObj.dohProvider, mainViewModel.dohProvider)
-                                    mainViewModel.renewNetworkInstance(mainViewModel.dohEnabled, mainViewModel.dohProvider)
-                                    mainViewModel.refreshNeeded = true
+                                    mainViewModel.updatePreferences(
+                                        newData = preferences.copy(
+                                            dohProvider = it,
+                                        )
+                                    )
                                 }
                             )
                     }
@@ -373,17 +392,23 @@ fun SettingsScreen(
                         title = "Block content from Recent apps",
                         subtitle = "Prevent content for showing in Recent apps",
                         onClick = {
-                            mainViewModel.blockFromRecents = !mainViewModel.blockFromRecents
-                            mainViewModel.editPreferences(PreferencesObj.blockFromRecents, mainViewModel.blockFromRecents)
+                            mainViewModel.updatePreferences(
+                                newData = preferences.copy(
+                                    blockFromRecents = !preferences.blockFromRecents,
+                                )
+                            )
                         },
                         interactionSource = blockFromRecentsInteractionSource,
                         action = {
                             Switch(
-                                checked = mainViewModel.blockFromRecents,
+                                checked = preferences.blockFromRecents,
                                 interactionSource = blockFromRecentsInteractionSource,
                                 onCheckedChange = {
-                                    mainViewModel.blockFromRecents = !mainViewModel.blockFromRecents
-                                    mainViewModel.editPreferences(PreferencesObj.blockFromRecents, mainViewModel.blockFromRecents)
+                                    mainViewModel.updatePreferences(
+                                        newData = preferences.copy(
+                                            blockFromRecents = !preferences.blockFromRecents,
+                                        )
+                                    )
                                 }
                             )
                         }
@@ -401,17 +426,23 @@ fun SettingsScreen(
                         title = "Auto clean cache",
                         subtitle = "Automatically clean cache that older than 12 hours at startup",
                         onClick = {
-                            mainViewModel.autoCleanCache = !mainViewModel.autoCleanCache
-                            mainViewModel.editPreferences(PreferencesObj.autoCleanCache, mainViewModel.autoCleanCache)
+                            mainViewModel.updatePreferences(
+                                newData = preferences.copy(
+                                    autoCleanCache = !preferences.autoCleanCache,
+                                )
+                            )
                         },
                         interactionSource = autoCleanCacheInteractionSource,
                         action = {
                             Switch(
-                                checked = mainViewModel.autoCleanCache,
+                                checked = preferences.autoCleanCache,
                                 interactionSource = autoCleanCacheInteractionSource,
                                 onCheckedChange = {
-                                    mainViewModel.autoCleanCache = !mainViewModel.autoCleanCache
-                                    mainViewModel.editPreferences(PreferencesObj.autoCleanCache, mainViewModel.autoCleanCache)
+                                    mainViewModel.updatePreferences(
+                                        newData = preferences.copy(
+                                            autoCleanCache = !preferences.autoCleanCache,
+                                        )
+                                    )
                                 }
                             )
                         }

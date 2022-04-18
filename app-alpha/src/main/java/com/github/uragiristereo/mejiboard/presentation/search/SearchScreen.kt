@@ -4,19 +4,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -31,11 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.R
+import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.common.helper.getWordInPosition
-import com.github.uragiristereo.mejiboard.presentation.common.SearchView
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
+import com.github.uragiristereo.mejiboard.presentation.search.common.SearchView
 import com.google.accompanist.insets.navigationBarsWithImePadding
 import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
 @ExperimentalComposeUiApi
@@ -48,97 +51,145 @@ fun SearchScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val columnState = rememberLazyListState()
+    val systemUiController = rememberSystemUiController()
 
-    var query by remember { mutableStateOf(TextFieldValue(mainViewModel.searchTags, TextRange(mainViewModel.searchTags.length))) }
+    var query by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(text = "")) }
     val focusRequester = remember { FocusRequester() }
     var searchAllowed by remember { mutableStateOf(true) }
     var startQueryIndex by remember { mutableStateOf(0) }
     var endQueryIndex by remember { mutableStateOf(0) }
     var delimiter by remember { mutableStateOf("") }
-    var lastQuery = remember { TextFieldValue("") }
     var wordInCursor by remember { mutableStateOf("") }
     var boldWord by remember { mutableStateOf("") }
+    var parsedQuery by remember { mutableStateOf("") }
+    val surfaceColor = MaterialTheme.colors.surface
+
+    fun searchTag(it: TextFieldValue) {
+        if (it.selection.end > 0) {
+            val keywords = arrayOf(" ", "{", "}", "~")
+            val match = keywords.filter { keyword ->
+                keyword in it.text[it.selection.end - 1].toString()
+            }
+
+            if (match.isEmpty()) {
+                val result = getWordInPosition(it.text, it.selection.end)
+                wordInCursor = result.first
+
+                if (wordInCursor.isNotEmpty() && wordInCursor != "-") {
+                    delimiter = if (wordInCursor.take(1) == "-") "-" else ""
+                    startQueryIndex = result.second
+                    endQueryIndex = result.third
+
+                    searchViewModel.getTags(wordInCursor)
+
+                    scope.launch {
+                        columnState.animateScrollToItem(0)
+                    }
+                }
+            } else {
+                searchViewModel.clearSearches()
+                wordInCursor = ""
+            }
+        } else {
+            searchViewModel.clearSearches()
+            wordInCursor = ""
+        }
+    }
+
+    fun parseSearchQuery(): String {
+        var submitQuery = query.text
+            .replace("\\s+".toRegex(), " ")
+            .replace("{ ", "{")
+            .replace(" }", "}")
+
+        if (submitQuery.isNotEmpty())
+            if (submitQuery[submitQuery.length - 1] != ' ')
+                submitQuery = "$submitQuery "
+
+        if (submitQuery == " ")
+            submitQuery = ""
+
+        return submitQuery.lowercase()
+    }
+
+    DisposableEffect(Unit) {
+        if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
+            systemUiController.setStatusBarColor(Color.Black)
+            systemUiController.setNavigationBarColor(surfaceColor)
+        } else
+            systemUiController.setSystemBarsColor(surfaceColor)
+
+        if (query.text.isEmpty()) {
+            query = TextFieldValue(
+                text = mainViewModel.searchTags,
+                selection = TextRange(mainViewModel.searchTags.length),
+            )
+        } else {
+            parsedQuery = parseSearchQuery()
+            searchTag(query)
+        }
+
+        onDispose { }
+    }
+
+    DisposableEffect(key1 = query.text) {
+        if (query.text.isEmpty()) {
+            searchViewModel.clearSearches()
+            wordInCursor = ""
+        }
+
+        parsedQuery = parseSearchQuery()
+
+        onDispose { }
+    }
+
+    DisposableEffect(key1 = searchViewModel.searchData) {
+        if (query.text.isEmpty()) {
+            searchViewModel.clearSearches()
+            wordInCursor = ""
+        }
+
+        onDispose { }
+    }
 
     Scaffold(
         topBar = {
             SearchView(
-                modifier = Modifier
-                    .focusRequester(focusRequester)
-                    .statusBarsPadding(),
                 query = query,
-                placeholder = "Example: 1girl blue_hair",
+                focusRequester = focusRequester,
                 onQueryTextChange = {
-                    if (it.text == "")
-                        searchViewModel.clearSearches()
-
-                    if (searchAllowed && it.text != lastQuery.text) {
-                        if (it.selection.end > 0) {
-                            val keywords = arrayOf(" ", "{", "}", "~")
-                            val match = keywords.filter { keyword ->
-                                keyword in it.text[it.selection.end - 1].toString()
-                            }
-
-                            if (match.isEmpty()) {
-                                val result = getWordInPosition(it.text, it.selection.end)
-                                wordInCursor = result.first
-
-                                if (wordInCursor.isNotEmpty() && wordInCursor != "-") {
-                                    delimiter = if (wordInCursor.take(1) == "-") "-" else ""
-                                    startQueryIndex = result.second
-                                    endQueryIndex = result.third
-                                    searchViewModel.getTags(wordInCursor)
-                                    scope.launch {
-                                        columnState.animateScrollToItem(0)
-                                    }
-                                }
-                            } else {
-                                searchViewModel.clearSearches()
-                                wordInCursor = ""
-                            }
-                        } else {
-                            searchViewModel.clearSearches()
-                            wordInCursor = ""
-                        }
+                    if (searchAllowed && it.text != query.text) {
+                        searchTag(it)
                     }
 
-                    lastQuery = query
                     query = it
                 },
                 onBackPressed = {
-                    keyboardController!!.hide()
+                    keyboardController?.hide()
                     mainNavigation.navigateUp()
                     searchAllowed = false
                 },
                 onQueryTextSubmit = {
-                    var submitQuery = it.text
-                        .replace("\\s+".toRegex(), " ")
-                        .replace("{ ", "{")
-                        .replace(" }", "}")
-
-                    if (submitQuery.isNotEmpty())
-                        if (submitQuery[submitQuery.length - 1] != ' ')
-                            submitQuery = "$submitQuery "
-
-                    if (submitQuery == " ")
-                        submitQuery = ""
-
-                    mainViewModel.searchTags = submitQuery.lowercase()
                     mainViewModel.refreshNeeded = true
+                    mainViewModel.saveSearchTags(parseSearchQuery())
 
-                    keyboardController!!.hide()
+                    keyboardController?.hide()
                     mainNavigation.navigate("main") {
                         popUpTo(0)
                     }
-                }
+                },
+                placeholder = "Example: 1girl blue_hair",
+                modifier = Modifier.statusBarsPadding(),
             )
-
-            DisposableEffect(Unit) {
-                focusRequester.requestFocus()
-                keyboardController!!.show()
-                onDispose { }
-            }
         }
     ) {
+        DisposableEffect(Unit) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
+
+            onDispose { }
+        }
+
         Surface(
             Modifier.padding(it)
         ) {
@@ -161,32 +212,15 @@ fun SearchScreen(
 //                    verticalArrangement = if (searchViewModel.searchError.isEmpty()) Arrangement.Top else Arrangement.Center
                     verticalArrangement = Arrangement.Top
                 ) {
-                    var submitQuery = query.text
-                        .replace("\\s+".toRegex(), " ")
-                        .replace("{ ", "{")
-                        .replace(" }", "}")
-
-                    if (submitQuery == " ")
-                        submitQuery = ""
-
-                    submitQuery = submitQuery.trim().lowercase()
-
                     item {
                         Row(
                             Modifier
                                 .fillMaxWidth()
                                 .clickable(onClick = {
-                                    if (submitQuery.isNotEmpty())
-                                        if (submitQuery[submitQuery.length - 1] != ' ')
-                                            submitQuery = "$submitQuery "
-
-                                    if (submitQuery == " ")
-                                        submitQuery = ""
-
-                                    mainViewModel.searchTags = submitQuery
                                     mainViewModel.refreshNeeded = true
+                                    mainViewModel.saveSearchTags(parseSearchQuery())
 
-                                    keyboardController!!.hide()
+                                    keyboardController?.hide()
                                     mainNavigation.navigate("main") {
                                         popUpTo(0)
                                     }
@@ -208,7 +242,7 @@ fun SearchScreen(
                                             fontWeight = FontWeight.Bold
                                         )
                                     ) {
-                                        append(if (submitQuery.isNotEmpty()) submitQuery else "All posts")
+                                        append(if (parsedQuery.isNotEmpty()) parsedQuery else "All posts")
                                     }
                                 },
                                 Modifier
@@ -227,7 +261,7 @@ fun SearchScreen(
                         if (!searchViewModel.searchProgressVisible)
                             boldWord = wordInCursor.lowercase()
 
-                        itemsIndexed(searchViewModel.searchData) { _, item ->
+                        items(searchViewModel.searchData) { item ->
                             Row(
                                 Modifier
                                     .fillMaxWidth()
@@ -240,9 +274,7 @@ fun SearchScreen(
                                             "$delimiter${item.value} "
                                         )
 
-                                        val newQuery =
-                                            "$result "
-                                                .replace("\\s+".toRegex(), " ")
+                                        val newQuery = "$result ".replace("\\s+".toRegex(), " ")
 
                                         query = TextFieldValue(newQuery, TextRange(newQuery.length))
                                         searchViewModel.clearSearches()
@@ -278,12 +310,12 @@ fun SearchScreen(
                                                 append(if (newQuery.contains(boldWord)) boldWord else "")
                                             }
 
-                                            append(newQuery.replace(boldWord, ""))
+                                            append(newQuery.replaceFirst(boldWord, ""))
                                         },
                                         Modifier.weight(6f)
                                     )
                                     Text(
-                                        item.postCount.toString(),
+                                        item.postCount,
                                         Modifier.weight(2f),
                                         textAlign = TextAlign.Right,
                                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
@@ -330,7 +362,9 @@ fun SearchScreen(
                     ) {
                         item {
                             TextButton(
-                                onClick = { query = TextFieldValue("") },
+                                onClick = {
+                                    query = TextFieldValue("")
+                                },
                                 Modifier
                                     .widthIn(minWidth)
                                     .height(36.dp)

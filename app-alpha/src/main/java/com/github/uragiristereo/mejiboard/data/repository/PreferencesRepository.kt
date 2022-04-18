@@ -1,44 +1,33 @@
 package com.github.uragiristereo.mejiboard.data.repository
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.dataStore
 import com.github.uragiristereo.mejiboard.data.model.Reference
-import com.github.uragiristereo.mejiboard.data.model.preferences.PreferencesItem
-import com.github.uragiristereo.mejiboard.data.model.preferences.PreferencesObj
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.launchIn
+import com.github.uragiristereo.mejiboard.data.preferences.AppPreferences
+import com.github.uragiristereo.mejiboard.data.preferences.AppPreferencesSerializer
+import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class PreferencesRepository(context: Context) {
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
-    private val dataStore = context.dataStore
-    val blockFromRecents = Reference(PreferencesObj.blockFromRecents.default)
+    private val Context.protoDataStore by dataStore(
+        fileName = "app-settings.json",
+        serializer = AppPreferencesSerializer,
+    )
+
+    private val appDataStore = context.protoDataStore
+    val data = appDataStore.data
 
     // deprecated
     val permissionState = Reference("")
+    var blockFromRecents = Reference(false)
 
-    fun <T> readPreferences(
-        scope: CoroutineScope,
-        item: PreferencesItem<T>,
-        onItemUpdated: (T) -> Unit,
-    ) {
-        dataStore.data.map { it[item.key] ?: item.default }
-            .onEach { onItemUpdated(it) }
-            .launchIn(scope)
+    suspend fun update(newData: AppPreferences) {
+        appDataStore.updateData { newData }
     }
 
-    fun <T> editPreferences(
-        scope: CoroutineScope,
-        item: PreferencesItem<T>,
-        value: T,
-    ) {
-        scope.launch {
-            dataStore.edit { it[item.key] = value }
-        }
+    fun getInitialTheme(): Theme {
+        return runBlocking { appDataStore.data.map { it.theme }.first() }
     }
 }

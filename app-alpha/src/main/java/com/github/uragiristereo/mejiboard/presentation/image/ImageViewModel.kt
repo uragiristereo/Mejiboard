@@ -34,6 +34,11 @@ class ImageViewModel @Inject constructor(
     var infoProgressVisible by mutableStateOf(false)
     var showTagsIsCollapsed by mutableStateOf(true)
 
+    var isPressed by mutableStateOf(false)
+    var offsetY by mutableStateOf(0f)
+    var animatedOffsetY by mutableStateOf(0f)
+    var currentZoom by mutableStateOf(1f)
+
     fun checkImage(url: String, original: Boolean = false) {
         if (original) originalImageSize = "Loading..." else imageSize = "Loading..."
 

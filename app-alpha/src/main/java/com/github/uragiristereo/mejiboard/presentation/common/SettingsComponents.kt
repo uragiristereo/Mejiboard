@@ -15,9 +15,7 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -134,20 +132,91 @@ data class SettingsOptionsItem(
     val value: String
 )
 
+//@Composable
+//fun SettingsOptions(
+//    title: String,
+//    subtitle: String,
+//    items: List<SettingsOptionsItem>,
+//    selectedItemKey: String,
+//    onItemSelected: (SettingsOptionsItem) -> Unit,
+//    modifier: Modifier = Modifier,
+//    enabled: Boolean = true,
+//) {
+//    var dropDownExpanded by remember { mutableStateOf(false) }
+////    var offsetY by remember { mutableStateOf(0.dp) }
+//    var itemOffsetY by remember { mutableStateOf(0.dp) }
+//    val selectedItem = items.filter { it.key == selectedItemKey }[0]
+//    var selectedItemIndexState by remember { mutableStateOf(items.indexOf(selectedItem)) }
+//    var dropDownItemOffsetY by remember { mutableStateOf(((-48).dp * selectedItemIndexState.plus(1)) - 14.dp) }
+//    val density = LocalDensity.current
+//    val scope = rememberCoroutineScope()
+//
+//    dropDownItemOffsetY = ((-48).dp * selectedItemIndexState.plus(1)) - 14.dp
+//
+//    SettingsItem(
+//        title = title,
+//        subtitle = subtitle,
+//        enabled = enabled,
+//        modifier = modifier
+//            .onGloballyPositioned {
+////                offsetY = with(density) { it.positionInWindow().y.toDp() }
+////                Timber.i("chooseThemeOffsetY = $offsetY")
+//            },
+//        onClick = {
+//            dropDownExpanded = !dropDownExpanded
+//        }
+//    )
+//    Box(
+//        Modifier
+//            .onGloballyPositioned {
+//                itemOffsetY = with(density) { it.positionInWindow().y.toDp() }
+////                Timber.i("itemOffsetY = $itemOffsetY")
+//            }
+//            .offset(
+//                x = 16.dp,
+////                            y = (-96).minus(28).dp
+////                            y = if (((-48).dp * selectedItemIndex.plus(1)) - 14.dp > -itemOffsetY.minus(48.dp)) ((-48).dp * selectedItemIndex.plus(1)) - 14.dp else (-48).dp - 14.dp
+//                y = if (dropDownItemOffsetY > -itemOffsetY.minus(48.dp)) dropDownItemOffsetY else (-48).dp - 14.dp
+////                            y = if (itemOffsetY.minus(124.dp) >= 52.dp) (-96).minus(28).dp else 0.dp
+//            )
+//    ) {
+//        DropdownMenu(
+//            expanded = dropDownExpanded,
+//            onDismissRequest = {
+//                dropDownExpanded = false
+//            },
+//        ) {
+//            items.forEachIndexed { index, item ->
+//                DropdownMenuItem(
+//                    onClick = {
+//                        dropDownExpanded = false
+//                        scope.launch {
+//                            delay(100)
+//                            selectedItemIndexState = index
+//                            onItemSelected(item)
+//                        }
+//                    },
+//                    Modifier.background(if (selectedItemIndexState == index) MaterialTheme.colors.primary.copy(alpha = 0.3f) else Color.Unspecified)
+//                ) {
+//                    Text(item.value)
+//                }
+//            }
+//        }
+//    }
+//}
+
 @Composable
-fun SettingsOptions(
+fun <T> SettingsOptions(
     title: String,
-    subtitle: String,
-    items: List<SettingsOptionsItem>,
-    selectedItemKey: String,
-    onItemSelected: (SettingsOptionsItem) -> Unit,
+    items: List<T>,
+    selectedItem: T,
+    onItemSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
     var dropDownExpanded by remember { mutableStateOf(false) }
 //    var offsetY by remember { mutableStateOf(0.dp) }
     var itemOffsetY by remember { mutableStateOf(0.dp) }
-    val selectedItem = items.filter { it.key == selectedItemKey }[0]
     var selectedItemIndexState by remember { mutableStateOf(items.indexOf(selectedItem)) }
     var dropDownItemOffsetY by remember { mutableStateOf(((-48).dp * selectedItemIndexState.plus(1)) - 14.dp) }
     val density = LocalDensity.current
@@ -157,7 +226,7 @@ fun SettingsOptions(
 
     SettingsItem(
         title = title,
-        subtitle = subtitle,
+        subtitle = selectedItem.toString(),
         enabled = enabled,
         modifier = modifier
             .onGloballyPositioned {
@@ -200,32 +269,9 @@ fun SettingsOptions(
                     },
                     Modifier.background(if (selectedItemIndexState == index) MaterialTheme.colors.primary.copy(alpha = 0.3f) else Color.Unspecified)
                 ) {
-                    Text(item.value)
+                    Text(item.toString())
                 }
             }
-        }
-    }
-}
-
-@Preview
-@Composable
-fun Prev() {
-    MejiboardTheme(
-        theme = "dark",
-        blackTheme = true
-    ) {
-        var state by remember { mutableStateOf(false) }
-        val interactionSource = remember { MutableInteractionSource() }
-
-        SettingsItem(
-            title = "Dark theme",
-            subtitle = "Use pitch black theme instead of regular dark theme, useful for AMOLED user",
-            onClick = {
-                state = !state
-            },
-            interactionSource = interactionSource,
-        ) {
-            Switch(checked = state, onCheckedChange = { state = !state }, interactionSource = interactionSource)
         }
     }
 }

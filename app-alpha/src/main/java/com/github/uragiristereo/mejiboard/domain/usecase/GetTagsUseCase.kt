@@ -4,11 +4,11 @@ import com.github.uragiristereo.mejiboard.common.extension.toSearch
 import com.github.uragiristereo.mejiboard.data.model.Resource
 import com.github.uragiristereo.mejiboard.domain.entity.Search
 import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-@Suppress("RemoveExplicitTypeArguments")
 class GetTagsUseCase @Inject constructor(
     private val networkRepository: NetworkRepository,
 ) {
@@ -16,15 +16,22 @@ class GetTagsUseCase @Inject constructor(
         return flow {
             emit(Resource.Loading())
 
-            val response = networkRepository.api.getTags(term)
+            delay(400)
 
-            if (response.isSuccessful)
-                response.body()?.let { result ->
-                    val searches = result.map { it.toSearch() }
-                    emit(Resource.Success(searches))
-                }
-            else
-                emit(Resource.Error<List<Search>>(response.errorBody().toString()))
+            try {
+                val response = networkRepository.api.getTags(term)
+
+                if (response.isSuccessful) {
+                    response.body()?.let { result ->
+                        val searches = result.map { it.toSearch() }
+
+                        emit(Resource.Success(searches))
+                    }
+                } else
+                    emit(Resource.Error(response.errorBody().toString()))
+            } catch (t: Throwable) {
+                emit(Resource.Error(t.toString()))
+            }
         }
     }
 }

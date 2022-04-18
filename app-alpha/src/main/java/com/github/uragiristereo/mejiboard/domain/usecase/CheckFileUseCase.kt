@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.flow
 import okhttp3.Headers
 import javax.inject.Inject
 
-@Suppress("RemoveExplicitTypeArguments")
 class CheckFileUseCase @Inject constructor(
     private val networkRepository: NetworkRepository,
 ) {
@@ -15,10 +14,14 @@ class CheckFileUseCase @Inject constructor(
         return flow {
             emit(Resource.Loading())
 
-            val response = networkRepository.api.checkFile(url)
-            val headers = response.headers()
+            try {
+                val response = networkRepository.api.checkFile(url)
+                val headers = response.headers()
 
-            emit(Resource.Success(headers))
+                emit(Resource.Success(headers))
+            } catch (t: Throwable) {
+                emit(Resource.Error(t.toString()))
+            }
         }
     }
 }

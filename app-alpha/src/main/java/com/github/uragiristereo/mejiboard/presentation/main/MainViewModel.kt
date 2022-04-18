@@ -17,15 +17,12 @@ import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.helper.FileHelper
-import com.github.uragiristereo.mejiboard.data.database.AppDatabase
-import com.github.uragiristereo.mejiboard.data.database.Bookmark
 import com.github.uragiristereo.mejiboard.data.download.DownloadBroadcastReceiver
 import com.github.uragiristereo.mejiboard.data.download.DownloadInstance
 import com.github.uragiristereo.mejiboard.data.model.AppUpdate
 import com.github.uragiristereo.mejiboard.data.model.DownloadInfo
 import com.github.uragiristereo.mejiboard.data.model.ReleaseInfo
-import com.github.uragiristereo.mejiboard.data.model.preferences.PreferencesItem
-import com.github.uragiristereo.mejiboard.data.model.preferences.PreferencesObj
+import com.github.uragiristereo.mejiboard.data.preferences.AppPreferences
 import com.github.uragiristereo.mejiboard.data.repository.DownloadRepository
 import com.github.uragiristereo.mejiboard.data.repository.PreferencesRepository
 import com.github.uragiristereo.mejiboard.domain.entity.Post
@@ -33,6 +30,10 @@ import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -40,49 +41,39 @@ import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 import java.io.*
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val appDatabase: AppDatabase,
     private val downloadRepository: DownloadRepository,
     private val networkRepository: NetworkRepository,
     private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
     var okHttpClient = networkRepository.okHttpClient
     var imageLoader = networkRepository.imageLoader
-    val permissionState = preferencesRepository.permissionState
 
     // preferences
-    var theme by mutableStateOf("system")
+    var preferences by mutableStateOf(AppPreferences(theme = preferencesRepository.getInitialTheme()))
+        private set
     var isDesiredThemeDark by mutableStateOf(true)
-    var blackTheme by mutableStateOf(false)
-    var dohEnabled by mutableStateOf(true)
-    var safeListingOnly by mutableStateOf(true)
-    var previewSize by mutableStateOf("sample")
-    var dohProvider by mutableStateOf("cloudflare")
-    var autoCleanCache by mutableStateOf(true)
-    var blockFromRecents by mutableStateOf(true)
-    var videoVolume by mutableStateOf(0.5f)
+    val permissionState = preferencesRepository.permissionState
 
     // posts, search & settings
     var refreshNeeded by mutableStateOf(false)
 
     // posts & search
-    var searchTags by mutableStateOf("")
+    var searchTags by mutableStateOf(savedStateHandle.get(Constants.STATE_KEY_SEARCH_TAGS) ?: "")
 
     // posts & image
-    var selectedPost: Post? = null
+    var selectedPost: Post? = savedStateHandle.get(Constants.STATE_KEY_SELECTED_POST)
 
     // bookmarks
-    var bookmarks by mutableStateOf<List<Bookmark>>(listOf())
+//    var bookmarks by mutableStateOf<List<Bookmark>>(listOf())
 
     // image
-    private var notificationCount = 0
+    private var notificationCount = savedStateHandle.get(Constants.STATE_KEY_NOTIFICATION_COUNT) ?: 0
+    var backPressedByGesture = false
 
     // update
     var updateStatus by mutableStateOf("idle")
@@ -92,43 +83,24 @@ class MainViewModel @Inject constructor(
     var remindLaterCounter by mutableStateOf(0)
 
     init {
-        // load saved state from system
-        savedStateHandle.get<Post>(Constants.STATE_KEY_SELECTED_POST)?.let { selectedPost = it }
-        savedStateHandle.get<Int>(Constants.STATE_KEY_NOTIFICATION_COUNT)?.let { notificationCount = it }
-
-        with(preferencesRepository) {
-            readPreferences(viewModelScope, PreferencesObj.theme, onItemUpdated = { theme = it })
-            readPreferences(viewModelScope, PreferencesObj.blackTheme, onItemUpdated = { blackTheme = it })
-            readPreferences(viewModelScope, PreferencesObj.previewSize, onItemUpdated = { previewSize = it })
-            readPreferences(viewModelScope, PreferencesObj.safeListingOnly, onItemUpdated = { safeListingOnly = it })
-            readPreferences(viewModelScope, PreferencesObj.dohEnabled, onItemUpdated = { dohEnabled = it })
-            readPreferences(viewModelScope, PreferencesObj.dohProvider, onItemUpdated = { dohProvider = it })
-            readPreferences(viewModelScope, PreferencesObj.autoCleanCache, onItemUpdated = { autoCleanCache = it })
-            readPreferences(viewModelScope, PreferencesObj.remindLaterCounter, onItemUpdated = { remindLaterCounter = it })
-            readPreferences(viewModelScope, PreferencesObj.videoVolume, onItemUpdated = { videoVolume = it })
-            readPreferences(
-                scope = viewModelScope,
-                item = PreferencesObj.blockFromRecents,
-                onItemUpdated = {
-                    this@MainViewModel.blockFromRecents = it
-                    blockFromRecents.value = it
-                }
-            )
-        }
+        preferencesRepository.data.onEach {
+            preferences = it
+            preferencesRepository.blockFromRecents.value = preferences.blockFromRecents
+        }.launchIn(viewModelScope)
 
         viewModelScope.launch {
-//            insertBookmark(10)
             refreshNeeded = true
-            renewNetworkInstance(dohEnabled, dohProvider)
+            val dohEnabled = preferencesRepository.data.map { it.useDnsOverHttps }.first()
+            val dohProvider = preferencesRepository.data.map { it.dohProvider }.first()
+            renewNetworkInstance(dohEnabled, dohProvider.name)
             incrementLaterCounter()
         }
     }
 
-    fun <T> editPreferences(
-        item: PreferencesItem<T>,
-        value: T,
-    ) {
-        preferencesRepository.editPreferences(viewModelScope, item, value)
+    fun updatePreferences(newData: AppPreferences) {
+        viewModelScope.launch {
+            preferencesRepository.update(newData)
+        }
     }
 
     private fun getNewNotificationCount(): Int {
@@ -145,33 +117,6 @@ class MainViewModel @Inject constructor(
         networkRepository.renewInstance(useDnsOverHttps, dohProvider)
         okHttpClient = networkRepository.okHttpClient
         imageLoader = networkRepository.imageLoader
-    }
-
-    fun setTheme(theme: String, blackTheme: Boolean) {
-        editPreferences(PreferencesObj.theme, theme)
-        editPreferences(PreferencesObj.blackTheme, blackTheme)
-    }
-
-    fun insertBookmark(postId: Int) {
-        val now = Date
-            .from(
-                LocalDateTime.now()
-                    .toInstant(ZoneOffset.UTC)
-            )
-
-        val bookmark = Bookmark(
-            id = postId,
-            dateAdded = now
-        )
-
-        viewModelScope.launch {
-            appDatabase.bookmarkDao().insert(bookmark)
-        }
-    }
-
-    fun getBookmarks() {
-        bookmarks = appDatabase.bookmarkDao().get()
-        Timber.i(bookmarks.toString())
     }
 
     fun saveSelectedPost(post: Post) {
@@ -383,6 +328,15 @@ class MainViewModel @Inject constructor(
             if (remindLaterCounter != -1)
                 remindLaterCounter += 1
 
-        editPreferences(PreferencesObj.remindLaterCounter, remindLaterCounter)
+        updatePreferences(
+            newData = preferences.copy(
+                remindLaterCounter = remindLaterCounter,
+            )
+        )
+    }
+
+    fun saveSearchTags(query: String) {
+        searchTags = query
+        savedStateHandle.set(Constants.STATE_KEY_SEARCH_TAGS, query)
     }
 }

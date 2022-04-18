@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-@Suppress("RemoveExplicitTypeArguments")
 class GetTagsInfoUseCase @Inject constructor(
     private val networkRepository: NetworkRepository,
 ) {
@@ -16,17 +15,21 @@ class GetTagsInfoUseCase @Inject constructor(
         return flow {
             emit(Resource.Loading())
 
-            val response = networkRepository.api.getTagsInfo(names)
+            try {
+                val response = networkRepository.api.getTagsInfo(names)
 
-            if (response.isSuccessful)
-                response.body()?.let { result ->
-                    if (result.tag != null)
-                        emit(Resource.Success(result.tag.map { it.toTag() }))
-                    else
-                        emit(Resource.Success(emptyList<Tag>()))
-                }
-            else
-                emit(Resource.Error<List<Tag>>(response.errorBody().toString()))
+                if (response.isSuccessful)
+                    response.body()?.let { result ->
+                        if (result.tag != null)
+                            emit(Resource.Success(result.tag.map { it.toTag() }))
+                        else
+                            emit(Resource.Success(emptyList()))
+                    }
+                else
+                    emit(Resource.Error(response.errorBody().toString()))
+            } catch (t: Throwable) {
+                emit(Resource.Error(t.toString()))
+            }
         }
     }
 }

@@ -7,16 +7,19 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.extension.showSystemBars
-import com.github.uragiristereo.mejiboard.presentation.image.components.core.ImageAppBar
-import com.github.uragiristereo.mejiboard.presentation.image.components.core.ImageBottomSheet
-import com.github.uragiristereo.mejiboard.presentation.image.components.image.ImagePost
-import com.github.uragiristereo.mejiboard.presentation.image.components.video.VideoPost
+import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
+import com.github.uragiristereo.mejiboard.presentation.image.common.ImageAppBar
+import com.github.uragiristereo.mejiboard.presentation.image.common.ImageBottomSheet
+import com.github.uragiristereo.mejiboard.presentation.image.image.ImagePost
+import com.github.uragiristereo.mejiboard.presentation.image.video.VideoPost
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -34,6 +37,8 @@ fun ImageScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val window = (context as Activity).window
+    val systemUiController = rememberSystemUiController()
+    val preferences = mainViewModel.preferences
 
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val appBarVisible = remember { mutableStateOf(true) }
@@ -47,7 +52,7 @@ fun ImageScreen(
     }
 
     DisposableEffect(key1 = Unit) {
-        imageViewModel.showOriginalImage = mainViewModel.previewSize == "original"
+        imageViewModel.showOriginalImage = preferences.previewSize == PreviewSize.Original
 
         onDispose {
             val tempDirectory = File("${context.cacheDir.absolutePath}/temp/")
@@ -55,6 +60,12 @@ fun ImageScreen(
             window.showSystemBars()
             tempDirectory.deleteRecursively()
         }
+    }
+
+    DisposableEffect(key1 = imageViewModel) {
+        systemUiController.setSystemBarsColor(Color.Black.copy(0.4f))
+
+        onDispose { }
     }
 
     if (imageType in supportedTypesAnimation) {
@@ -74,6 +85,10 @@ fun ImageScreen(
             post = post,
             appBarVisible = appBarVisible,
             sheetState = sheetState,
+            onBackRequest = {
+                mainViewModel.backPressedByGesture = true
+                mainNavigation.navigateUp()
+            }
         )
     }
 
