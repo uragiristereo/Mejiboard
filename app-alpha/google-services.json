@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "603633196860",
+    "project_id": "mejiboard",
+    "storage_bucket": "mejiboard.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:603633196860:android:8c5fb5bda39a79bb514839",
+        "android_client_info": {
+          "package_name": "com.github.uragiristereo.mejiboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "603633196860-hrri96ne89spg2j1ncu5t0efehp3ot08.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfjmzDub5dx7VjsOWaTASrIIVWyahRHF4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "603633196860-hrri96ne89spg2j1ncu5t0efehp3ot08.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
