@@ -140,6 +140,7 @@ fun SettingItemList(
                     checked = preferences.safeListingOnly,
                     onCheckedChange = {
                         mainViewModel.updatePreferences(newData = preferences.copy(safeListingOnly = it))
+                        mainViewModel.refreshNeeded = true
                     }
                 )
             }
