@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.domain.usecase
+package com.github.uragiristereo.mejiboard.domain.usecase.common
 
 import javax.inject.Inject
 import kotlin.math.floor

@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.presentation.search.common
+package com.github.uragiristereo.mejiboard.presentation.search.core
 
 import android.view.KeyEvent.ACTION_DOWN
 import android.view.KeyEvent.KEYCODE_BACK

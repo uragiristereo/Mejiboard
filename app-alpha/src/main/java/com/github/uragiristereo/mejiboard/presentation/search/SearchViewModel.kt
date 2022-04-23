@@ -6,57 +6,114 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.uragiristereo.mejiboard.data.model.Resource
-import com.github.uragiristereo.mejiboard.domain.entity.Search
-import com.github.uragiristereo.mejiboard.domain.usecase.GetTagsUseCase
+import com.github.uragiristereo.mejiboard.common.util.SearchUtil
+import com.github.uragiristereo.mejiboard.domain.usecase.api.GetTagsUseCase
+import com.github.uragiristereo.mejiboard.presentation.search.core.SearchState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val getTagsUseCase: GetTagsUseCase,
 ) : ViewModel() {
-    val query = mutableStateOf(TextFieldValue(text = ""))
-    var searchData: List<Search> by mutableStateOf(listOf())
-        private set
-    var searchProgressVisible by mutableStateOf(false)
-        private set
-    var searchError by mutableStateOf("")
-        private set
-    private var job: Job? = null
+    val state = mutableStateOf(SearchState())
 
-    fun getTags(newTag: String) {
-        if (newTag != "") {
-            searchError = ""
+    private var _state by state
+    private var job: Job? = null
+    private val keywords = arrayOf(' ', '{', '}', '~')
+
+    fun updateState(updatedState: SearchState) {
+        _state = updatedState
+    }
+
+    private fun getTags(term: String) {
+        if (term.isNotEmpty()) {
+            _state = _state.copy(searchError = "")
             job?.cancel()
 
-            job = getTagsUseCase(newTag)
-                .onEach { result ->
-                    when (result) {
-                        is Resource.Success -> {
-                            searchProgressVisible = false
-                            searchError = ""
-                            searchData = result.data ?: emptyList()
-                        }
-                        is Resource.Loading -> {
-                            searchProgressVisible = true
-                        }
-                        is Resource.Error -> {
-                            searchProgressVisible = false
-                            searchError = result.message ?: "An unexpected error occurred"
-                        }
-                    }
-                }
-                .launchIn(viewModelScope)
+            job = viewModelScope.launch {
+                getTagsUseCase(
+                    term = term,
+                    onLoading = { loading ->
+                        _state = _state.copy(searchProgressVisible = loading)
+                    },
+                    onSuccess = { data ->
+                        _state = _state.copy(
+                            searchData = data,
+                            searchError = "",
+                        )
+                    },
+                    onFailed = { message ->
+                        _state = _state.copy(
+                            searchData = emptyList(),
+                            searchError = message,
+                        )
+                    },
+                    onError = { t ->
+                        _state = _state.copy(
+                            searchData = emptyList(),
+                            searchError = t.toString(),
+                        )
+                    },
+                )
+            }
         } else clearSearches()
     }
 
+    fun searchTerm(
+        textField: TextFieldValue,
+        onDoSearch: () -> Unit,
+    ) {
+        if (textField.selection.end > 0) {
+            val match = keywords.filter { keyword ->
+                keyword in textField.text[textField.selection.end - 1].toString()
+            }
+
+            if (match.isEmpty()) {
+                val result = SearchUtil.getWordInPosition(
+                    text = textField.text,
+                    position = textField.selection.end,
+                )
+                _state = _state.copy(wordInCursor = result.first)
+
+                if (_state.wordInCursor.isNotEmpty() && _state.wordInCursor != "-") {
+
+                    _state = _state.copy(
+                        delimiter = when {
+                            _state.wordInCursor.take(1) == "-" -> "-"
+                            else -> ""
+                        },
+                        startQueryIndex = result.second,
+                        endQueryIndex = result.third,
+                    )
+
+                    getTags(_state.wordInCursor)
+
+                    onDoSearch()
+                }
+            } else {
+                clearSearches()
+                _state = _state.copy(wordInCursor = "")
+            }
+        } else {
+            clearSearches()
+            _state = _state.copy(wordInCursor = "")
+        }
+    }
+
     fun clearSearches() {
-        searchData = listOf()
-        searchError = ""
-        searchProgressVisible = false
+        _state = _state.copy(
+            searchData = emptyList(),
+            searchError = "",
+            searchProgressVisible = false,
+        )
+    }
+
+    fun parseSearchQuery(query: String) {
+        _state = _state.copy(
+            parsedQuery = SearchUtil.parseSearchQuery(query = query),
+        )
     }
 }

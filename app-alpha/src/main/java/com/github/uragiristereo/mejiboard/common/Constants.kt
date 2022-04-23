@@ -8,4 +8,5 @@ object Constants {
     const val STATE_KEY_SESSION_EXIST = "post.session.exist"
     const val STATE_KEY_POST_INDEX = "posts.post.index"
     const val STATE_KEY_POST_OFFSET = "posts.post.offset"
+    const val API_DELAY = 400L
 }
