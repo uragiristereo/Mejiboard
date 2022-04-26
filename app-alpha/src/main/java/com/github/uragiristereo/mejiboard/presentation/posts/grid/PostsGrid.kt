@@ -1,8 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.posts.grid
 
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -23,8 +21,6 @@ import com.github.uragiristereo.mejiboard.presentation.posts.PostsViewModel
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostItem
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostPlaceholder
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostsProgress
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.rememberInsetsPaddingValues
 
 @ExperimentalCoilApi
 @Composable
@@ -46,36 +42,18 @@ fun PostsGrid(
         }
     }
 
-//    LazyStaggeredGrid(
-//        columnCount = 2,
-//        contentPadding = rememberInsetsPaddingValues(
-//            insets = LocalWindowInsets.current.navigationBars,
-//            additionalStart = 8.dp,
-//            additionalEnd = 8.dp,
-//            additionalTop = toolbarHeight + with(density) { browseHeightPx.toDp() },
-//            additionalBottom = 56.dp,
-//        ),
-//    ) {
-//        postsViewModel.postsData.forEach { item ->
-//            item(key = item.id) {
-//                PostItemStaggered(
-//                    mainNavigation = mainNavigation,
-//                    post = item,
-//                    mainViewModel = mainViewModel,
-//                )
-//            }
-//        }
-//    }
-
     LazyColumn(
         state = gridState,
-        contentPadding = rememberInsetsPaddingValues(
-            insets = LocalWindowInsets.current.navigationBars,
-            additionalStart = 8.dp,
-            additionalEnd = 8.dp,
-            additionalTop = toolbarHeight + with(density) { browseHeightPx.toDp() },
-            additionalBottom = 56.dp,
-        ),
+        contentPadding = WindowInsets.navigationBars
+            .add(
+                insets = WindowInsets(
+                    left = 8.dp,
+                    top = toolbarHeight + with(density) { browseHeightPx.toDp() },
+                    right = 8.dp,
+                    bottom = 56.dp + 8.dp,
+                )
+            )
+            .asPaddingValues()
     ) {
         itemsIndexed(postsViewModel.postsData) { index, _ ->
             if (index % gridCount == 0) {

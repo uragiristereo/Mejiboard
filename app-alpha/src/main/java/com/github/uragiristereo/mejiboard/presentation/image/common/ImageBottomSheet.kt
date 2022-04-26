@@ -18,8 +18,6 @@ import com.github.uragiristereo.mejiboard.presentation.common.ThumbPill
 import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
 import com.github.uragiristereo.mejiboard.presentation.image.more.PostMoreNavigation
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
-import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.navigation.rememberMaterialMotionNavController
 import java.io.File

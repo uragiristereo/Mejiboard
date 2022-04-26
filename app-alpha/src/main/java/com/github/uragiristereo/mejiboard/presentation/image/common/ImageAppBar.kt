@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -25,8 +24,6 @@ import com.github.uragiristereo.mejiboard.common.extension.hideSystemBars
 import com.github.uragiristereo.mejiboard.common.extension.showSystemBars
 import com.github.uragiristereo.mejiboard.domain.entity.Post
 import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.ui.TopAppBar
 import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.math.abs
@@ -45,10 +42,6 @@ fun ImageAppBar(
     val context = LocalContext.current
     val window = (context as Activity).window
     val imageType = remember { File(post.image).extension }
-
-    // TODO: use better solution to get a fixed status bar height
-    val statusBarHeight = with(LocalDensity.current) { LocalWindowInsets.current.statusBars.top.toDp() }
-    val fixedStatusBarHeight = remember { statusBarHeight }
 
     LaunchedEffect(key1 = appBarVisible.value) {
         if (appBarVisible.value)
@@ -77,7 +70,9 @@ fun ImageAppBar(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(fixedStatusBarHeight + 52.dp)
+                .windowInsetsTopHeight(
+                    insets = WindowInsets.statusBars.add(insets = WindowInsets(top = 56.dp)),
+                )
                 .background(
                     brush = Brush.verticalGradient(colors = listOf(Color.Black, Color.Transparent)),
                     alpha = 0.5f
@@ -121,7 +116,7 @@ fun ImageAppBar(
             elevation = 0.dp,
             backgroundColor = Color.Transparent,
             contentColor = Color.White,
-            modifier = Modifier.padding(top = fixedStatusBarHeight),
+            modifier = Modifier.statusBarsPadding(),
         )
     }
 }

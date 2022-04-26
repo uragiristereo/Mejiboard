@@ -25,8 +25,6 @@ import com.github.uragiristereo.mejiboard.presentation.common.SheetInfoItem
 import com.github.uragiristereo.mejiboard.presentation.common.SheetItem
 import com.github.uragiristereo.mejiboard.presentation.common.TagInfoItem
 import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.rememberInsetsPaddingValues
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.DateFormat
@@ -64,10 +62,11 @@ fun MoreInfo(
         )
         Divider()
         LazyColumn(
-            contentPadding = rememberInsetsPaddingValues(
-                insets = LocalWindowInsets.current.navigationBars,
-                applyBottom = imageViewModel.infoData.value.isNotEmpty() && !imageViewModel.infoProgressVisible && !imageViewModel.showTagsIsCollapsed,
-            ),
+//            contentPadding = rememberInsetsPaddingValues(
+//                insets = LocalWindowInsets.current.navigationBars,
+//                applyBottom = imageViewModel.infoData.value.isNotEmpty() && !imageViewModel.infoProgressVisible && !imageViewModel.showTagsIsCollapsed,
+//            ),
+            contentPadding = WindowInsets.statusBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top).asPaddingValues()
         ) {
             item {
                 Text(

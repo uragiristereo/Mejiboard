@@ -3,10 +3,10 @@ package com.github.uragiristereo.mejiboard.presentation.settings
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -19,10 +19,6 @@ import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsTopAppBar
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.navigationBarsHeight
-import com.google.accompanist.insets.rememberInsetsPaddingValues
-import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
@@ -88,10 +84,6 @@ fun SettingsScreen(
     }
 
     Scaffold(
-        contentPadding = rememberInsetsPaddingValues(
-            insets = LocalWindowInsets.current.navigationBars,
-            applyBottom = false,
-        ),
         topBar = {
             SettingsTopAppBar(
                 state = state,
@@ -102,8 +94,8 @@ fun SettingsScreen(
         bottomBar = {
             Spacer(
                 modifier = Modifier
-                    .navigationBarsHeight()
                     .fillMaxWidth()
+                    .windowInsetsBottomHeight(insets = WindowInsets.navigationBars)
             )
         },
     ) {
@@ -111,7 +103,7 @@ fun SettingsScreen(
             state = state,
             columnState = columnState,
             bigHeaderOpacity = bigHeaderOpacity,
-            innerPadding = it,
+            innerPadding = WindowInsets.navigationBars.asPaddingValues(),
             mainViewModel = mainViewModel,
         )
     }

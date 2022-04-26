@@ -43,10 +43,6 @@ import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.rememberInsetsPaddingValues
-import com.google.accompanist.insets.ui.Scaffold
-import com.google.accompanist.insets.ui.TopAppBar
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @ExperimentalCoilApi
@@ -83,10 +79,6 @@ fun AboutScreen(
                 },
                 backgroundColor = Color.Transparent,
                 elevation = 0.dp,
-                contentPadding = rememberInsetsPaddingValues(
-                    LocalWindowInsets.current.statusBars,
-                    applyBottom = false,
-                ),
                 navigationIcon = {
                     IconButton(
                         onClick = {
@@ -98,11 +90,11 @@ fun AboutScreen(
                 }
             )
         }
-    ) { innerPadding ->
+    ) {
         LazyColumn(
             Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(WindowInsets.statusBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top).asPaddingValues())
         ) {
             item {
                 Box(

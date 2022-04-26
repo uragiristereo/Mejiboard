@@ -22,8 +22,6 @@ import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.search.core.SearchView
 import com.github.uragiristereo.mejiboard.presentation.search.quickshortcutbar.QuickShortcutBar
 import com.github.uragiristereo.mejiboard.presentation.search.result.SearchResult
-import com.google.accompanist.insets.navigationBarsWithImePadding
-import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
@@ -128,9 +126,12 @@ fun SearchScreen(
                     }
                 },
                 placeholder = "Example: 1girl blue_hair",
-                modifier = Modifier.statusBarsPadding(),
             )
-        }
+        },
+        modifier = Modifier
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding(),
     ) { innerPadding ->
         DisposableEffect(key1 = Unit) {
             focusRequester.requestFocus()
@@ -141,10 +142,7 @@ fun SearchScreen(
 
         Column(
             verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues = innerPadding)
-                .navigationBarsWithImePadding(),
+            modifier = Modifier.padding(paddingValues = innerPadding),
         ) {
             LinearProgressIndicator(
                 modifier = Modifier

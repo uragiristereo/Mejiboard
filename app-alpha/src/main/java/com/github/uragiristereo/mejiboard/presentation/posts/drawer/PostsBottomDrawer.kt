@@ -1,9 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.posts.drawer
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -20,7 +17,6 @@ import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.presentation.common.ThumbPill
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
-import com.google.accompanist.insets.navigationBarsPadding
 import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
