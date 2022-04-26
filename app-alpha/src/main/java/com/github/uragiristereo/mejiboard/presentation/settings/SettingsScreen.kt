@@ -20,6 +20,7 @@ import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsTopAppBar
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 const val ENABLE_SAFE_LISTING_TOGGLE = false
@@ -51,12 +52,8 @@ fun SettingsScreen(
     LaunchedEffect(key1 = Unit) {
         launch { viewModel.getFormattedFolderSize(context.cacheDir) }
 
-        mainViewModel.checkForUpdate()
-    }
-
-    LaunchedEffect(key1 = columnState.isScrollInProgress) {
-        if (!columnState.isScrollInProgress) {
-            launch {
+        launch {
+            while (true) {
                 if (state.settingsHeaderSize > 0) {
                     viewModel.shouldUseBigHeader(
                         columnState = columnState,
@@ -65,8 +62,12 @@ fun SettingsScreen(
                         },
                     )
                 }
+
+                delay(timeMillis = 100L)
             }
         }
+
+        mainViewModel.checkForUpdate()
     }
 
     DisposableEffect(key1 = surfaceColor, key2 = isLight) {
