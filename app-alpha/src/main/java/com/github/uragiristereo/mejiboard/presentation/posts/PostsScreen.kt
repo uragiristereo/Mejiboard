@@ -5,6 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -28,8 +29,6 @@ import com.github.uragiristereo.mejiboard.presentation.posts.common.PostsFab
 import com.github.uragiristereo.mejiboard.presentation.posts.common.UpdateDialog
 import com.github.uragiristereo.mejiboard.presentation.posts.drawer.PostsBottomDrawer
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.PostsGrid
-import com.google.accompanist.insets.statusBarsPadding
-import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

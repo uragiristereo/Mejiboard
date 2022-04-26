@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.helper.TimeHelper
-import com.google.accompanist.insets.navigationBarsPadding
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlayer
 import kotlinx.coroutines.delay

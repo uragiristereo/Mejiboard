@@ -38,8 +38,6 @@ import com.github.uragiristereo.mejiboard.presentation.common.SheetItem
 import com.github.uragiristereo.mejiboard.presentation.common.TagInfoItem
 import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.rememberInsetsPaddingValues
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import soup.compose.material.motion.materialSharedAxisXIn
@@ -64,7 +62,7 @@ fun PostMoreNavigation(
     originalUrl: String,
     imageType: String,
     moreNavigation: NavHostController,
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -451,10 +449,14 @@ fun PostMoreNavigation(
                 )
                 Divider()
                 LazyColumn(
-                    contentPadding = rememberInsetsPaddingValues(
-                        insets = LocalWindowInsets.current.navigationBars,
-                        applyBottom = imageViewModel.infoData.value.isNotEmpty() && !imageViewModel.infoProgressVisible && !imageViewModel.showTagsIsCollapsed,
-                    ),
+                    contentPadding = WindowInsets.navigationBars
+                        .only(
+                            sides = when {
+                                imageViewModel.infoData.value.isNotEmpty() && !imageViewModel.infoProgressVisible && !imageViewModel.showTagsIsCollapsed -> WindowInsetsSides.Vertical + WindowInsetsSides.Horizontal
+                                else -> WindowInsetsSides.Top + WindowInsetsSides.Horizontal
+                            },
+                        )
+                        .asPaddingValues(),
                 ) {
                     item {
                         Text(

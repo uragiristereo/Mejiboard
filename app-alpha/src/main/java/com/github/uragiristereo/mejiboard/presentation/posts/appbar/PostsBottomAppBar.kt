@@ -18,8 +18,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.posts.PostsViewModel
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
@@ -41,10 +39,9 @@ fun PostsBottomAppBar(
 
     BottomAppBar(
         backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.95f),
-        contentPadding = rememberInsetsPaddingValues(
-            LocalWindowInsets.current.navigationBars,
-            applyTop = false,
-        ),
+        contentPadding = WindowInsets.navigationBars
+            .only(sides = WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+            .asPaddingValues(),
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,

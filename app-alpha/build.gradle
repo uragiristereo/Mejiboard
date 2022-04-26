@@ -104,8 +104,8 @@ dependencies {
     // Accompanist
     def accompanist_version = "0.24.0-alpha"
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-insets-ui:$accompanist_version"
+//    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
+//    implementation "com.google.accompanist:accompanist-insets-ui:$accompanist_version"
     // DataStore
     implementation "androidx.datastore:datastore:1.0.0"
     // ExoPlayer

@@ -13,7 +13,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
 import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
-import com.google.accompanist.insets.ProvideWindowInsets
 import java.io.File
 
 @ExperimentalCoilApi
@@ -43,16 +42,12 @@ fun MainScreen(
         tempDirectory.deleteRecursively()
     }
 
-    ProvideWindowInsets(
-        windowInsetsAnimationsEnabled = false,
+    MejiboardTheme(
+        theme = preferences.theme,
+        blackTheme = preferences.blackTheme,
     ) {
-        MejiboardTheme(
-            theme = preferences.theme,
-            blackTheme = preferences.blackTheme,
-        ) {
-            Surface(color = MaterialTheme.colors.background) {
-                MainNavGraph(mainViewModel = mainViewModel)
-            }
+        Surface(color = MaterialTheme.colors.background) {
+            MainNavGraph(mainViewModel = mainViewModel)
         }
     }
 }
