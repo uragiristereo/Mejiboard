@@ -47,6 +47,24 @@ fun QuickShortcutBar(
 
             item {
                 QuickShortcutItem(
+                    text = "_",
+                    onClick = {
+                        onQueryChange(
+                            TextFieldValue(
+                                text = query.text.replaceRange(
+                                    startIndex = query.selection.start,
+                                    endIndex = query.selection.start,
+                                    replacement = "_",
+                                ),
+                                selection = TextRange(index = query.selection.start + 1),
+                            )
+                        )
+                    },
+                )
+            }
+
+            item {
+                QuickShortcutItem(
                     text = "-",
                     onClick = {
                         onQueryChange(
