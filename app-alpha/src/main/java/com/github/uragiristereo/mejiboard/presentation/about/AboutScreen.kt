@@ -89,12 +89,12 @@ fun AboutScreen(
                     }
                 }
             )
-        }
+        },
+        modifier = Modifier.statusBarsPadding(),
     ) {
         LazyColumn(
             Modifier
                 .fillMaxSize()
-                .padding(WindowInsets.statusBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top).asPaddingValues())
         ) {
             item {
                 Box(
