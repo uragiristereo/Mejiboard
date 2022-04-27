@@ -14,7 +14,7 @@ import com.google.android.exoplayer2.TracksInfo
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
@@ -38,7 +38,7 @@ fun VideoPost(
     val videoUrl = remember { "https://video-cdn3.gelbooru.com/images/${post.directory}/${post.hash}.$imageType" }
     var volumeSliderVisible by remember { mutableStateOf(false) }
     var isVideoHasAudio by remember { mutableStateOf(false) }
-    val playerView = remember { PlayerView(context) }
+    val playerView = remember { StyledPlayerView(context) }
     val exoPlayer = remember {
         ExoPlayer.Builder(context)
             .setMediaSourceFactory(

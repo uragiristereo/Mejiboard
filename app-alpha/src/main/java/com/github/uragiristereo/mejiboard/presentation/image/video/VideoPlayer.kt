@@ -11,12 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.ui.StyledPlayerView
 
 @ExperimentalMaterialApi
 @Composable
 fun VideoPlayer(
-    playerView: PlayerView,
+    playerView: StyledPlayerView,
     onPress: () -> Unit,
     onLongPress: () -> Unit,
 ) {
