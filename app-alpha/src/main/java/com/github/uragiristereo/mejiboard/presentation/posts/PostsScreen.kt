@@ -4,8 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -232,14 +232,15 @@ fun PostsScreen(
             }
         }
 
-        val modifier = Modifier.statusBarsPadding()
-
         Box(
-            modifier =
-            if (!postsViewModel.postsProgressVisible && postsViewModel.postsData.size > 4)
-                modifier.nestedScroll(connection = nestedScrollConnection)
-            else
-                modifier,
+            modifier = Modifier
+                .statusBarsPadding()
+                .let {
+                    if (!postsViewModel.postsProgressVisible && postsViewModel.postsData.size > 4)
+                        it.nestedScroll(connection = nestedScrollConnection)
+                    else
+                        it
+                },
         ) {
             if (postsViewModel.postsError.isEmpty())
                 PostsGrid(
@@ -256,11 +257,17 @@ fun PostsScreen(
                 toolbarOffsetHeightPx = toolbarOffsetHeightPx,
                 animatedToolbarOffsetHeightPx = animatedToolbarOffsetHeightPx,
                 animationInProgress = animationInProgress,
-                invisible = animatedToolbarOffsetHeightPx == -toolbarHeightPx + -browseHeightPx,
                 onBrowseHeightChange = { browseHeightPx = it },
                 searchTags = mainViewModel.searchTags,
             )
         }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsTopHeight(insets = WindowInsets.statusBars)
+                .background(color = MaterialTheme.colors.background),
+        )
     }
 
     PostsBottomDrawer(
