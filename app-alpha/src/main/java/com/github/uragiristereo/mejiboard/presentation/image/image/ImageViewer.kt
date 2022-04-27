@@ -20,7 +20,6 @@ import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.load
@@ -31,10 +30,10 @@ import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.ortiz.touchview.TouchImageView
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 @ExperimentalMaterialApi
 @Composable
@@ -50,6 +49,7 @@ fun ImageViewer(
     onBackRequest: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
     var originalImageDisposable: Disposable? = null
     val screenHeight = with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
     val maxOffset = screenHeight * 0.17f
@@ -142,30 +142,38 @@ fun ImageViewer(
                 if (imageViewer.currentZoom == 1f) {
                     detectDragGestures(
                         onDragStart = { imageViewModel.isPressed = true },
-                        onDragEnd = { imageViewModel.isPressed = false },
-                        onDragCancel = { imageViewModel.isPressed = false },
+                        onDragEnd = {
+                            scope.launch {
+                                delay(timeMillis = 50L)
+                                imageViewModel.isPressed = false
+                            }
+                        },
+                        onDragCancel = {
+                            scope.launch {
+                                delay(timeMillis = 50L)
+                                imageViewModel.isPressed = false
+                            }
+                        },
                         onDrag = { change, dragAmount ->
                             if ((fingerCount == 1 || imageViewModel.offsetY != 0f) && sheetState.targetValue == ModalBottomSheetValue.Hidden) {
                                 change.consumeAllChanges()
 
-                                if (abs(imageViewModel.offsetY + dragAmount.y) <= maxOffset) {
-                                    imageViewModel.offsetY += dragAmount.y
+                                val deceleratedDragAmount = dragAmount.y * 0.7f
+
+                                if (abs(imageViewModel.offsetY + deceleratedDragAmount) <= maxOffset) {
+                                    imageViewModel.offsetY += deceleratedDragAmount
                                 }
                             }
                         }
                     )
                 }
             }
-            .offset {
-                IntOffset(
-                    x = 0,
-                    y =
-                    if (imageViewModel.isPressed)
-                        imageViewModel.offsetY.roundToInt()
-                    else
-                        animatedOffsetY.roundToInt(),
-                )
-            },
+            .offset(
+                y = when {
+                    imageViewModel.isPressed -> with(density) { imageViewModel.offsetY.toDp() }
+                    else -> with(density) { animatedOffsetY.toDp() }
+                }
+            ),
     )
 
     if (imageLoading.value) {
