@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -100,7 +99,9 @@ private fun VolumeSlider(
     videoVolume: Float,
     onVideoVolumeChange: (Float) -> Unit,
 ) {
-    val screenWidth = LocalConfiguration.current.screenWidthDp
+    var videoVolumeState by remember { mutableStateOf(videoVolume * 10) }
+    var lastVideoVolume by remember { mutableStateOf(videoVolumeState) }
+    var videoVolumeText by remember { mutableStateOf("${videoVolume.times(100).roundToInt()}%") }
 
     LaunchedEffect(key1 = videoVolume) {
         player.volume = videoVolume
@@ -114,8 +115,8 @@ private fun VolumeSlider(
                 painter =
                 if (isVideoHasAudio)
                     when {
-                        videoVolume >= 0.5f -> painterResource(id = R.drawable.volume_up)
-                        videoVolume == 0f -> painterResource(id = R.drawable.volume_mute)
+                        videoVolumeState >= 5f -> painterResource(id = R.drawable.volume_up)
+                        videoVolumeState == 0f -> painterResource(id = R.drawable.volume_mute)
                         else -> painterResource(id = R.drawable.volume_down)
                     }
                 else
@@ -132,7 +133,7 @@ private fun VolumeSlider(
             Card(
                 elevation = 4.dp,
                 modifier = Modifier
-                    .width(if (isVideoHasAudio) (screenWidth / 2).dp else Dp.Unspecified)
+                    .width(if (isVideoHasAudio) 200.dp else Dp.Unspecified)
             ) {
                 if (isVideoHasAudio) {
                     Row(
@@ -141,15 +142,32 @@ private fun VolumeSlider(
                             .padding(horizontal = 16.dp)
                     ) {
                         Text(
-                            text = "${videoVolume.times(100).roundToInt()}%",
+                            text = videoVolumeText,
                             modifier = Modifier
                                 .padding(end = 8.dp)
                                 .width(36.dp)
                         )
                         Slider(
-                            value = videoVolume,
-                            onValueChange = onVideoVolumeChange,
-                            onValueChangeFinished = { player.volume = videoVolume },
+                            value = videoVolumeState,
+                            onValueChange = {
+                                videoVolumeState = it
+                                val volume = it.roundToInt().toFloat()
+
+                                if (lastVideoVolume != volume) {
+                                    lastVideoVolume = volume
+                                    videoVolumeText = "${volume.times(10).roundToInt()}%"
+                                    player.volume = volume / 10
+                                }
+                            },
+                            onValueChangeFinished = {
+                                onVideoVolumeChange(videoVolumeState.roundToInt().toFloat() / 10)
+                            },
+                            valueRange = 0f..10f,
+                            steps = 10 - 1,
+                            colors = SliderDefaults.colors(
+                                activeTickColor = Color.Transparent,
+                                inactiveTickColor = Color.Transparent,
+                            ),
                             modifier = Modifier
                                 .weight(weight = 1f, fill = true)
                         )
