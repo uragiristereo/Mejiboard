@@ -2,14 +2,12 @@ package com.github.uragiristereo.mejiboard.presentation.search
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -126,6 +124,7 @@ fun SearchScreen(
                     }
                 },
                 placeholder = "Example: 1girl blue_hair",
+                loading = state.searchProgressVisible,
             )
         },
         modifier = Modifier
@@ -144,11 +143,11 @@ fun SearchScreen(
             verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.padding(paddingValues = innerPadding),
         ) {
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .alpha(if (state.searchProgressVisible) 1f else 0f)
-                    .fillMaxWidth()
-            )
+//            LinearProgressIndicator(
+//                modifier = Modifier
+//                    .alpha(if (state.searchProgressVisible) 1f else 0f)
+//                    .fillMaxWidth()
+//            )
 
             SearchResult(
                 state = state,

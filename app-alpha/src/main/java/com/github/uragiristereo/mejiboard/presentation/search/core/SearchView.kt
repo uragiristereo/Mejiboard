@@ -3,6 +3,7 @@ package com.github.uragiristereo.mejiboard.presentation.search.core
 import android.view.KeyEvent.ACTION_DOWN
 import android.view.KeyEvent.KEYCODE_BACK
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -29,6 +30,7 @@ fun SearchView(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String = "",
+    loading: Boolean = false,
 ) {
     Surface(
         elevation = 2.dp,
@@ -65,7 +67,17 @@ fun SearchView(
                 if (query.text.isNotEmpty())
                     IconButton(
                         onClick = { onQueryTextChange(TextFieldValue(text = "")) },
-                        content = { Icon(imageVector = Icons.Default.Close, contentDescription = "Clear") },
+                        content = {
+                            if (loading) {
+                                CircularProgressIndicator(
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colors.secondary,
+                                    modifier = Modifier.size(26.dp),
+                                )
+                            }
+
+                            Icon(imageVector = Icons.Default.Close, contentDescription = "Clear")
+                        },
                     )
             },
             modifier = Modifier
