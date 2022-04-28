@@ -9,8 +9,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +35,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val columnState = rememberLazyListState()
     val systemUiController = rememberSystemUiController()
+    val scope = rememberCoroutineScope()
     val state by viewModel.state
 
     val surfaceColor = MaterialTheme.colors.surface
@@ -49,10 +50,10 @@ fun SettingsScreen(
         animationSpec = tween(durationMillis = 350),
     )
 
-    LaunchedEffect(key1 = Unit) {
-        launch { viewModel.getFormattedFolderSize(context.cacheDir) }
+    DisposableEffect(key1 = Unit) {
+        scope.launch { viewModel.getFormattedFolderSize(context.cacheDir) }
 
-        launch {
+        val job = scope.launch {
             while (true) {
                 if (state.settingsHeaderSize > 0) {
                     viewModel.shouldUseBigHeader(
@@ -68,6 +69,10 @@ fun SettingsScreen(
         }
 
         mainViewModel.checkForUpdate()
+
+        onDispose {
+            job.cancel()
+        }
     }
 
     DisposableEffect(key1 = surfaceColor, key2 = isLight) {
