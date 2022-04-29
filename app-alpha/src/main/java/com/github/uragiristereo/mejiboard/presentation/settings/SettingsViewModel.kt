@@ -3,9 +3,9 @@ package com.github.uragiristereo.mejiboard.presentation.settings
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.github.uragiristereo.mejiboard.domain.usecase.common.ConvertFileSizeUseCase
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -17,17 +17,13 @@ class SettingsViewModel @Inject constructor(
     private val convertFileSizeUseCase: ConvertFileSizeUseCase,
 ) : ViewModel() {
     val state = mutableStateOf(value = SettingsState())
-    private var _state by state
-
-    fun updateUiState(updatedState: SettingsState) {
-        _state = updatedState
-    }
+    private val _state by state
 
     fun getFormattedFolderSize(file: File) {
         val folderSize = getFolderSize(file)
         val formattedFileSize = convertFileSizeUseCase(sizeBytes = folderSize)
 
-        _state = _state.copy(cacheDirectorySize = formattedFileSize)
+        state.update { it.copy(cacheDirectorySize = formattedFileSize) }
     }
 
     private fun getFolderSize(file: File): Long {
@@ -49,12 +45,12 @@ class SettingsViewModel @Inject constructor(
     ) {
         val half = (0.6f * _state.settingsHeaderSize).toInt()
 
-        _state = _state.copy(
+        state.update { it.copy(
             useBigHeader = if (columnState.firstVisibleItemIndex == 0)
                 columnState.firstVisibleItemScrollOffset < half
             else
                 false
-        )
+        ) }
 
         if (columnState.firstVisibleItemIndex == 0 && columnState.firstVisibleItemScrollOffset != 0 && !columnState.isScrollInProgress) {
             if (columnState.firstVisibleItemScrollOffset < half)
@@ -65,11 +61,12 @@ class SettingsViewModel @Inject constructor(
     }
 
     suspend fun updateIsCacheCleanedState(file: File) {
-        _state = _state.copy(isCacheCleaned = true)
+        state.update { it.copy(isCacheCleaned = true) }
+
         this.getFormattedFolderSize(file)
 
         delay(timeMillis = 4000L)
 
-        _state = _state.copy(isCacheCleaned = false)
+        state.update { it.copy(isCacheCleaned = false) }
     }
 }

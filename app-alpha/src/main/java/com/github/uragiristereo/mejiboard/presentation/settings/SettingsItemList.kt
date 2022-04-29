@@ -25,6 +25,7 @@ import com.github.uragiristereo.mejiboard.data.preferences.enums.DohProvider
 import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
 import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
 import com.github.uragiristereo.mejiboard.presentation.common.SettingsCategory
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.settings.core.BigHeader
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsState
@@ -61,8 +62,8 @@ fun SettingItemList(
         item {
             BigHeader(
                 bigHeaderOpacity = bigHeaderOpacity,
-                onSizeChange = {
-                    viewModel.updateUiState(updatedState = state.copy(settingsHeaderSize = it))
+                onSizeChange = { new ->
+                    viewModel.state.update { it.copy(settingsHeaderSize = new) }
                 },
             )
         }
