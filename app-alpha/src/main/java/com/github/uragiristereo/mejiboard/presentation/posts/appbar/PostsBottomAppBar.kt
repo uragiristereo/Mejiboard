@@ -39,9 +39,6 @@ fun PostsBottomAppBar(
 
     BottomAppBar(
         backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.95f),
-        contentPadding = WindowInsets.navigationBars
-            .only(sides = WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
-            .asPaddingValues(),
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,

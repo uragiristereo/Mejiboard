@@ -1,6 +1,9 @@
 package com.github.uragiristereo.mejiboard.presentation.posts.grid
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -16,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.domain.entity.Post
+import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.posts.PostsViewModel
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostItem
@@ -34,6 +38,7 @@ fun PostsGrid(
 ) {
     val density = LocalDensity.current
     val gridCount = remember { 2 }
+    val navigationBarsPadding = LocalFixedInsets.current.navigationBarsPadding
 
     LaunchedEffect(postsViewModel.newSearch) {
         if (postsViewModel.newSearch) {
@@ -44,16 +49,12 @@ fun PostsGrid(
 
     LazyColumn(
         state = gridState,
-        contentPadding = WindowInsets.navigationBars
-            .add(
-                insets = WindowInsets(
-                    left = 8.dp,
-                    top = toolbarHeight + with(density) { browseHeightPx.toDp() },
-                    right = 8.dp,
-                    bottom = 56.dp + 8.dp,
-                )
-            )
-            .asPaddingValues()
+        contentPadding = PaddingValues(
+            start = 8.dp,
+            end = 8.dp,
+            top = navigationBarsPadding.calculateTopPadding() + toolbarHeight + with(density) { browseHeightPx.toDp() },
+            bottom = navigationBarsPadding.calculateBottomPadding() + 56.dp + 8.dp,
+        ),
     ) {
         itemsIndexed(postsViewModel.postsData) { index, _ ->
             if (index % gridCount == 0) {

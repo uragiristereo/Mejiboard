@@ -5,8 +5,12 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.uragiristereo.mejiboard.common.Constants
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
-import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
+import com.github.uragiristereo.mejiboard.presentation.image.core.ImageState
+import com.github.uragiristereo.mejiboard.presentation.image.video.controls.VideoControls
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -19,50 +23,45 @@ import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import java.io.File
 
 @ExperimentalMaterialApi
 @Composable
 fun VideoPost(
-    mainViewModel: MainViewModel,
-    imageViewModel: ImageViewModel,
-    post: com.github.uragiristereo.mejiboard.domain.entity.Post,
-    appBarVisible: MutableState<Boolean>,
+    state: ImageState,
+    okHttpClient: OkHttpClient,
     sheetState: ModalBottomSheetState,
+    videoVolume: Float,
+    onVideoVolumeChange: (Float) -> Unit,
+    viewModel: ImageViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val preferences = mainViewModel.preferences
+    val post = state.selectedPost!!
 
     val imageType = remember { File(post.image).extension }
     val videoUrl = remember { "https://video-cdn3.gelbooru.com/images/${post.directory}/${post.hash}.$imageType" }
-    var volumeSliderVisible by remember { mutableStateOf(false) }
-    var isVideoHasAudio by remember { mutableStateOf(false) }
     val playerView = remember { StyledPlayerView(context) }
-    val exoPlayer = remember {
+    val player = remember {
         ExoPlayer.Builder(context)
-            .setMediaSourceFactory(
-                DefaultMediaSourceFactory(
-                    OkHttpDataSource.Factory(mainViewModel.okHttpClient)
-                )
-            )
+            .setMediaSourceFactory(DefaultMediaSourceFactory(OkHttpDataSource.Factory(okHttpClient)))
             .build()
     }
 
     DisposableEffect(key1 = Unit) {
         val cacheFactory = CacheDataSource.Factory().apply {
-            setCache(imageViewModel.exoPlayerCache)
+            setCache(viewModel.exoPlayerCache)
             setUpstreamDataSourceFactory(
                 DefaultDataSource.Factory(
                     context,
-                    DefaultHttpDataSource.Factory()
-                        .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0")
+                    DefaultHttpDataSource.Factory().setUserAgent(Constants.USER_AGENT)
                 )
             )
         }
         val mediaItem = MediaItem.fromUri(videoUrl)
 
-        exoPlayer.apply {
+        player.apply {
             setMediaItem(mediaItem)
             setMediaSource(
                 ProgressiveMediaSource.Factory(cacheFactory)
@@ -70,18 +69,18 @@ fun VideoPost(
             )
             repeatMode = Player.REPEAT_MODE_ONE
             playWhenReady = true
-            volume = preferences.videoVolume
+            volume = videoVolume
             addListener(object : Player.Listener {
                 override fun onTracksInfoChanged(tracksInfo: TracksInfo) {
                     super.onTracksInfoChanged(tracksInfo)
 
-                    isVideoHasAudio = false
+                    viewModel.state.update { it.copy(isVideoHasAudio = false) }
 
                     tracksInfo.trackGroupInfos.forEach {
                         for (i in 0 until it.trackGroup.length) {
                             val trackMimeType = it.trackGroup.getFormat(i).sampleMimeType
                             if (trackMimeType?.contains("audio") == true)
-                                isVideoHasAudio = true
+                                viewModel.state.update { it.copy(isVideoHasAudio = true) }
                         }
                     }
                 }
@@ -89,67 +88,73 @@ fun VideoPost(
         }
 
         playerView.apply {
-            player = exoPlayer
+            this.player = player
             useController = false
             controllerAutoShow = false
 
             videoSurfaceView?.isHapticFeedbackEnabled = false
+
             videoSurfaceView?.setOnLongClickListener {
                 scope.launch {
-                    appBarVisible.value = true
-                    volumeSliderVisible = false
+                    viewModel.state.update {
+                        it.copy(
+                            appBarVisible = true,
+                            volumeSliderVisible = false,
+                        )
+                    }
+
                     sheetState.animateTo(ModalBottomSheetValue.Expanded)
                 }
                 return@setOnLongClickListener true
             }
+
             videoSurfaceView?.setOnClickListener {
-                if (!volumeSliderVisible)
-                    appBarVisible.value = !appBarVisible.value
+                if (!state.volumeSliderVisible)
+                    viewModel.state.update { it.copy(appBarVisible = !it.appBarVisible) }
                 else
-                    volumeSliderVisible = false
+                    viewModel.state.update { it.copy(volumeSliderVisible = false) }
             }
         }
 
-        exoPlayer.prepare()
+        player.prepare()
 
         onDispose {
-            exoPlayer.release()
+            player.release()
         }
     }
 
-    LaunchedEffect(key1 = preferences.videoVolume) {
-        exoPlayer.volume = preferences.videoVolume
-        mainViewModel.updatePreferences(
-            newData = preferences.copy(
-                videoVolume = preferences.videoVolume,
-            ),
-        )
+    LaunchedEffect(key1 = videoVolume) {
+        player.volume = videoVolume
+
+        onVideoVolumeChange(videoVolume)
     }
 
     VideoPlayer(
         playerView = playerView,
         onPress = {
-            if (!volumeSliderVisible)
-                appBarVisible.value = !appBarVisible.value
+            if (!state.volumeSliderVisible)
+                viewModel.state.update { it.copy(appBarVisible = !it.appBarVisible) }
             else
-                volumeSliderVisible = false
+                viewModel.state.update { it.copy(volumeSliderVisible = false) }
         },
         onLongPress = {
             scope.launch {
-                appBarVisible.value = true
-                volumeSliderVisible = false
+                viewModel.state.update {
+                    it.copy(
+                        appBarVisible = true,
+                        volumeSliderVisible = false,
+                    )
+                }
+
                 sheetState.animateTo(ModalBottomSheetValue.Expanded)
             }
         }
     )
 
     VideoControls(
-        player = exoPlayer,
-        controlsVisible = appBarVisible.value,
-        volumeSliderVisible = volumeSliderVisible,
-        onVolumeSliderVisibleChange = { volumeSliderVisible = it },
-        isVideoHasAudio = isVideoHasAudio,
-        videoVolume = preferences.videoVolume,
-        onVideoVolumeChange = { mainViewModel.updatePreferences(preferences.copy(videoVolume = it)) },
+        state = state,
+        player = player,
+        videoVolume = videoVolume,
+        onVideoVolumeChange = onVideoVolumeChange,
     )
 }

@@ -1,10 +1,11 @@
-package com.github.uragiristereo.mejiboard.presentation.image.more
+package com.github.uragiristereo.mejiboard.presentation.image.more.route.main
 
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetState
@@ -12,19 +13,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.R
-import com.github.uragiristereo.mejiboard.common.helper.ImageHelper
 import com.github.uragiristereo.mejiboard.common.helper.PermissionHelper
-import com.github.uragiristereo.mejiboard.domain.entity.Post
-import com.github.uragiristereo.mejiboard.presentation.common.SheetItem
-import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
-import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
+import com.github.uragiristereo.mejiboard.presentation.image.more.MoreViewModel
+import com.github.uragiristereo.mejiboard.presentation.image.more.route.LocalImageViewModel
+import com.github.uragiristereo.mejiboard.presentation.image.more.route.LocalMoreNavigation
+import com.github.uragiristereo.mejiboard.presentation.image.more.route.core.MoreRoute
+import com.github.uragiristereo.mejiboard.presentation.image.more.route.core.SheetItem
+import com.github.uragiristereo.mejiboard.presentation.main.LocalMainViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -32,68 +35,77 @@ import java.io.File
 @ExperimentalMaterialApi
 @Composable
 fun MoreMain(
-    post: Post,
     sheetState: ModalBottomSheetState,
-    moreNavigation: NavHostController,
-    mainViewModel: MainViewModel,
-    imageViewModel: ImageViewModel = hiltViewModel(),
+    viewModel: MoreViewModel,
 ) {
+    val moreNavigation = LocalMoreNavigation.current
+    val mainViewModel = LocalMainViewModel.current
+    val imageViewModel = LocalImageViewModel.current
+    val state by viewModel.state
+
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    val post = state.selectedPost!!
     val imageType = remember { File(post.image).extension }
-    val imageUrl = remember {
-        ImageHelper.parseImageUrl(
-            post = post,
-            original = false,
-        )
-    }
-    val originalImageUrl = remember {
-        ImageHelper.parseImageUrl(
-            post = post,
-            original = true,
-        )
+
+    fun checkImageAndNavigate(route: String) {
+        if (state.imageSize.isEmpty()) {
+            viewModel.checkImage(original = false)
+        }
+
+        if (post.sample == 1 && state.originalImageSize.isEmpty() && imageType != "gif") {
+            viewModel.checkImage(original = true)
+        }
+
+        viewModel.state.update { it.copy(isShowTagsCollapsed = true) }
+
+        moreNavigation.navigate(route = route) {
+            popUpTo(route = MoreRoute.Main) { saveState = true }
+
+            launchSingleTop = true
+            restoreState = true
+        }
     }
 
-    Column {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         SheetItem(
             text = "Post info",
             icon = {
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    contentDescription = null,
-                )
+                Icon(imageVector = Icons.Outlined.Info, contentDescription = null)
             },
             onClick = {
-                if (imageViewModel.imageSize.isEmpty())
-                    imageViewModel.checkImage(imageUrl, original = false)
-
-                if (post.sample == 1 && imageViewModel.originalImageSize.isEmpty() && imageType != "gif")
-                    imageViewModel.checkImage(originalImageUrl, original = true)
-
-                imageViewModel.showTagsIsCollapsed = true
-
-                moreNavigation.navigate("info")
-            }
+                checkImageAndNavigate(route = MoreRoute.Info)
+            },
         )
-        if (post.sample == 1 && !imageViewModel.showOriginalImage && imageType != "gif") {
+
+        if (post.sample == 1 && !imageViewModel.state.value.showOriginalImage && imageType != "gif") {
             SheetItem(
                 text = "Show full size (original) image",
                 icon = { Icon(painterResource(R.drawable.open_in_full), "Show full size (original) image") },
                 onClick = {
                     scope.launch {
                         sheetState.hide()
-                        imageViewModel.showOriginalImage = true
+
+                        imageViewModel.state.update { it.copy(showOriginalImage = true) }
                     }
-                }
+                },
             )
         }
+
         SheetItem(
             text = "Save to device",
-            icon = { Icon(painterResource(R.drawable.file_download), "Save") },
+            icon = {
+                Icon(painter = painterResource(id = R.drawable.file_download), contentDescription = null)
+            },
             onClick = {
                 scope.launch {
                     sheetState.hide()
+
+                    // TODO: use better permission manager solution
+                    // TODO: migrate to scoped storage
 
                     if (!PermissionHelper.checkPermission(context)) {
                         PermissionHelper.requestPermission(context)
@@ -110,35 +122,39 @@ fun MoreMain(
                     Toast.makeText(context, "Download started.\nCheck notification for download progress.", Toast.LENGTH_SHORT).show()
 
                     val downloadLocation = File(Environment.getExternalStorageDirectory().absolutePath + "/Pictures/Mejiboard/")
-                    if (!downloadLocation.isDirectory)
-                        downloadLocation.mkdir()
 
-                    val instance = mainViewModel.newDownloadInstance(context, post.id, originalImageUrl, downloadLocation)
+                    if (!downloadLocation.isDirectory) {
+                        downloadLocation.mkdir()
+                    }
+
+                    val instance = mainViewModel.newDownloadInstance(
+                        context = context,
+                        postId = post.id,
+                        url = state.originalImageUrl,
+                        location = downloadLocation,
+                    )
 
                     if (instance == null) {
                         Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
                     } else {
                         mainViewModel.trackDownloadProgress(
-                            context,
-                            post,
-                            instance
+                            context = context,
+                            post = post,
+                            instance = instance,
                         )
                     }
                 }
             }
         )
+
         SheetItem(
             text = "Open post in browser",
             icon = {
-                Icon(
-                    painterResource(R.drawable.open_in_browser),
-                    "Open post in browser"
-                )
+                Icon(painter = painterResource(id = R.drawable.open_in_browser), contentDescription = null)
             },
             onClick = {
-                scope.launch {
-                    sheetState.hide()
-                }
+                scope.launch { sheetState.hide() }
+
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://gelbooru.com/index.php?page=post&s=view&id=${post.id}"))
                 context.startActivity(intent)
             }
@@ -147,17 +163,7 @@ fun MoreMain(
             text = "Share...",
             icon = { Icon(Icons.Outlined.Share, "Share") },
             onClick = {
-                if (imageViewModel.imageSize.isEmpty())
-                    imageViewModel.checkImage(imageUrl, original = false)
-
-                if (post.sample == 1 && imageViewModel.originalImageSize.isEmpty() && imageType != "gif")
-                    imageViewModel.checkImage(originalImageUrl, original = true)
-
-                moreNavigation.navigate("share") {
-                    popUpTo("main") { saveState = true }
-                    launchSingleTop = true
-                    restoreState = true
-                }
+                checkImageAndNavigate(route = MoreRoute.Share)
             }
         )
     }

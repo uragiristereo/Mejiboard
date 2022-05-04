@@ -4,17 +4,22 @@ import android.os.Build.VERSION.SDK_INT
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.ImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.load
 import coil.request.Disposable
 import com.github.uragiristereo.mejiboard.common.helper.ImageHelper
 import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
-import com.github.uragiristereo.mejiboard.domain.entity.Post
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
-import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
+import com.github.uragiristereo.mejiboard.presentation.image.core.ImageState
 import com.ortiz.touchview.OnTouchImageViewListener
 import com.ortiz.touchview.TouchImageView
 import kotlinx.coroutines.launch
@@ -23,65 +28,70 @@ import java.io.File
 @ExperimentalMaterialApi
 @Composable
 fun ImagePost(
-    mainViewModel: MainViewModel,
-    imageViewModel: ImageViewModel,
-    post: Post,
-    appBarVisible: MutableState<Boolean>,
+    state: ImageState,
+    imageLoader: ImageLoader,
+    previewSize: PreviewSize,
     sheetState: ModalBottomSheetState,
+    viewModel: ImageViewModel = hiltViewModel(),
     onBackRequest: () -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val imageViewer = remember { TouchImageView(context) }
     var imageDisposable: Disposable? = remember { null }
+    val post = state.selectedPost!!
     val imageType = remember { File(post.image).extension }
-    val imageLoading = remember { mutableStateOf(true) }
-    val preferences = mainViewModel.preferences
 
     DisposableEffect(key1 = Unit) {
         imageViewer.apply {
             maxZoom = 5f
             doubleTapScale = 2f
 
-            setOnClickListener { appBarVisible.value = !appBarVisible.value }
+            setOnClickListener {
+                viewModel.state.update { it.copy(appBarVisible = !it.appBarVisible) }
+            }
+
             setOnLongClickListener {
                 scope.launch {
-                    appBarVisible.value = true
+                    viewModel.state.update { it.copy(appBarVisible = true) }
                     sheetState.animateTo(ModalBottomSheetValue.Expanded)
                 }
+
                 return@setOnLongClickListener false
             }
 
             setOnTouchImageViewListener(object : OnTouchImageViewListener {
                 override fun onMove() {
-                    imageViewModel.currentZoom = imageViewer.currentZoom
+                    viewModel.state.update { it.copy(currentZoom = imageViewer.currentZoom) }
                 }
             })
 
             imageDisposable = load(
                 uri = ImageHelper.parseImageUrl(
                     post = post,
-                    original = preferences.previewSize == PreviewSize.Original
+                    original = previewSize == PreviewSize.Original,
                 ),
-                imageLoader = mainViewModel.imageLoader,
+                imageLoader = imageLoader,
                 builder = {
-                    if (imageType == "gif")
-                        if (SDK_INT >= 28)
+                    if (imageType == "gif") {
+                        if (SDK_INT >= 28) {
                             decoder(ImageDecoderDecoder(context))
-                        else
+                        } else {
                             decoder(GifDecoder())
+                        }
+                    }
 
                     val resized = ImageHelper.resizeImage(post = post)
-                    size(
-                        width = resized.first,
-                        height = resized.second,
-                    )
+
+                    size(width = resized.first, height = resized.second)
 
                     listener(
-                        onStart = { imageLoading.value = true },
+                        onStart = {
+                            viewModel.state.update { it.copy(imageLoading = true) }
+                        },
                         onSuccess = { _, _ ->
-                            imageLoading.value = false
-                        }
+                            viewModel.state.update { it.copy(imageLoading = false) }
+                        },
                     )
                 }
             )
@@ -93,14 +103,11 @@ fun ImagePost(
     }
 
     ImageViewer(
-        mainViewModel = mainViewModel,
-        imageViewModel = imageViewModel,
-        post = post,
+        state = state,
         imageViewer = imageViewer,
-        imageDisposable = imageDisposable,
-        imageLoading = imageLoading,
-        appBarVisible = appBarVisible,
+        imageLoader = imageLoader,
         sheetState = sheetState,
         onBackRequest = onBackRequest,
+        onImageDispose = { imageDisposable?.dispose() }
     )
 }

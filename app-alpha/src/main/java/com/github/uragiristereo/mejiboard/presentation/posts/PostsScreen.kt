@@ -5,7 +5,9 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -21,6 +23,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedStatusBarsPadding
+import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.posts.appbar.PostsBottomAppBar
 import com.github.uragiristereo.mejiboard.presentation.posts.appbar.PostsTopAppBar
@@ -217,7 +222,8 @@ fun PostsScreen(
                 onToolbarOffsetHeightPxChange = { toolbarOffsetHeightPx = it },
                 mainViewModel = mainViewModel,
             )
-        }
+        },
+        modifier = Modifier.fixedNavigationBarsPadding(),
     ) {
         val nestedScrollConnection = remember {
             object : NestedScrollConnection {
@@ -234,7 +240,7 @@ fun PostsScreen(
 
         Box(
             modifier = Modifier
-                .statusBarsPadding()
+                .fixedStatusBarsPadding()
                 .let {
                     if (!postsViewModel.postsProgressVisible && postsViewModel.postsData.size > 4)
                         it.nestedScroll(connection = nestedScrollConnection)
@@ -265,7 +271,7 @@ fun PostsScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .windowInsetsTopHeight(insets = WindowInsets.statusBars)
+                .height(LocalFixedInsets.current.statusBarHeight)
                 .background(color = MaterialTheme.colors.background),
         )
     }

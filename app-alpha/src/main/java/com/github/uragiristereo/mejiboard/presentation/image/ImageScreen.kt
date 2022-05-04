@@ -12,11 +12,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
+import com.github.uragiristereo.mejiboard.common.Constants
+import com.github.uragiristereo.mejiboard.common.extension.hideSystemBars
 import com.github.uragiristereo.mejiboard.common.extension.showSystemBars
 import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
-import com.github.uragiristereo.mejiboard.presentation.image.common.ImageAppBar
-import com.github.uragiristereo.mejiboard.presentation.image.common.ImageBottomSheet
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
+import com.github.uragiristereo.mejiboard.presentation.image.core.ImageAppBar
 import com.github.uragiristereo.mejiboard.presentation.image.image.ImagePost
+import com.github.uragiristereo.mejiboard.presentation.image.more.MoreBottomSheet
 import com.github.uragiristereo.mejiboard.presentation.image.video.VideoPost
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -31,9 +34,15 @@ import java.io.File
 fun ImageScreen(
     mainNavigation: NavHostController,
     mainViewModel: MainViewModel,
-    imageViewModel: ImageViewModel = hiltViewModel(),
+    viewModel: ImageViewModel = hiltViewModel(),
 ) {
-    val post = mainViewModel.selectedPost!!
+    remember {
+        viewModel.state.update {
+            it.copy(selectedPost = mainViewModel.selectedPost)
+        }
+    }
+
+    val post = viewModel.state.value.selectedPost!!
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val window = (context as Activity).window
@@ -41,10 +50,6 @@ fun ImageScreen(
     val preferences = mainViewModel.preferences
 
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-    val appBarVisible = remember { mutableStateOf(true) }
-
-    val supportedTypesImage = remember { listOf("jpg", "jpeg", "png", "gif") }
-    val supportedTypesAnimation = remember { listOf("webm", "mp4") }
     val imageType = remember { File(post.image).extension }
 
     BackHandler(enabled = sheetState.isVisible) {
@@ -52,58 +57,66 @@ fun ImageScreen(
     }
 
     DisposableEffect(key1 = Unit) {
-        imageViewModel.showOriginalImage = preferences.previewSize == PreviewSize.Original
+        viewModel.state.update {
+            it.copy(
+                showOriginalImage = preferences.previewSize == PreviewSize.Original,
+            )
+        }
 
         onDispose {
             val tempDirectory = File("${context.cacheDir.absolutePath}/temp/")
 
             window.showSystemBars()
-            tempDirectory.deleteRecursively()
+            scope.launch { tempDirectory.deleteRecursively() }
         }
     }
 
-    DisposableEffect(key1 = imageViewModel) {
-        systemUiController.setSystemBarsColor(Color.Black.copy(0.4f))
+    DisposableEffect(key1 = viewModel) {
+        systemUiController.setSystemBarsColor(Color.Black.copy(alpha = 0.4f))
 
         onDispose { }
     }
 
-    if (imageType in supportedTypesAnimation) {
+    LaunchedEffect(key1 = viewModel.state.value.appBarVisible) {
+        if (viewModel.state.value.appBarVisible)
+            window.showSystemBars()
+        else
+            window.hideSystemBars()
+    }
+
+    if (imageType in Constants.SUPPORTED_TYPES_ANIMATION) {
         VideoPost(
-            mainViewModel = mainViewModel,
-            imageViewModel = imageViewModel,
-            post = post,
-            appBarVisible = appBarVisible,
+            state = viewModel.state.value,
             sheetState = sheetState,
+            okHttpClient = mainViewModel.okHttpClient,
+            videoVolume = preferences.videoVolume,
+            onVideoVolumeChange = {
+                mainViewModel.updatePreferences(preferences.copy(videoVolume = it))
+            },
         )
     }
 
-    if (imageType in supportedTypesImage) {
+    if (imageType in Constants.SUPPORTED_TYPES_IMAGE) {
         ImagePost(
-            mainViewModel = mainViewModel,
-            imageViewModel = imageViewModel,
-            post = post,
-            appBarVisible = appBarVisible,
+            state = viewModel.state.value,
+            imageLoader = mainViewModel.imageLoader,
             sheetState = sheetState,
+            previewSize = preferences.previewSize,
             onBackRequest = {
                 mainViewModel.backPressedByGesture = true
                 mainNavigation.navigateUp()
-            }
+            },
         )
     }
 
     ImageAppBar(
-        imageViewModel = imageViewModel,
-        post = post,
-        appBarVisible = appBarVisible,
+        state = viewModel.state.value,
         mainNavigation = mainNavigation,
         sheetState = sheetState,
+        onShowImageChange = { new ->
+            viewModel.state.update { it.copy(showOriginalImage = new) }
+        },
     )
 
-    ImageBottomSheet(
-        mainViewModel = mainViewModel,
-        imageViewModel = imageViewModel,
-        post = post,
-        sheetState = sheetState,
-    )
+    MoreBottomSheet(sheetState = sheetState)
 }

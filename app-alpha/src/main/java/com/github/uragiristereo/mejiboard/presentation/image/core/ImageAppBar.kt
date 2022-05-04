@@ -1,6 +1,5 @@
-package com.github.uragiristereo.mejiboard.presentation.image.common
+package com.github.uragiristereo.mejiboard.presentation.image.core
 
-import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,20 +9,19 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.R
-import com.github.uragiristereo.mejiboard.common.extension.hideSystemBars
-import com.github.uragiristereo.mejiboard.common.extension.showSystemBars
-import com.github.uragiristereo.mejiboard.domain.entity.Post
-import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedStatusBarsPadding
 import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.math.abs
@@ -32,40 +30,30 @@ import kotlin.math.roundToInt
 @ExperimentalMaterialApi
 @Composable
 fun ImageAppBar(
-    imageViewModel: ImageViewModel,
-    post: Post,
-    appBarVisible: MutableState<Boolean>,
+    state: ImageState,
     mainNavigation: NavHostController,
     sheetState: ModalBottomSheetState,
+    onShowImageChange: (Boolean) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val window = (context as Activity).window
+    val post = state.selectedPost!!
     val imageType = remember { File(post.image).extension }
 
-    LaunchedEffect(key1 = appBarVisible.value) {
-        if (appBarVisible.value)
-            window.showSystemBars()
-        else
-            window.hideSystemBars()
-    }
-
     AnimatedVisibility(
-        visible = appBarVisible.value,
+        visible = state.appBarVisible,
         enter = fadeIn(),
         exit = fadeOut(),
         modifier = Modifier
             .offset {
                 IntOffset(
                     x = 0,
-                    y =
-                    if (imageViewModel.isPressed)
-                        -abs(imageViewModel.offsetY.roundToInt())
-                    else
-                        -abs(imageViewModel.animatedOffsetY.roundToInt()),
+                    y = when {
+                        state.isPressed -> -abs(state.offsetY.roundToInt())
+                        else -> -abs(state.animatedOffsetY.roundToInt())
+                    }
                 )
             }
-            .navigationBarsPadding(),
+            .fixedNavigationBarsPadding(),
     ) {
         Box(
             modifier = Modifier
@@ -75,7 +63,7 @@ fun ImageAppBar(
                 )
                 .background(
                     brush = Brush.verticalGradient(colors = listOf(Color.Black, Color.Transparent)),
-                    alpha = 0.5f
+                    alpha = 0.5f,
                 )
         )
 
@@ -84,39 +72,38 @@ fun ImageAppBar(
             navigationIcon = {
                 IconButton(
                     onClick = { mainNavigation.navigateUp() },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = null,
-                    )
-                }
+                    content = { Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null) },
+                )
             },
             actions = {
-                if (post.sample == 1 && !imageViewModel.showOriginalImage && imageType != "gif") {
+                if (post.sample == 1 && !state.showOriginalImage && imageType != "gif") {
                     IconButton(
-                        onClick = { imageViewModel.showOriginalImage = true },
-                    ) {
+                        onClick = { onShowImageChange(true) },
+                        content = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.open_in_full),
+                                contentDescription = null,
+                                tint = Color.White,
+                            )
+                        }
+                    )
+                }
+
+                IconButton(
+                    onClick = { scope.launch { sheetState.animateTo(ModalBottomSheetValue.Expanded) } },
+                    content = {
                         Icon(
-                            painter = painterResource(R.drawable.open_in_full),
-                            contentDescription = null,
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Back",
                             tint = Color.White,
                         )
                     }
-                }
-                IconButton(
-                    onClick = { scope.launch { sheetState.animateTo(ModalBottomSheetValue.Expanded) } },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                    )
-                }
+                )
             },
             elevation = 0.dp,
             backgroundColor = Color.Transparent,
             contentColor = Color.White,
-            modifier = Modifier.statusBarsPadding(),
+            modifier = Modifier.fixedStatusBarsPadding(),
         )
     }
 }

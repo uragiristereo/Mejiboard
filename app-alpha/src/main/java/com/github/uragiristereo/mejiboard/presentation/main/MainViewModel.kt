@@ -27,6 +27,7 @@ import com.github.uragiristereo.mejiboard.data.repository.DownloadRepository
 import com.github.uragiristereo.mejiboard.data.repository.PreferencesRepository
 import com.github.uragiristereo.mejiboard.domain.entity.Post
 import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
+import com.github.uragiristereo.mejiboard.presentation.main.core.MainState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -50,6 +51,7 @@ class MainViewModel @Inject constructor(
     private val networkRepository: NetworkRepository,
     private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
+    val state = mutableStateOf(MainState())
     var okHttpClient = networkRepository.okHttpClient
     var imageLoader = networkRepository.imageLoader
 

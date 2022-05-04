@@ -1,20 +1,20 @@
 package com.github.uragiristereo.mejiboard.domain.usecase.api
 
 import com.github.uragiristereo.mejiboard.common.Constants
-import com.github.uragiristereo.mejiboard.common.mapper.api.toSearch
-import com.github.uragiristereo.mejiboard.domain.entity.Search
+import com.github.uragiristereo.mejiboard.common.mapper.api.toTag
+import com.github.uragiristereo.mejiboard.domain.entity.Tag
 import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import javax.inject.Inject
 
-class GetTagsUseCase @Inject constructor(
+class GetTagsInfoUseCase @Inject constructor(
     private val networkRepository: NetworkRepository,
 ) {
     suspend operator fun invoke(
-        term: String,
+        names: String,
         onLoading: (loading: Boolean) -> Unit,
-        onSuccess: (data: List<Search>) -> Unit,
+        onSuccess: (data: List<Tag>) -> Unit,
         onFailed: (message: String) -> Unit,
         onError: (t: Throwable) -> Unit,
     ) {
@@ -23,11 +23,11 @@ class GetTagsUseCase @Inject constructor(
         delay(Constants.API_DELAY)
 
         try {
-            val response = networkRepository.api.getTags(term)
+            val response = networkRepository.api.getTagsInfo(names)
 
             if (response.isSuccessful)
                 response.body()?.let { data ->
-                    onSuccess(data.toSearch())
+                    onSuccess(data.tag?.toTag() ?: emptyList())
                 }
             else
                 onFailed(response.raw().body.toString())

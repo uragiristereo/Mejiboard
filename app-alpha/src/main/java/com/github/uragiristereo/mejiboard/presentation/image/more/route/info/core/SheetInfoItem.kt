@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.presentation.common
+package com.github.uragiristereo.mejiboard.presentation.image.more.route.info.core
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

@@ -1,6 +1,9 @@
 package com.github.uragiristereo.mejiboard.presentation.posts.drawer
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -15,7 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.BuildConfig
-import com.github.uragiristereo.mejiboard.presentation.common.ThumbPill
+import com.github.uragiristereo.mejiboard.presentation.common.DragHandle
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import kotlinx.coroutines.launch
 
@@ -36,14 +40,14 @@ fun PostsBottomDrawer(
         scrimColor = Color(0xFF121212).copy(alpha = DrawerDefaults.ScrimOpacity),
         sheetContent = {
             Column(
-                modifier = Modifier.navigationBarsPadding(),
+                modifier = Modifier.fixedNavigationBarsPadding(),
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    content = { ThumbPill() }
+                    content = { DragHandle() }
                 )
 
                 Column(
