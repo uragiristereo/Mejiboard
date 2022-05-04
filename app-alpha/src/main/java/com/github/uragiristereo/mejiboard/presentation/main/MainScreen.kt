@@ -2,18 +2,24 @@ package com.github.uragiristereo.mejiboard.presentation.main
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
+import com.github.uragiristereo.mejiboard.presentation.main.core.FixedInsets
 import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
+import kotlinx.coroutines.launch
 import java.io.File
+
+val LocalFixedInsets = compositionLocalOf<FixedInsets> { error("no FixedInsets provided!") }
+val LocalMainViewModel = compositionLocalOf<MainViewModel> { error("no MainViewModel provided!") }
 
 @ExperimentalCoilApi
 @ExperimentalComposeUiApi
@@ -24,8 +30,22 @@ fun MainScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val isSystemDarkTheme = isSystemInDarkTheme()
     val preferences = mainViewModel.preferences
+
+    val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
+
+    val fixedInsets = remember {
+        FixedInsets(
+            statusBarHeight = systemBarsPadding.calculateTopPadding(),
+            navigationBarsPadding = PaddingValues(
+                bottom = systemBarsPadding.calculateBottomPadding(),
+                start = systemBarsPadding.calculateStartPadding(LayoutDirection.Ltr),
+                end = systemBarsPadding.calculateEndPadding(LayoutDirection.Ltr),
+            ),
+        )
+    }
 
     LaunchedEffect(key1 = preferences.theme) {
         mainViewModel.isDesiredThemeDark =
@@ -39,15 +59,24 @@ fun MainScreen(
     LaunchedEffect(key1 = Unit) {
         val tempDirectory = File("${context.cacheDir.absolutePath}/temp/")
 
-        tempDirectory.deleteRecursively()
+        scope.launch { tempDirectory.deleteRecursively() }
     }
 
     MejiboardTheme(
         theme = preferences.theme,
         blackTheme = preferences.blackTheme,
-    ) {
-        Surface(color = MaterialTheme.colors.background) {
-            MainNavGraph(mainViewModel = mainViewModel)
+        content = {
+            Surface(color = MaterialTheme.colors.background) {
+                CompositionLocalProvider(
+                    values = arrayOf(
+                        LocalFixedInsets provides fixedInsets,
+                        LocalMainViewModel provides mainViewModel,
+                    ),
+                    content = {
+                        MainNavGraph(mainViewModel = mainViewModel)
+                    },
+                )
+            }
         }
-    }
+    )
 }
