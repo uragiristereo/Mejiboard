@@ -38,6 +38,7 @@ fun PostsBottomDrawer(
         sheetState = drawerState,
         sheetShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
         scrimColor = Color(0xFF121212).copy(alpha = DrawerDefaults.ScrimOpacity),
+        sheetElevation = 0.dp,
         sheetContent = {
             Column(
                 modifier = Modifier.fixedNavigationBarsPadding(),
