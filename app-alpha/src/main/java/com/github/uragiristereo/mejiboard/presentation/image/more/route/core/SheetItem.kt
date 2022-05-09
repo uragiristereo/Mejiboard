@@ -62,12 +62,13 @@ fun SheetItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp),
     ) {
         Box(
             modifier = Modifier
                 .padding(
-                    start = 16.dp,
+                    start = 8.dp,
                     top = 16.dp,
                     end = 24.dp,
                     bottom = 16.dp,
@@ -77,11 +78,7 @@ fun SheetItem(
         )
 
         Box(
-            modifier = Modifier
-                .padding(
-                    top = 8.dp,
-                    bottom = 8.dp,
-                ),
+            modifier = Modifier.padding(vertical = 8.dp),
             content = { content() },
         )
     }
