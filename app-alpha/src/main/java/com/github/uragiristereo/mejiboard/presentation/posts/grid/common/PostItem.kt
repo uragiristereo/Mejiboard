@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -23,7 +22,9 @@ import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import com.github.uragiristereo.mejiboard.domain.entity.Post
+import com.github.uragiristereo.mejiboard.presentation.common.extension.navigate
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
+import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.github.uragiristereo.mejiboard.presentation.posts.PostsViewModel
 import java.io.File
 
@@ -31,7 +32,6 @@ import java.io.File
 fun PostItem(
     mainNavigation: NavHostController,
     post: Post,
-    index: Int,
     mainViewModel: MainViewModel,
     modifier: Modifier = Modifier,
     postsViewModel: PostsViewModel = hiltViewModel(),
@@ -52,10 +52,6 @@ fun PostItem(
 
     Box(
         modifier = modifier
-            .padding(
-                start = if (index > 0) 4.dp else 0.dp,
-                end = if (index == 0) 4.dp else 0.dp,
-            )
             .aspectRatio(ratio = 3f / 4f)
             .border(
                 BorderStroke(
@@ -69,7 +65,10 @@ fun PostItem(
                     mainViewModel.saveSelectedPost(post)
                     mainViewModel.backPressedByGesture = false
 
-                    mainNavigation.navigate("image")
+                    mainNavigation.navigate(
+                        route = "${MainRoute.Image}",
+                        data = MainRoute.Image.Key to post,
+                    )
                 }
             }
     ) {
