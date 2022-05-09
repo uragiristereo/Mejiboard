@@ -151,11 +151,7 @@ fun ImageViewer(
                             }
                         },
                         onDragCancel = {
-                            scope.launch {
-                                delay(timeMillis = 50L)
-
-                                viewModel.state.update { it.copy(isPressed = false) }
-                            }
+                            viewModel.state.update { it.copy(isPressed = false) }
                         },
                         onDrag = { change, dragAmount ->
                             if ((state.fingerCount == 1 || viewModel.state.value.offsetY != 0f) && sheetState.targetValue == ModalBottomSheetValue.Hidden) {
@@ -173,9 +169,9 @@ fun ImageViewer(
             }
             .offset(
                 y = when {
-                    state.isPressed -> with(density) { state.offsetY.toDp() }
+                    state.isPressed || abs(state.offsetY) >= maxOffset * 0.7f -> with(density) { state.offsetY.toDp() }
                     else -> with(density) { animatedOffsetY.toDp() }
-                }
+                },
             ),
     )
 
