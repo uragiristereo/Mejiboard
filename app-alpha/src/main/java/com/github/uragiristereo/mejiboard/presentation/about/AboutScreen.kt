@@ -103,7 +103,7 @@ fun AboutScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.not_like_tsugu),
+                        painter = painterResource(id = R.drawable.mejiboard_round),
                         contentDescription = "App icon",
                         Modifier
                             .padding(

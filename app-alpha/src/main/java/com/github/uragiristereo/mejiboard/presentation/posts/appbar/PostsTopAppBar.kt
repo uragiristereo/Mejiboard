@@ -58,7 +58,7 @@ fun PostsTopAppBar(
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.not_like_tsugu),
+                            painter = painterResource(id = R.drawable.mejiboard_round),
                             contentDescription = null,
                         )
                     }

@@ -27,7 +27,7 @@ fun SplashLogo(
     ) {
         Box(modifier = Modifier.clip(CircleShape)) {
             Image(
-                painter = painterResource(R.drawable.not_like_tsugu),
+                painter = painterResource(R.drawable.mejiboard_round),
                 contentDescription = null,
                 modifier = Modifier.size(92.dp)
             )
