@@ -24,14 +24,13 @@ fun DrawerItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
-    darkTheme: Boolean = false,
 ) {
     val color: Color
     val contentColor: Color
 
     if (selected) {
-        if (darkTheme) {
-            color = MaterialTheme.colors.surface.copy(alpha = 0.3f)
+        if (!MaterialTheme.colors.isLight) {
+            color = MaterialTheme.colors.primary.copy(alpha = 0.2f)
             contentColor = MaterialTheme.colors.primary
         } else {
             color = MaterialTheme.colors.primaryVariant.copy(alpha = 0.3f)

@@ -20,7 +20,6 @@ import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.presentation.common.DragHandle
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
-import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
@@ -28,7 +27,6 @@ import kotlinx.coroutines.launch
 fun PostsBottomDrawer(
     mainNavigation: NavHostController,
     drawerState: ModalBottomSheetState,
-    mainViewModel: MainViewModel,
 ) {
     val scope = rememberCoroutineScope()
 
@@ -81,7 +79,6 @@ fun PostsBottomDrawer(
                         scope.launch { drawerState.hide() }
                     },
                     selected = drawerItemSelected == "home",
-                    darkTheme = mainViewModel.isDesiredThemeDark,
                 )
 
                 DrawerItem(
@@ -94,7 +91,6 @@ fun PostsBottomDrawer(
                         }
                     },
                     selected = false,
-                    darkTheme = mainViewModel.isDesiredThemeDark,
                 )
 
                 DrawerItem(
@@ -107,7 +103,6 @@ fun PostsBottomDrawer(
                         }
                     },
                     selected = false,
-                    darkTheme = mainViewModel.isDesiredThemeDark,
                 )
             }
         },

@@ -296,6 +296,5 @@ fun PostsScreen(
     PostsBottomDrawer(
         mainNavigation = mainNavigation,
         drawerState = drawerState,
-        mainViewModel = mainViewModel,
     )
 }
