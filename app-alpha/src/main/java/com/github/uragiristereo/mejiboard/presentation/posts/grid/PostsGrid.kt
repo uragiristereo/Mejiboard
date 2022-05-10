@@ -50,7 +50,7 @@ fun PostsGrid(
             start = 8.dp,
             end = 8.dp,
             top = navigationBarsPadding.calculateTopPadding() + toolbarHeight + with(density) { browseHeightPx.toDp() },
-            bottom = 56.dp + 8.dp,
+            bottom = navigationBarsPadding.calculateBottomPadding() + 56.dp + 8.dp,
         ),
     ) {
         itemsIndexed(postsViewModel.postsData) { index, _ ->

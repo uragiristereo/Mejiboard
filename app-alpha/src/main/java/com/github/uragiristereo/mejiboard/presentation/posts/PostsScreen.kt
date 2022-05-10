@@ -6,9 +6,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -20,13 +18,13 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
-import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedStatusBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
@@ -60,6 +58,7 @@ fun PostsScreen(
     val isLight = MaterialTheme.colors.isLight
     val surfaceColor = MaterialTheme.colors.surface
     val preferences = mainViewModel.preferences
+    val navigationBarsPadding =  LocalFixedInsets.current.navigationBarsPadding
 
     val toolbarHeight = remember { 56.dp }
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.toPx() }
@@ -239,7 +238,10 @@ fun PostsScreen(
                 mainViewModel = mainViewModel,
             )
         },
-        modifier = Modifier.fixedNavigationBarsPadding(),
+        modifier = Modifier.padding(
+            start = navigationBarsPadding.calculateStartPadding(LayoutDirection.Ltr),
+            end = navigationBarsPadding.calculateEndPadding(LayoutDirection.Ltr),
+        ),
     ) {
         val nestedScrollConnection = remember {
             object : NestedScrollConnection {

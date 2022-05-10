@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.posts.PostsViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -39,6 +40,7 @@ fun PostsBottomAppBar(
 
     BottomAppBar(
         backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.95f),
+        contentPadding = LocalFixedInsets.current.navigationBarsPadding,
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
