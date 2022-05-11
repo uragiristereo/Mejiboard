@@ -1,6 +1,7 @@
 package com.github.uragiristereo.mejiboard.di
 
 import android.content.Context
+import com.github.uragiristereo.mejiboard.common.util.CacheUtil
 import com.github.uragiristereo.mejiboard.data.repository.DownloadRepository
 import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
 import com.google.android.exoplayer2.database.StandaloneDatabaseProvider
@@ -22,7 +23,7 @@ object NetworkModule {
     @Singleton
     fun providesOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
         return OkHttpClient.Builder()
-//            .cache(CoilUtils.createDefaultCache(context))
+            .cache(CacheUtil.createDefaultCache(context, "image_cache"))
             .build()
     }
 
