@@ -1,26 +1,24 @@
 package com.github.uragiristereo.mejiboard.presentation.image.more.route.share
 
-import android.content.ClipData
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import com.github.uragiristereo.mejiboard.R
-import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.more.MoreViewModel
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.LocalImageViewModel
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.LocalMoreNavigation
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.core.SheetItem
 import com.github.uragiristereo.mejiboard.presentation.main.LocalMainViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -58,38 +56,7 @@ fun MoreShare(
             if (instance == null) {
                 Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
             } else {
-                viewModel.state.update { it.copy(dialogShown = true) }
-
-                var lastDownloaded: Long
-
-                while (instance.info.status == "downloading") {
-                    lastDownloaded = instance.info.downloaded
-
-                    delay(1000)
-
-                    viewModel.state.update {
-                        it.copy(
-                            shareDownloadInfo = instance.info,
-                            shareDownloadSpeed = instance.info.downloaded - lastDownloaded,
-                        )
-                    }
-                }
-
-                viewModel.state.update { it.copy(dialogShown = true) }
-
-                if (instance.info.status == "completed") {
-                    mainViewModel.removeInstance(post.id)
-                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", File(instance.info.path))
-
-                    val shareIntent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        clipData = ClipData.newRawUri(null, uri)
-                        putExtra(Intent.EXTRA_STREAM, uri)
-                        type = context.contentResolver.getType(uri)
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    }
-                    ContextCompat.startActivity(context, Intent.createChooser(shareIntent, "Send to"), null)
-                }
+                viewModel.trackShare(instance)
             }
         }
     }

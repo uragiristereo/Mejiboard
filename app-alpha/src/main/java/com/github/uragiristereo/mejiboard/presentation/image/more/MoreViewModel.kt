@@ -4,12 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.uragiristereo.mejiboard.data.download.DownloadInstance
 import com.github.uragiristereo.mejiboard.domain.usecase.api.CheckFileUseCase
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetTagsInfoUseCase
 import com.github.uragiristereo.mejiboard.domain.usecase.common.ConvertFileSizeUseCase
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.more.core.MoreState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -90,7 +92,41 @@ class MoreViewModel @Inject constructor(
         }
     }
 
+    fun parseImageUrls() {
+        state.update {
+            it.copy(
+                imageUrl = parseImageUrl(original = false),
+                originalImageUrl = parseImageUrl(original = true),
+            )
+        }
+    }
+
     fun convertFileSize(sizeBytes: Long): String {
         return convertFileSizeUseCase(sizeBytes)
+    }
+
+    fun trackShare(
+        instance: DownloadInstance,
+    ) {
+        viewModelScope.launch {
+            state.update { it.copy(dialogShown = true) }
+
+            var lastDownloaded: Long
+
+            while (instance.info.status == "downloading") {
+                lastDownloaded = instance.info.downloaded
+
+                delay(1000)
+
+                state.update {
+                    it.copy(
+                        shareDownloadInfo = instance.info,
+                        shareDownloadSpeed = instance.info.downloaded - lastDownloaded,
+                    )
+                }
+            }
+
+            state.update { it.copy(dialogShown = false) }
+        }
     }
 }
