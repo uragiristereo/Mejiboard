@@ -1,25 +1,23 @@
 package com.github.uragiristereo.mejiboard.presentation.posts.grid.common
 
-import android.graphics.drawable.GradientDrawable
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import coil.compose.LocalImageLoader
-import coil.compose.rememberImagePainter
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.github.uragiristereo.mejiboard.domain.entity.Post
 import com.github.uragiristereo.mejiboard.presentation.common.extension.navigate
@@ -53,6 +51,7 @@ fun PostItem(
     Box(
         modifier = modifier
             .aspectRatio(ratio = 3f / 4f)
+            .clip(RoundedCornerShape(size = 4.dp))
             .border(
                 BorderStroke(
                     width = if (imageType in supportedTypesAnimation) 4.dp else 0.dp,
@@ -72,24 +71,22 @@ fun PostItem(
                 }
             }
     ) {
-        CompositionLocalProvider(LocalImageLoader provides mainViewModel.imageLoader) {
-            val placeholder = remember { GradientDrawable() }
+        PostPlaceholderLoading()
 
-            placeholder.setSize(post.width, post.height)
-            placeholder.setColor(android.graphics.Color.DKGRAY)
-
-            Image(
-                painter = rememberImagePainter(
-                    ImageRequest.Builder(context)
-                        .data(url)
-                        .placeholder(placeholder)
-                        .crossfade(170)
-                        .build()
-                ),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        }
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(url)
+                .crossfade(170)
+                .build(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            loading = {
+                PostPlaceholderLoading()
+            },
+            error = {
+                PostPlaceholderLoading()
+            },
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }

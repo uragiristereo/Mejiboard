@@ -16,6 +16,7 @@ import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.extension.hideSystemBars
 import com.github.uragiristereo.mejiboard.common.extension.showSystemBars
 import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
+import com.github.uragiristereo.mejiboard.domain.entity.Post
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.core.ImageAppBar
 import com.github.uragiristereo.mejiboard.presentation.image.image.ImagePost
@@ -32,17 +33,16 @@ import java.io.File
 @ExperimentalCoilApi
 @Composable
 fun ImageScreen(
+    post: Post,
     mainNavigation: NavHostController,
     mainViewModel: MainViewModel,
     viewModel: ImageViewModel = hiltViewModel(),
 ) {
     remember {
         viewModel.state.update {
-            it.copy(selectedPost = mainViewModel.selectedPost)
+            it.copy(selectedPost = post)
         }
     }
-
-    val post = viewModel.state.value.selectedPost!!
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val window = (context as Activity).window

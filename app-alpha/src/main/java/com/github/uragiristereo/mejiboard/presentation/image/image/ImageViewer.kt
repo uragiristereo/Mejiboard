@@ -95,8 +95,7 @@ fun ImageViewer(
                 onImageDispose()
 
                 originalImageDisposable = image.load(
-                    uri = ImageHelper.parseImageUrl(post = post, original = true),
-                    imageLoader = imageLoader,
+                    data = ImageHelper.parseImageUrl(post = post, original = true),
                     builder = {
                         val resized = ImageHelper.resizeImage(post = post)
 

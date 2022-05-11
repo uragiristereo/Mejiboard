@@ -7,7 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,8 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import coil.compose.LocalImageLoader
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.github.uragiristereo.mejiboard.domain.entity.Post
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
@@ -65,24 +63,22 @@ fun PostItemStaggered(
                 mainNavigation.navigate("image")
             }
     ) {
-        CompositionLocalProvider(LocalImageLoader provides mainViewModel.imageLoader) {
-            val placeholder = remember { GradientDrawable() }
+        val placeholder = remember { GradientDrawable() }
 
-            placeholder.setSize(post.width, post.height)
-            placeholder.setColor(android.graphics.Color.DKGRAY)
+        placeholder.setSize(post.width, post.height)
+        placeholder.setColor(android.graphics.Color.DKGRAY)
 
-            Image(
-                painter = rememberImagePainter(
-                    ImageRequest.Builder(context)
-                        .data(url)
-                        .placeholder(placeholder)
-                        .crossfade(170)
-                        .build()
-                ),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        }
+        Image(
+            painter = rememberAsyncImagePainter(
+                model = ImageRequest.Builder(context)
+                    .data(url)
+                    .placeholder(placeholder)
+                    .crossfade(170)
+                    .build()
+            ),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
     }
 }

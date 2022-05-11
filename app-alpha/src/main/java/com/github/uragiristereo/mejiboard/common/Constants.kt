@@ -9,7 +9,9 @@ object Constants {
     const val STATE_KEY_POST_INDEX = "posts.post.index"
     const val STATE_KEY_POST_OFFSET = "posts.post.offset"
     const val API_DELAY = 400L
+    const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0"
+    const val KEY_LOAD_MORE_PROGRESS = "posts.post.load.more"
+
     val SUPPORTED_TYPES_IMAGE = listOf("jpg", "jpeg", "png", "gif")
     val SUPPORTED_TYPES_ANIMATION = listOf("webm", "mp4")
-    const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0"
 }

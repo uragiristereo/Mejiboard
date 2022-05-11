@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsTopAppBar
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 
 const val ENABLE_SAFE_LISTING_TOGGLE = false
 
+@ExperimentalCoilApi
 @ExperimentalAnimationApi
 @Composable
 fun SettingsScreen(

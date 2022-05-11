@@ -20,6 +20,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.annotation.ExperimentalCoilApi
+import coil.imageLoader
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.data.preferences.enums.DohProvider
 import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
@@ -35,6 +37,7 @@ import com.github.uragiristereo.mejiboard.presentation.settings.preference.Switc
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@ExperimentalCoilApi
 @ExperimentalAnimationApi
 @Composable
 fun SettingItemList(
@@ -232,8 +235,11 @@ fun SettingItemList(
                 },
                 onClick = {
                     scope.launch {
-                        mainViewModel.imageLoader.memoryCache.clear()
-                        context.cacheDir.deleteRecursively()
+                        context.apply {
+                            imageLoader.memoryCache?.clear()
+                            imageLoader.diskCache?.clear()
+                            cacheDir.deleteRecursively()
+                        }
 
                         delay(350)
 

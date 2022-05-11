@@ -67,17 +67,16 @@ fun ImagePost(
             })
 
             imageDisposable = load(
-                uri = ImageHelper.parseImageUrl(
+                data = ImageHelper.parseImageUrl(
                     post = post,
                     original = previewSize == PreviewSize.Original,
                 ),
-                imageLoader = imageLoader,
                 builder = {
                     if (imageType == "gif") {
                         if (SDK_INT >= 28) {
-                            decoder(ImageDecoderDecoder(context))
+                            ImageDecoderDecoder.Factory()
                         } else {
-                            decoder(GifDecoder())
+                            GifDecoder.Factory()
                         }
                     }
 

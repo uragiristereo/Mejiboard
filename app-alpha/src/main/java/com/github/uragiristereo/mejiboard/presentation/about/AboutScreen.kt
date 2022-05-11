@@ -12,7 +12,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -35,8 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.LocalImageLoader
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.R
@@ -49,7 +47,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 @Composable
 fun AboutScreen(
     mainNavigation: NavHostController,
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -215,28 +213,26 @@ fun AboutScreen(
                         Modifier
                             .padding(16.dp)
                     ) {
-                        CompositionLocalProvider(LocalImageLoader provides mainViewModel.imageLoader) {
-                            val placeholder = remember { GradientDrawable() }
-                            val size = with(density) { 48.dp.toPx() }.toInt()
+                        val placeholder = remember { GradientDrawable() }
+                        val size = with(density) { 48.dp.toPx() }.toInt()
 
-                            placeholder.setSize(size, size)
-                            placeholder.setColor(android.graphics.Color.DKGRAY)
+                        placeholder.setSize(size, size)
+                        placeholder.setColor(android.graphics.Color.DKGRAY)
 
-                            Image(
-                                painter = rememberImagePainter(
-                                    ImageRequest.Builder(context)
-                                        .data("https://avatars.githubusercontent.com/u/52477630?v=4")
-                                        .placeholder(placeholder)
-                                        .crossfade(200)
-                                        .build()
-                                ),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .size(48.dp),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                model = ImageRequest.Builder(context)
+                                    .data("https://avatars.githubusercontent.com/u/52477630?v=4")
+                                    .placeholder(placeholder)
+                                    .crossfade(200)
+                                    .build()
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(48.dp),
+                            contentScale = ContentScale.Crop
+                        )
                         Column(
                             Modifier
                                 .padding(start = 16.dp)
