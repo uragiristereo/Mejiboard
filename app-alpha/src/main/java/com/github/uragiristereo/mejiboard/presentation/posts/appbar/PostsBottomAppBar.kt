@@ -62,6 +62,7 @@ fun PostsBottomAppBar(
                 Surface(
                     shape = RoundedCornerShape(percent = 50),
                     color = Color.Transparent,
+                    contentColor = MaterialTheme.colors.primary.copy(alpha = if (MaterialTheme.colors.isLight) 0.4f else 0.2f),
                     modifier = Modifier
                         .width(128.dp)
                         .height(48.dp),
