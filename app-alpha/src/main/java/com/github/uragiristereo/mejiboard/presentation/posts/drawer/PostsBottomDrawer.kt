@@ -71,7 +71,7 @@ fun PostsBottomDrawer(
 
                 Divider(modifier = Modifier.padding(bottom = 8.dp))
 
-                DrawerItem(
+                DrawerItem3(
                     text = "Home",
                     icon = if (drawerItemSelected == "home") Icons.Filled.Home else Icons.Outlined.Home,
                     onClick = {
@@ -81,7 +81,7 @@ fun PostsBottomDrawer(
                     selected = drawerItemSelected == "home",
                 )
 
-                DrawerItem(
+                DrawerItem3(
                     text = "Settings",
                     icon = Icons.Outlined.Settings,
                     onClick = {
@@ -93,7 +93,7 @@ fun PostsBottomDrawer(
                     selected = false,
                 )
 
-                DrawerItem(
+                DrawerItem3(
                     text = "About",
                     icon = Icons.Outlined.Info,
                     onClick = {
