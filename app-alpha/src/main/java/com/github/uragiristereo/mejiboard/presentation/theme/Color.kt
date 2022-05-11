@@ -2,10 +2,6 @@ package com.github.uragiristereo.mejiboard.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
-val DeepPurple200 = Color(0xFFb39ddb)
-val DeepPurple500 = Color(0xFF673ab7)
-val DeepPurple700 = Color(0xFF512da8)
+val Blue200 = Color(color = 0xFFB6C4FF)
+val Blue500 = Color(color = 0xFF4359AC)
+val Blue700 = Color(color = 0xFF294092)

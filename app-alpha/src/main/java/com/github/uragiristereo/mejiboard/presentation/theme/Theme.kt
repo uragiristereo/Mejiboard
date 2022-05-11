@@ -10,26 +10,26 @@ import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorPalette = darkColors(
-    primary = DeepPurple200,
-    primaryVariant = DeepPurple700,
-    secondaryVariant = DeepPurple700,
-    secondary = DeepPurple200
+    primary = Blue200,
+    primaryVariant = Blue700,
+    secondaryVariant = Blue700,
+    secondary = Blue200,
 )
 
 private val BlackColorPalette = darkColors(
-    primary = DeepPurple200,
-    primaryVariant = DeepPurple700,
-    secondary = DeepPurple200,
-    secondaryVariant = DeepPurple700,
+    primary = Blue200,
+    primaryVariant = Blue700,
+    secondary = Blue200,
+    secondaryVariant = Blue700,
     background = Color.Black,
-    surface = Color.Black
+    surface = Color.Black,
 )
 
 private val LightColorPalette = lightColors(
-    primary = DeepPurple500,
-    primaryVariant = DeepPurple700,
-    secondary = DeepPurple500,
-    secondaryVariant = DeepPurple700,
+    primary = Blue500,
+    primaryVariant = Blue700,
+    secondary = Blue500,
+    secondaryVariant = Blue700,
 
     /* Other default colors to override
     background = Color.White,
