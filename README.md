@@ -1,4 +1,4 @@
-<img src="https://github.com/uragiristereo/Mejiboard/raw/main/docs/banner.png" width="50%">
+<img src="docs/banner.png" width="100%">
 
 # Mejiboard
 image (イメージ) + board = メジboard (mejiboard)
