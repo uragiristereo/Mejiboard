@@ -237,7 +237,6 @@ fun SettingItemList(
                     scope.launch {
                         context.apply {
                             imageLoader.memoryCache?.clear()
-                            imageLoader.diskCache?.clear()
                             cacheDir.deleteRecursively()
                         }
 

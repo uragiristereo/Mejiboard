@@ -27,6 +27,7 @@ class MainApplication : Application(), ImageLoaderFactory {
                     .maxSizePercent(0.25)
                     .build()
             }
+            .diskCache(null)
             .okHttpClient(okHttpClient)
             .build()
     }
