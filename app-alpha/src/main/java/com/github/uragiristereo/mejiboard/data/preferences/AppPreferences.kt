@@ -22,7 +22,7 @@ data class AppPreferences(
     @SerialName(value = "auto_clean_cache")
     val autoCleanCache: Boolean = true,
     @SerialName(value = "block_from_recents")
-    val blockFromRecents: Boolean = true,
+    val blockFromRecents: Boolean = false,
     @SerialName(value = "remind_later_counter")
     val remindLaterCounter: Int = -1,
     @SerialName(value = "video_volume")
