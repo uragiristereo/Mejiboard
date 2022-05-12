@@ -1,5 +1,6 @@
-# Mejiboard
+<img src="https://github.com/uragiristereo/Mejiboard/raw/main/docs/banner.png" width="50%">
 
+# Mejiboard
 image (イメージ) + board = メジboard (mejiboard)
 
 An image board ~~client~~ viewer based on [Gelbooru](https://gelbooru.com) for android, made from Jetpack Compose 🚀.
@@ -16,24 +17,24 @@ An image board ~~client~~ viewer based on [Gelbooru](https://gelbooru.com) for a
 
 ## Download
 Latest **alpha** variant:
-- Version: `1.3.1-alpha`
-- Date: 2022-04-26
-- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.3.0-alpha) • [direct](https://github.com/uragiristereo/Mejiboard/releases/download/v1.3.1-alpha/Mejiboard_v1.3.1-alpha.apk)
+- Version: `1.4.0-alpha`
+- Date: 2022-05-12
+- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.4.0-alpha) • [direct](https://github.com/uragiristereo/Mejiboard/releases/download/v1.4.0-alpha/Mejiboard_v1.4.0-alpha.apk)
 
 Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more.
 
 ## Screenshots
-<img src="https://github.com/uragiristereo/Mejiboard/raw/main/app-alpha/screenshots.jpg">
+<img src="https://github.com/uragiristereo/Mejiboard/raw/main/docs/screenshots.jpg">
 
 ## To-Dos
 **Note: not in ordered list.**
 - [x] Implement check for update
 - [x] Implement custom video player controls
-- [x] Migrate to clean architecture
+- [x] Migrate to ~~clean~~ android app architecture (in progress)
+- [x] Change app icon
 - [ ] Use staggered grid layout
 - [ ] Use definitive progress bar for image loading
 - [ ] Use Storage Access Framework (SAF)
-- [ ] Change app icon
 - [ ] Join home screen with search screen
 - [ ] Back press returns to previous browsed tags instead exiting
 - [ ] Generate filename from tags
@@ -42,8 +43,7 @@ Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) sectio
 - [ ] Implement search guide
 - [ ] Implement favourites
 - [ ] Implement search history
-- [ ] Implement tags blacklisting
-- [ ] Enable safe listing toggle
+- [ ] Implement tags filtering
 
 ## Libraries used
 ### Official
