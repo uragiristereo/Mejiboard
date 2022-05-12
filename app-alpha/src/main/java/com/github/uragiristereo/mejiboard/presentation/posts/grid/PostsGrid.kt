@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.posts.grid
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -22,6 +23,8 @@ import com.github.uragiristereo.mejiboard.presentation.posts.PostsViewModel
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostItem
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostPlaceholder
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostsProgress
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @ExperimentalCoilApi
 @Composable
@@ -39,61 +42,68 @@ fun PostsGrid(
 
     LaunchedEffect(postsViewModel.newSearch) {
         if (postsViewModel.newSearch) {
-            gridState.scrollToItem(0)
-            postsViewModel.newSearch = false
+            launch {
+                delay(timeMillis = 200L)
+                gridState.scrollToItem(index = 0)
+                postsViewModel.newSearch = false
+            }
         }
     }
 
-    LazyColumn(
-        state = gridState,
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            end = 8.dp,
-            top = navigationBarsPadding.calculateTopPadding() + toolbarHeight + with(density) { browseHeightPx.toDp() },
-            bottom = navigationBarsPadding.calculateBottomPadding() + 56.dp + 8.dp,
-        ),
-    ) {
-        itemsIndexed(postsViewModel.postsData) { index, _ ->
-            if (index % gridCount == 0) {
-                Row(
-                    Modifier.padding(top = if (index != 0) 8.dp else 0.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val items = mutableListOf<Post>()
+    Crossfade(
+        targetState = postsViewModel.postsProgressVisible && postsViewModel.page == 0,
+    ) { target ->
+        if (!target) {
+            LazyColumn(
+                state = gridState,
+                contentPadding = PaddingValues(
+                    start = 8.dp,
+                    end = 8.dp,
+                    top = navigationBarsPadding.calculateTopPadding() + toolbarHeight + with(density) { browseHeightPx.toDp() },
+                    bottom = navigationBarsPadding.calculateBottomPadding() + 56.dp + 8.dp,
+                ),
+            ) {
+                itemsIndexed(postsViewModel.postsData) { index, _ ->
+                    if (index % gridCount == 0) {
+                        Row(
+                            Modifier.padding(top = if (index != 0) 8.dp else 0.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val items = mutableListOf<Post>()
 
-                    repeat(gridCount) {
-                        val itemIndex = index + it
-                        if (postsViewModel.postsData.size > itemIndex) items.add(postsViewModel.postsData[itemIndex])
-                    }
+                            repeat(gridCount) {
+                                val itemIndex = index + it
+                                if (postsViewModel.postsData.size > itemIndex) items.add(postsViewModel.postsData[itemIndex])
+                            }
 
-                    items.forEachIndexed { index, item ->
-                        PostItem(
-                            mainNavigation = mainNavigation,
-                            post = item,
-                            mainViewModel = mainViewModel,
-                            modifier = Modifier.weight(weight = 1f),
-                        )
+                            items.forEachIndexed { index, item ->
+                                PostItem(
+                                    mainNavigation = mainNavigation,
+                                    post = item,
+                                    mainViewModel = mainViewModel,
+                                    modifier = Modifier.weight(weight = 1f),
+                                )
 
-                        if (index != gridCount - 1) {
-                            Spacer(modifier = Modifier.width(8.dp))
+                                if (index != gridCount - 1) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                }
+                            }
+
+                            repeat(times = gridCount - items.size) {
+                                PostPlaceholder(modifier = Modifier.weight(weight = 1f))
+                            }
                         }
                     }
+                }
 
-                    repeat(times = gridCount - items.size) {
-                        PostPlaceholder(modifier = Modifier.weight(weight = 1f))
+                if (postsViewModel.postsData.isNotEmpty() && (postsViewModel.postsData.size == (postsViewModel.page + 1) * 100 || postsViewModel.postsProgressVisible)) {
+                    item(key = Constants.KEY_LOAD_MORE_PROGRESS) {
+                        PostsProgress()
                     }
                 }
             }
+        } else {
+            PostsProgress(modifier = Modifier.fillMaxHeight())
         }
-
-        if (postsViewModel.postsData.isNotEmpty() && (postsViewModel.postsData.size == (postsViewModel.page + 1) * 100 || postsViewModel.postsProgressVisible)) {
-            item(key = Constants.KEY_LOAD_MORE_PROGRESS) {
-                PostsProgress()
-            }
-        }
-    }
-
-    if (postsViewModel.postsProgressVisible && postsViewModel.postsData.isEmpty()) {
-        PostsProgress(modifier = Modifier.fillMaxHeight())
     }
 }

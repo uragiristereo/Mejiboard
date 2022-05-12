@@ -1,6 +1,10 @@
 package com.github.uragiristereo.mejiboard.presentation.image.image
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -22,13 +26,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.ImageLoader
-import coil.load
+import coil.imageLoader
 import coil.request.Disposable
+import coil.request.ImageRequest
 import com.github.uragiristereo.mejiboard.common.helper.ImageHelper
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
@@ -40,17 +45,19 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
+@ExperimentalAnimationApi
 @ExperimentalMaterialApi
 @Composable
 fun ImageViewer(
     state: ImageState,
     imageViewer: TouchImageView,
-    imageLoader: ImageLoader,
+    imageRequest: ImageRequest.Builder,
     sheetState: ModalBottomSheetState,
     viewModel: ImageViewModel = hiltViewModel(),
     onBackRequest: () -> Unit,
     onImageDispose: () -> Unit,
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     var originalImageDisposable: Disposable? = null
@@ -87,45 +94,59 @@ fun ImageViewer(
         onDispose { }
     }
 
-    AndroidView(
-        factory = { imageViewer },
-        update = { image ->
+    DisposableEffect(
+        keys = arrayOf(
+            state.showOriginalImage,
+            state.originalImageShown,
+        ),
+    ) {
+        scope.launch {
             if (state.showOriginalImage && !state.originalImageShown) {
-                viewModel.state.update { it.copy(originalImageShown = true) }
+                val resized = ImageHelper.resizeImage(post = post)
+
+                viewModel.state.update {
+                    it.copy(
+                        originalImageShown = true,
+                        imageLoading = true
+                    )
+                }
+
+                delay(timeMillis = 150L)
+
                 onImageDispose()
 
-                originalImageDisposable = image.load(
-                    data = ImageHelper.parseImageUrl(post = post, original = true),
-                    builder = {
-                        val resized = ImageHelper.resizeImage(post = post)
-
-                        size(width = resized.first, height = resized.second)
-
-                        listener(
-                            onStart = {
-                                viewModel.state.update { it.copy(imageLoading = true) }
-                            },
-                            onSuccess = { _, _ ->
-                                viewModel.state.update { it.copy(imageLoading = false) }
-                            },
+                originalImageDisposable = context.imageLoader.enqueue(
+                    request = imageRequest
+                        .data(
+                            data = ImageHelper.parseImageUrl(
+                                post = post,
+                                original = true,
+                            ),
                         )
-                    }
+                        .size(width = resized.first, height = resized.second)
+                        .build(),
                 )
             }
-        },
+        }
+
+        onDispose { }
+    }
+
+    AndroidView(
+        factory = { imageViewer },
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.Black)
             .pointerInput(key1 = Unit) {
                 forEachGesture {
-                    val context = currentCoroutineContext()
+                    val coroutineContext = currentCoroutineContext()
 
                     awaitPointerEventScope {
                         do {
                             val event = awaitPointerEvent()
 
                             viewModel.state.update { it.copy(fingerCount = event.changes.size) }
-                        } while (event.changes.any { it.pressed } && context.isActive)
+                        } while (event.changes.any { it.pressed } && coroutineContext.isActive)
                     }
                 }
             }
@@ -174,7 +195,11 @@ fun ImageViewer(
             ),
     )
 
-    if (state.imageLoading) {
+    AnimatedVisibility(
+        visible = state.imageLoading,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier

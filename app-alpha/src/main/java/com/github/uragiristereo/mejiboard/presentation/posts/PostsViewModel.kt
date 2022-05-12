@@ -60,7 +60,6 @@ class PostsViewModel @Inject constructor(
     ) {
         if (refresh) {
             _page.value = 0
-            postsData.clear()
             newSearch = true
         } else {
             newSearch = false
@@ -73,6 +72,10 @@ class PostsViewModel @Inject constructor(
         ).onEach { result ->
             when (result) {
                 is Resource.Success -> {
+                    if (refresh) {
+                        postsData.clear()
+                    }
+
                     _postsProgressVisible.value = false
                     postsData.addAll(elements = result.data ?: emptyList())
                 }
