@@ -175,6 +175,17 @@ fun AboutScreen(
                         Modifier.width(8.dp)
                     )
                     LinkIconButton(
+                        painter = painterResource(R.drawable.telegram_logo),
+                        text = "Telegram",
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/mejiboard_group"))
+                            context.startActivity(intent)
+                        }
+                    )
+                    Spacer(
+                        Modifier.width(8.dp)
+                    )
+                    LinkIconButton(
                         painter = painterResource(R.drawable.gelbooru_logo),
                         text = "Gelbooru",
                         onClick = {
@@ -264,34 +275,10 @@ fun AboutScreen(
                                     Modifier.width(8.dp)
                                 )
                                 LinkIconButton(
-                                    painter = painterResource(R.drawable.facebook_logo),
-                                    text = "Facebook",
+                                    painter = painterResource(R.drawable.telegram_logo),
+                                    text = "Telegram",
                                     onClick = {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://facebook.com/agutenx"))
-                                        context.startActivity(intent)
-                                    }
-                                )
-                            }
-                            Row(
-                                Modifier
-                                    .padding(top = 8.dp)
-                            ) {
-                                LinkIconButton(
-                                    painter = painterResource(R.drawable.twitter_logo),
-                                    text = "Twitter",
-                                    onClick = {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/uragiristereo"))
-                                        context.startActivity(intent)
-                                    }
-                                )
-                                Spacer(
-                                    Modifier.width(8.dp)
-                                )
-                                LinkIconButton(
-                                    painter = painterResource(R.drawable.outlook_logo),
-                                    text = "Email",
-                                    onClick = {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("mailto:raava@outlook.co.id"))
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/uragiristereo"))
                                         context.startActivity(intent)
                                     }
                                 )
