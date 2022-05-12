@@ -33,14 +33,13 @@ fun SheetInfoItem(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            leadingText,
-            Modifier
-                .padding(end = 4.dp)
+            text = leadingText,
+            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+            modifier = Modifier.padding(end = 4.dp),
         )
         Text(
-            trailingText,
-            color = MaterialTheme.colors.onSurface.copy(0.8f),
-            textAlign = TextAlign.End
+            text = trailingText,
+            textAlign = TextAlign.End,
         )
     }
 }
