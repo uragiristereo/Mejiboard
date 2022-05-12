@@ -30,6 +30,7 @@ fun PostPlaceholderLoading(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = Color.DarkGray),
+            .background(color = if (MaterialTheme.colors.isLight) Color.White else Color.Black)
+            .background(color = MaterialTheme.colors.primary.copy(alpha = 0.3f)),
     )
 }
