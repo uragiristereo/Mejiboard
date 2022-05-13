@@ -173,12 +173,6 @@ fun PostsScreen(
         }
     }
 
-    LaunchedEffect(key1 = animatedToolbarOffsetHeightPx) {
-        if (animatedToolbarOffsetHeightPx == toolbarOffsetHeightPx && animationInProgress) {
-            animationInProgress = false
-        }
-    }
-
     BackHandler(enabled = drawerState.isVisible && confirmExit) {
         scope.launch { drawerState.hide() }
     }
@@ -209,6 +203,8 @@ fun PostsScreen(
                     }
 
                     gridState.animateScrollBy(value = oldToolbarOffsetHeightPx - toolbarOffsetHeightPx)
+
+                    animationInProgress = false
                 }
             }
         }
