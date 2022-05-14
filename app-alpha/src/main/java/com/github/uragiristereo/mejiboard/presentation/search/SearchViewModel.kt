@@ -116,4 +116,8 @@ class SearchViewModel @Inject constructor(
             parsedQuery = SearchUtil.parseSearchQuery(query = query),
         )
     }
+
+    fun cancelSearch() {
+        job?.cancel()
+    }
 }

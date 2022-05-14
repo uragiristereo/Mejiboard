@@ -67,6 +67,12 @@ fun SearchScreen(
         onDispose { }
     }
 
+    DisposableEffect(key1 = viewModel) {
+        onDispose {
+            viewModel.cancelSearch()
+        }
+    }
+
     DisposableEffect(key1 = query.text) {
         if (query.text.isEmpty()) {
             viewModel.clearSearches()
