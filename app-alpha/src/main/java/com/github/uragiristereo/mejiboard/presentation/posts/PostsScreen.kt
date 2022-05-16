@@ -75,6 +75,9 @@ fun PostsScreen(
 
     val animatedToolbarOffsetHeightPx by animateFloatAsState(
         targetValue = toolbarOffsetHeightPx,
+        finishedListener = {
+            animationInProgress = false
+        },
     )
 
     DisposableEffect(key1 = postsViewModel) {
@@ -188,8 +191,6 @@ fun PostsScreen(
     DisposableEffect(key1 = gridState.isScrollInProgress) {
         scope.launch {
             if (!gridState.isScrollInProgress) {
-                delay(timeMillis = 50L)
-
                 if (gridState.firstVisibleItemIndex > 0 && toolbarOffsetHeightPx != -toolbarHeightPx + -browseHeightPx && toolbarOffsetHeightPx != 0f) {
                     animationInProgress = true
 
@@ -203,8 +204,6 @@ fun PostsScreen(
                     }
 
                     gridState.animateScrollBy(value = oldToolbarOffsetHeightPx - toolbarOffsetHeightPx)
-
-                    animationInProgress = false
                 }
             }
         }
