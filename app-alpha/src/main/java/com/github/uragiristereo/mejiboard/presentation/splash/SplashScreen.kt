@@ -29,9 +29,7 @@ fun SplashScreen(
     val preferences = mainViewModel.preferences
 
     LaunchedEffect(Unit) {
-        systemUiController.setSystemBarsColor(backgroundColor)
-
-        delay(300)
+        systemUiController.setSystemBarsColor(Color.Transparent)
 
         if (BuildConfig.DEBUG)
             mainViewModel.updateStatus = "latest"

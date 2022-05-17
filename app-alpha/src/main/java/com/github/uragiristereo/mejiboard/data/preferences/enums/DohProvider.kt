@@ -1,22 +1,16 @@
 package com.github.uragiristereo.mejiboard.data.preferences.enums
 
-import kotlinx.serialization.Serializable
 
-@Serializable
-sealed class DohProvider(
-    val name: String,
-    val url: String,
-) {
-    @Serializable
-    object Cloudflare : DohProvider(name = "cloudflare", url = "https://cloudflare-dns.com/dns-query")
+object DohProvider {
+    const val Cloudflare = "cloudflare"
+    const val Google = "google"
+    const val Tuna = "tuna"
 
-    @Serializable
-    object Google : DohProvider(name = "google", url = "https://dns.google/dns-query")
-
-    @Serializable
-    object Tuna : DohProvider(name = "tuna", url = "https://101.6.6.6:8443/dns-query")
-
-    override fun toString(): String {
-        return this.name.replaceFirstChar { it.uppercase() }
+    fun getUrl(provider: String): String {
+        return when (provider) {
+            Cloudflare -> "https://cloudflare-dns.com/dns-query"
+            Google -> "https://dns.google/dns-query"
+            else -> "https://101.6.6.6:8443/dns-query"
+        }
     }
 }

@@ -5,7 +5,6 @@ import androidx.datastore.dataStore
 import com.github.uragiristereo.mejiboard.data.model.Reference
 import com.github.uragiristereo.mejiboard.data.preferences.AppPreferences
 import com.github.uragiristereo.mejiboard.data.preferences.AppPreferencesSerializer
-import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
@@ -27,7 +26,7 @@ class PreferencesRepository(context: Context) {
         appDataStore.updateData { newData }
     }
 
-    fun getInitialTheme(): Theme {
+    fun getInitialTheme(): String {
         return runBlocking { appDataStore.data.map { it.theme }.first() }
     }
 }

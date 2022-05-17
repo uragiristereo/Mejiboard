@@ -23,6 +23,7 @@ import com.github.uragiristereo.mejiboard.data.model.AppUpdate
 import com.github.uragiristereo.mejiboard.data.model.DownloadInfo
 import com.github.uragiristereo.mejiboard.data.model.ReleaseInfo
 import com.github.uragiristereo.mejiboard.data.preferences.AppPreferences
+import com.github.uragiristereo.mejiboard.data.preferences.enums.DohProvider
 import com.github.uragiristereo.mejiboard.data.repository.DownloadRepository
 import com.github.uragiristereo.mejiboard.data.repository.PreferencesRepository
 import com.github.uragiristereo.mejiboard.domain.entity.Post
@@ -94,7 +95,7 @@ class MainViewModel @Inject constructor(
             refreshNeeded = true
             val dohEnabled = preferencesRepository.data.map { it.useDnsOverHttps }.first()
             val dohProvider = preferencesRepository.data.map { it.dohProvider }.first()
-            renewNetworkInstance(dohEnabled, dohProvider.name)
+            renewNetworkInstance(dohEnabled, DohProvider.getUrl(dohProvider))
             incrementLaterCounter()
         }
     }

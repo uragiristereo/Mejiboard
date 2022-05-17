@@ -33,7 +33,7 @@ import java.io.File
 fun ImagePost(
     state: ImageState,
     imageLoader: ImageLoader,
-    previewSize: PreviewSize,
+    previewSize: String,
     sheetState: ModalBottomSheetState,
     viewModel: ImageViewModel = hiltViewModel(),
     onBackRequest: () -> Unit,

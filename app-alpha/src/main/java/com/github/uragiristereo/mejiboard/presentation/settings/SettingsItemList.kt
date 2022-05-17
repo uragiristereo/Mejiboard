@@ -53,9 +53,26 @@ fun SettingItemList(
     val scope = rememberCoroutineScope()
     val preferences = mainViewModel.preferences
 
-    val themes = remember { Theme::class.sealedSubclasses.map { it.objectInstance as Theme } }
-    val previewSizes = remember { PreviewSize::class.sealedSubclasses.map { it.objectInstance as PreviewSize } }
-    val dohProviders = remember { DohProvider::class.sealedSubclasses.map { it.objectInstance as DohProvider } }
+    val themes = remember {
+        listOf(
+            Theme.System to "System default",
+            Theme.Light to "Light",
+            Theme.Dark to "Dark",
+        )
+    }
+    val previewSizes = remember {
+        listOf(
+            PreviewSize.Sample to "Compressed (sample)",
+            PreviewSize.Original to "Full size (original)",
+        )
+    }
+    val dohProviders = remember {
+        listOf(
+            DohProvider.Cloudflare to "Cloudflare",
+            DohProvider.Google to "Google",
+            DohProvider.Tuna to "Tuna",
+        )
+    }
 
     LazyColumn(
         state = columnState,
@@ -169,7 +186,7 @@ fun SettingItemList(
                     mainViewModel.apply {
                         renewNetworkInstance(
                             useDnsOverHttps = preferences.useDnsOverHttps,
-                            dohProvider = preferences.dohProvider.name,
+                            dohProvider = DohProvider.getUrl(preferences.dohProvider),
                         )
                         updatePreferences(newData = preferences.copy(useDnsOverHttps = it))
                         refreshNeeded = true
@@ -184,7 +201,14 @@ fun SettingItemList(
                 items = dohProviders,
                 selectedItem = preferences.dohProvider,
                 onItemSelected = {
-                    mainViewModel.updatePreferences(newData = preferences.copy(dohProvider = it))
+                    mainViewModel.apply {
+                        renewNetworkInstance(
+                            useDnsOverHttps = preferences.useDnsOverHttps,
+                            dohProvider = DohProvider.getUrl(preferences.dohProvider),
+                        )
+                        updatePreferences(newData = preferences.copy(dohProvider = it))
+                        refreshNeeded = true
+                    }
                 },
             )
         }

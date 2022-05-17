@@ -52,7 +52,7 @@ fun MainScreen(
             when (preferences.theme) {
                 Theme.Light -> false
                 Theme.Dark -> true
-                Theme.System -> isSystemDarkTheme
+                else -> isSystemDarkTheme
             }
     }
 

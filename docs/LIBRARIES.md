@@ -5,8 +5,6 @@
 - [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel): The ViewModel class is designed to store and manage UI-related data in a lifecycle conscious way.
 - [Room](https://developer.android.com/training/data-storage/room): A persistence library that provides an abstraction layer over SQLite to allow fluent database access while harnessing the full power of SQLite.
 - [Proto DataStore](https://developer.android.com/topic/libraries/architecture/datastore#proto-datastore): A data storage solution that allows you to store typed objects with protocol buffers.
-- [Kotlin Reflection](https://kotlinlang.org/docs/reflection.html): A set of language and library features that allows you to introspect the structure of your program at runtime.
-- [kotlinx.serialization](https://kotlinlang.org/docs/serialization.html): Provides sets of libraries for all supported platforms – JVM, JavaScript, Native – and for various serialization formats – JSON, CBOR, protocol buffers, and others.
 - [Firebase Crashlytics](https://firebase.google.com/docs/crashlytics): A lightweight, realtime crash reporter that helps you track, prioritize, and fix stability issues that erode your app quality.
 
 ### Open-source

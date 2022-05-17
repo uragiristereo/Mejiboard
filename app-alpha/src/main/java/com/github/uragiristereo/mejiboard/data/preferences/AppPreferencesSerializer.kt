@@ -1,7 +1,7 @@
 package com.github.uragiristereo.mejiboard.data.preferences
 
 import androidx.datastore.core.Serializer
-import kotlinx.serialization.json.Json
+import com.squareup.moshi.Moshi
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -9,13 +9,13 @@ import java.io.OutputStream
 object AppPreferencesSerializer : Serializer<AppPreferences> {
     override val defaultValue: AppPreferences
         get() = AppPreferences()
+    private val adapter = Moshi.Builder()
+        .build()
+        .adapter(AppPreferences::class.java)
 
     override suspend fun readFrom(input: InputStream): AppPreferences {
         return try {
-            Json.decodeFromString(
-                deserializer = AppPreferences.serializer(),
-                string = input.readBytes().decodeToString(),
-            )
+            adapter.fromJson(input.readBytes().decodeToString()) ?: defaultValue
         } catch (e: Exception) {
             e.printStackTrace()
             defaultValue
@@ -23,10 +23,7 @@ object AppPreferencesSerializer : Serializer<AppPreferences> {
     }
 
     override suspend fun writeTo(t: AppPreferences, output: OutputStream) {
-        val out = Json.encodeToString(
-            serializer = AppPreferences.serializer(),
-            value = t,
-        )
+        val out = adapter.toJson(t)
 
         output.write(out.encodeToByteArray())
     }

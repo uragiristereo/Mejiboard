@@ -36,7 +36,7 @@ import com.github.uragiristereo.mejiboard.presentation.posts.common.UpdateDialog
 import com.github.uragiristereo.mejiboard.presentation.posts.drawer.PostsBottomDrawer
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.PostsGrid
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -58,7 +58,7 @@ fun PostsScreen(
     val isLight = MaterialTheme.colors.isLight
     val surfaceColor = MaterialTheme.colors.surface
     val preferences = mainViewModel.preferences
-    val navigationBarsPadding =  LocalFixedInsets.current.navigationBarsPadding
+    val navigationBarsPadding = LocalFixedInsets.current.navigationBarsPadding
 
     val toolbarHeight = remember { 56.dp }
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.toPx() }
@@ -80,18 +80,18 @@ fun PostsScreen(
         },
     )
 
+    var scrollJob: Job? = remember { null }
+
     DisposableEffect(key1 = postsViewModel) {
         postsViewModel.allowPostClick = true
         if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
             systemUiController.setStatusBarColor(Color.Black)
             systemUiController.setNavigationBarColor(surfaceColor)
         } else {
-            val color = when {
-                mainViewModel.isDesiredThemeDark -> Color.Black
-                else -> surfaceColor
-            }
-
-            systemUiController.setStatusBarColor(color)
+            systemUiController.setStatusBarColor(
+                color = Color.Transparent,
+                darkIcons = isLight,
+            )
 
             if (drawerState.currentValue == ModalBottomSheetValue.Hidden)
                 systemUiController.setNavigationBarColor(
@@ -120,13 +120,34 @@ fun PostsScreen(
 
     DisposableEffect(key1 = Unit) {
         val job = scope.launch {
-            while (true) {
-                postsViewModel.updateSessionPosition(
-                    index = gridState.firstVisibleItemIndex,
-                    offset = gridState.firstVisibleItemScrollOffset,
-                )
+            launch {
+                while (true) {
+                    postsViewModel.updateSessionPosition(
+                        index = gridState.firstVisibleItemIndex,
+                        offset = gridState.firstVisibleItemScrollOffset,
+                    )
 
-                delay(timeMillis = 1000L)
+                    delay(timeMillis = 1000L)
+                }
+            }
+
+            launch {
+                while (true) {
+                    val isMoreLoadingVisible = gridState.layoutInfo.visibleItemsInfo
+                        .filter { it.key.toString() == Constants.KEY_LOAD_MORE_PROGRESS }
+                        .size == 1
+
+                    if (isMoreLoadingVisible && postsViewModel.postsData.size == (postsViewModel.page + 1) * 100)
+                        postsViewModel.getPosts(
+                            searchTags = mainViewModel.searchTags,
+                            refresh = false,
+                            safeListingOnly = preferences.safeListingOnly,
+                        )
+
+                    fabVisible = toolbarOffsetHeightPx == 0f && gridState.firstVisibleItemIndex >= 5
+
+                    delay(timeMillis = 350L)
+                }
             }
         }
 
@@ -143,37 +164,14 @@ fun PostsScreen(
                 postsViewModel.jumpToPosition = false
 
                 scope.launch {
+                    delay(timeMillis = 50L)
+
                     gridState.scrollToItem(postsViewModel.sessionIndex, postsViewModel.sessionOffset)
                 }
             }
         }
 
         onDispose { }
-    }
-
-    DisposableEffect(key1 = Unit) {
-        val job = scope.launch(Dispatchers.Main.immediate) {
-            while (true) {
-                val isMoreLoadingVisible = gridState.layoutInfo.visibleItemsInfo
-                    .filter { it.key.toString() == Constants.KEY_LOAD_MORE_PROGRESS }
-                    .size == 1
-
-                if (isMoreLoadingVisible && postsViewModel.postsData.size == (postsViewModel.page + 1) * 100)
-                    postsViewModel.getPosts(
-                        searchTags = mainViewModel.searchTags,
-                        refresh = false,
-                        safeListingOnly = preferences.safeListingOnly,
-                    )
-
-                fabVisible = toolbarOffsetHeightPx == 0f && gridState.firstVisibleItemIndex >= 5
-
-                delay(timeMillis = 350L)
-            }
-        }
-
-        onDispose {
-            job.cancel()
-        }
     }
 
     BackHandler(enabled = drawerState.isVisible && confirmExit) {
@@ -192,6 +190,8 @@ fun PostsScreen(
         scope.launch {
             if (!gridState.isScrollInProgress) {
                 if (gridState.firstVisibleItemIndex > 0 && toolbarOffsetHeightPx != -toolbarHeightPx + -browseHeightPx && toolbarOffsetHeightPx != 0f) {
+                    delay(timeMillis = 50L)
+
                     animationInProgress = true
 
                     val half = (toolbarHeightPx + browseHeightPx) / 2
@@ -238,28 +238,29 @@ fun PostsScreen(
             end = navigationBarsPadding.calculateEndPadding(LayoutDirection.Ltr),
         ),
     ) {
-        val nestedScrollConnection = remember {
-            object : NestedScrollConnection {
-                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                    val delta = available.y
-                    val newOffset = toolbarOffsetHeightPx + delta
-
-                    toolbarOffsetHeightPx = newOffset.coerceIn(-toolbarHeightPx + -browseHeightPx, 0f)
-
-                    return Offset.Zero
-                }
-            }
-        }
-
         Box(
             modifier = Modifier
                 .fixedStatusBarsPadding()
-                .let {
-                    when {
-                        !postsViewModel.postsProgressVisible && postsViewModel.postsData.size > 4 -> it.nestedScroll(connection = nestedScrollConnection)
-                        else -> it
+                .nestedScroll(
+                    connection = remember {
+                        object : NestedScrollConnection {
+                            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                                if (!postsViewModel.postsProgressVisible && postsViewModel.postsData.size > 4) {
+                                    scrollJob?.cancel()
+
+                                    scrollJob = scope.launch {
+                                        val delta = available.y
+                                        val newOffset = toolbarOffsetHeightPx + delta
+
+                                        toolbarOffsetHeightPx = newOffset.coerceIn(-toolbarHeightPx + -browseHeightPx, 0f)
+                                    }
+                                }
+
+                                return Offset.Zero
+                            }
+                        }
                     }
-                },
+                ),
         ) {
             if (postsViewModel.postsError.isEmpty())
                 PostsGrid(
@@ -286,7 +287,12 @@ fun PostsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(LocalFixedInsets.current.statusBarHeight)
-                .background(color = MaterialTheme.colors.background),
+                .background(
+                    color = when {
+                        MaterialTheme.colors.isLight -> Color.White
+                        else -> Color.Black
+                    }
+                ),
         )
     }
 

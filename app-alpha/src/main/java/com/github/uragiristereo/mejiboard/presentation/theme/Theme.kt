@@ -43,7 +43,7 @@ private val LightColorPalette = lightColors(
 
 @Composable
 fun MejiboardTheme(
-    theme: Theme = Theme.System,
+    theme: String = Theme.System,
     blackTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -51,7 +51,7 @@ fun MejiboardTheme(
         when (theme) {
             Theme.Light -> LightColorPalette
             Theme.Dark -> if (blackTheme) BlackColorPalette else DarkColorPalette
-            Theme.System -> {
+            else -> {
                 if (isSystemInDarkTheme())
                     if (blackTheme)
                         BlackColorPalette

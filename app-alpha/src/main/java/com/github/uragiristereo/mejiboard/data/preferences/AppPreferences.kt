@@ -3,28 +3,27 @@ package com.github.uragiristereo.mejiboard.data.preferences
 import com.github.uragiristereo.mejiboard.data.preferences.enums.DohProvider
 import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
 import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.Json
 
-@Serializable
+
 data class AppPreferences(
-    val theme: Theme = Theme.System,
-    @SerialName(value = "black_theme")
+    val theme: String = Theme.System,
+    @field:Json(name = "black_theme")
     val blackTheme: Boolean = false,
-    @SerialName(value = "preview_size")
-    val previewSize: PreviewSize = PreviewSize.Sample,
-    @SerialName(value = "safe_listing_only")
+    @field:Json(name = "preview_size")
+    val previewSize: String = PreviewSize.Sample,
+    @field:Json(name = "safe_listing_only")
     val safeListingOnly: Boolean = true,
-    @SerialName(value = "doh_enabled")
+    @field:Json(name = "doh_enabled")
     val useDnsOverHttps: Boolean = true,
-    @SerialName(value = "doh_provider")
-    val dohProvider: DohProvider = DohProvider.Cloudflare,
-    @SerialName(value = "auto_clean_cache")
+    @field:Json(name = "doh_provider")
+    val dohProvider: String = DohProvider.Cloudflare,
+    @field:Json(name = "auto_clean_cache")
     val autoCleanCache: Boolean = true,
-    @SerialName(value = "block_from_recents")
+    @field:Json(name = "block_from_recents")
     val blockFromRecents: Boolean = false,
-    @SerialName(value = "remind_later_counter")
+    @field:Json(name = "remind_later_counter")
     val remindLaterCounter: Int = -1,
-    @SerialName(value = "video_volume")
+    @field:Json(name = "video_volume")
     val videoVolume: Float = 0.5f,
 )

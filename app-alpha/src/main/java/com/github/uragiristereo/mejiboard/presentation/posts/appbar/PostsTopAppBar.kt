@@ -9,7 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -31,16 +33,14 @@ fun PostsTopAppBar(
 ) {
     Column(
         modifier = Modifier
-            .offset {
-                IntOffset(
-                    x = 0,
-                    y =
-                    if (animationInProgress)
-                        animatedToolbarOffsetHeightPx.roundToInt()
-                    else
-                        toolbarOffsetHeightPx.roundToInt(),
-                )
-            }
+            .offset(
+                y = with(LocalDensity.current) {
+                    when {
+                        animationInProgress -> animatedToolbarOffsetHeightPx
+                        else -> toolbarOffsetHeightPx
+                    }.toDp()
+                }
+            )
             .background(color = MaterialTheme.colors.background),
     ) {
         Card(

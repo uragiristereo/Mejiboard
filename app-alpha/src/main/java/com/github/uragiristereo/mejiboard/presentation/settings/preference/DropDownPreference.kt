@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun <T> DropDownPreference(
     title: String,
-    items: List<T>,
+    items: List<Pair<T, String>>,
     selectedItem: T,
     onItemSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
@@ -25,7 +25,7 @@ fun <T> DropDownPreference(
 
     RegularPreference(
         title = title,
-        subtitle = selectedItem.toString(),
+        subtitle = items.first { it.first == selectedItem }.second,
         onClick = {
             dropDownExpanded = true
         },
@@ -49,18 +49,18 @@ fun <T> DropDownPreference(
                     onClick = {
                         dropDownExpanded = false
 
-                        onItemSelected(item)
+                        onItemSelected(item.first)
                     },
                     modifier = Modifier
                         .background(
-                            color = if (selectedItem == item)
+                            color = if (selectedItem == item.first)
                                 MaterialTheme.colors.primary.copy(alpha = 0.3f)
                             else
                                 Color.Unspecified,
                         ),
                     content = {
                         Text(
-                            text = item.toString(),
+                            text = item.second,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
@@ -73,15 +73,19 @@ fun <T> DropDownPreference(
 @Preview(showBackground = true)
 @Composable
 private fun DropDownPreferencePreview() {
-    val themes = listOf("System default", "Light", "Dark")
+    val themes = listOf(
+        "system" to "System default",
+        "light" to "Light",
+        "dark" to "Dark",
+    )
     var selectedTheme by remember { mutableStateOf(value = themes[0]) }
 
     DropDownPreference(
         title = "Theme",
         items = themes,
         selectedItem = selectedTheme,
-        onItemSelected = {
-             selectedTheme = themes[themes.indexOf(it)]
+        onItemSelected = { selected ->
+             selectedTheme = themes.first{ it.first ==  selected}
         },
     )
 }
