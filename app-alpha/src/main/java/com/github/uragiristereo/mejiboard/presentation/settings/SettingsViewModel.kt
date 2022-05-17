@@ -42,21 +42,19 @@ class SettingsViewModel @Inject constructor(
     fun shouldUseBigHeader(
         columnState: LazyListState,
         onPerformScroll: (index: Int) -> Unit,
-    ) {
+    ): Boolean {
         val half = (0.6f * _state.settingsHeaderSize).toInt()
-
-        state.update { it.copy(
-            useBigHeader = if (columnState.firstVisibleItemIndex == 0)
-                columnState.firstVisibleItemScrollOffset < half
-            else
-                false
-        ) }
 
         if (columnState.firstVisibleItemIndex == 0 && columnState.firstVisibleItemScrollOffset != 0 && !columnState.isScrollInProgress) {
             if (columnState.firstVisibleItemScrollOffset < half)
                 onPerformScroll(0)
             else
                 onPerformScroll(1)
+        }
+
+        return when (columnState.firstVisibleItemIndex) {
+            0 -> columnState.firstVisibleItemScrollOffset < half
+            else -> false
         }
     }
 

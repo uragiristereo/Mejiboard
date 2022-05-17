@@ -63,7 +63,12 @@ fun PostsGrid(
                     bottom = navigationBarsPadding.calculateBottomPadding() + 56.dp + 8.dp,
                 ),
             ) {
-                itemsIndexed(postsViewModel.postsData) { index, _ ->
+                itemsIndexed(
+                    items = postsViewModel.postsData,
+                    key = { _, item ->
+                        item.id
+                    },
+                ) { index, _ ->
                     if (index % gridCount == 0) {
                         Row(
                             Modifier.padding(top = if (index != 0) 8.dp else 0.dp),

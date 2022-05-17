@@ -92,11 +92,11 @@ class MainViewModel @Inject constructor(
         }.launchIn(viewModelScope)
 
         viewModelScope.launch {
-            refreshNeeded = true
             val dohEnabled = preferencesRepository.data.map { it.useDnsOverHttps }.first()
             val dohProvider = preferencesRepository.data.map { it.dohProvider }.first()
             renewNetworkInstance(dohEnabled, DohProvider.getUrl(dohProvider))
             incrementLaterCounter()
+            refreshNeeded = true
         }
     }
 

@@ -7,10 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -18,10 +15,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsTopAppBar
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 const val ENABLE_SAFE_LISTING_TOGGLE = false
@@ -52,32 +49,24 @@ fun SettingsScreen(
         animationSpec = tween(durationMillis = 350),
     )
 
-    DisposableEffect(key1 = Unit) {
-        scope.launch { viewModel.getFormattedFolderSize(context.cacheDir) }
-
-        val job = scope.launch {
-            while (true) {
-                if (state.settingsHeaderSize > 0) {
-                    viewModel.shouldUseBigHeader(
-                        columnState = columnState,
-                        onPerformScroll = {
-                            launch { columnState.animateScrollToItem(index = it) }
-                        },
-                    )
-                }
-
-                delay(timeMillis = 100L)
-            }
-        }
-
-        mainViewModel.checkForUpdate()
-
-        onDispose {
-            job.cancel()
+    val useBigHeader by remember {
+        derivedStateOf {
+            viewModel.shouldUseBigHeader(
+                columnState = columnState,
+                onPerformScroll = {
+                    scope.launch { columnState.animateScrollToItem(index = it) }
+                },
+            )
         }
     }
 
-    DisposableEffect(key1 = surfaceColor, key2 = isLight) {
+    LaunchedEffect(key1 = Unit) {
+        viewModel.getFormattedFolderSize(context.cacheDir)
+
+        mainViewModel.checkForUpdate()
+    }
+
+    LaunchedEffect(key1 = surfaceColor, key2 = isLight) {
         systemUiController.apply {
             if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
                 setStatusBarColor(Color.Black)
@@ -87,8 +76,10 @@ fun SettingsScreen(
                 setNavigationBarColor(surfaceColor.copy(0.4f))
             }
         }
+    }
 
-        onDispose { }
+    LaunchedEffect(key1 = useBigHeader) {
+        viewModel.state.update { it.copy(useBigHeader = useBigHeader) }
     }
 
     Scaffold(

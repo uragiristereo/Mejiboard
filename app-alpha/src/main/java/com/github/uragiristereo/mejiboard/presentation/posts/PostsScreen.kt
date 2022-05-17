@@ -3,9 +3,7 @@ package com.github.uragiristereo.mejiboard.presentation.posts
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
@@ -66,21 +64,35 @@ fun PostsScreen(
     var browseHeightPx by remember { mutableStateOf(0f) }
     var dropDownExpanded by remember { mutableStateOf(false) }
     var confirmExit by remember { mutableStateOf(true) }
-    var fabVisible by remember { mutableStateOf(false) }
-    val gridCount = when (configuration.orientation) {
-        Configuration.ORIENTATION_PORTRAIT -> 2
-        else -> 5
+    val fabVisible by remember {
+        derivedStateOf {
+            toolbarOffsetHeightPx == 0f && gridState.firstVisibleItemIndex >= 5
+        }
+    }
+    val gridCount by remember {
+        derivedStateOf {
+            when (configuration.orientation) {
+                Configuration.ORIENTATION_PORTRAIT -> 2
+                else -> 5
+            }
+        }
     }
     var animationInProgress by remember { mutableStateOf(false) }
-
-    val animatedToolbarOffsetHeightPx by animateFloatAsState(
-        targetValue = toolbarOffsetHeightPx,
-        finishedListener = {
-            animationInProgress = false
-        },
-    )
-
+//    val animatedToolbarOffsetHeightPx by animateFloatAsState(
+//        targetValue = offsetToAnimate,
+//        finishedListener = {
+//            animationInProgress = false
+//        },
+//    )
+    val animatedToolbarOffsetHeightPx = remember { 0f }
     var scrollJob: Job? = remember { null }
+    val isMoreLoadingVisible by remember {
+        derivedStateOf {
+            gridState.layoutInfo.visibleItemsInfo
+                .filter { it.key.toString() == Constants.KEY_LOAD_MORE_PROGRESS }
+                .size == 1
+        }
+    }
 
     DisposableEffect(key1 = postsViewModel) {
         postsViewModel.allowPostClick = true
@@ -130,25 +142,6 @@ fun PostsScreen(
                     delay(timeMillis = 1000L)
                 }
             }
-
-            launch {
-                while (true) {
-                    val isMoreLoadingVisible = gridState.layoutInfo.visibleItemsInfo
-                        .filter { it.key.toString() == Constants.KEY_LOAD_MORE_PROGRESS }
-                        .size == 1
-
-                    if (isMoreLoadingVisible && postsViewModel.postsData.size == (postsViewModel.page + 1) * 100)
-                        postsViewModel.getPosts(
-                            searchTags = mainViewModel.searchTags,
-                            refresh = false,
-                            safeListingOnly = preferences.safeListingOnly,
-                        )
-
-                    fabVisible = toolbarOffsetHeightPx == 0f && gridState.firstVisibleItemIndex >= 5
-
-                    delay(timeMillis = 350L)
-                }
-            }
         }
 
         onDispose {
@@ -174,6 +167,45 @@ fun PostsScreen(
         onDispose { }
     }
 
+    // TODO: fix scrolling lag
+//    DisposableEffect(key1 = gridState.isScrollInProgress) {
+//        scope.launch {
+//            if (!gridState.isScrollInProgress) {
+//                if (gridState.firstVisibleItemIndex > 0 && toolbarOffsetHeightPx != -toolbarHeightPx + -browseHeightPx && toolbarOffsetHeightPx != 0f) {
+//                    delay(timeMillis = 50L)
+//
+//                    animationInProgress = true
+//
+//                    val half = (toolbarHeightPx + browseHeightPx) / 2
+//
+//                    val oldToolbarOffsetHeightPx = toolbarOffsetHeightPx
+//
+//                    toolbarOffsetHeightPx = when {
+//                        -toolbarOffsetHeightPx >= half -> -toolbarHeightPx + -browseHeightPx
+//                        else -> 0f
+//                    }
+//
+//                    gridState.animateScrollBy(value = oldToolbarOffsetHeightPx - toolbarOffsetHeightPx)
+//                }
+//            }
+//        }
+//
+//        onDispose { }
+//    }
+
+    LaunchedEffect(
+        key1 = isMoreLoadingVisible,
+        key2 = postsViewModel.postsData.size,
+    ) {
+        if (isMoreLoadingVisible && postsViewModel.postsData.size == (postsViewModel.page + 1) * 100) {
+            postsViewModel.getPosts(
+                searchTags = mainViewModel.searchTags,
+                refresh = false,
+                safeListingOnly = preferences.safeListingOnly,
+            )
+        }
+    }
+
     BackHandler(enabled = drawerState.isVisible && confirmExit) {
         scope.launch { drawerState.hide() }
     }
@@ -184,31 +216,6 @@ fun PostsScreen(
             scaffoldState.snackbarHostState.showSnackbar("Press BACK again to exit Mejiboard", null, SnackbarDuration.Short)
             confirmExit = true
         }
-    }
-
-    DisposableEffect(key1 = gridState.isScrollInProgress) {
-        scope.launch {
-            if (!gridState.isScrollInProgress) {
-                if (gridState.firstVisibleItemIndex > 0 && toolbarOffsetHeightPx != -toolbarHeightPx + -browseHeightPx && toolbarOffsetHeightPx != 0f) {
-                    delay(timeMillis = 50L)
-
-                    animationInProgress = true
-
-                    val half = (toolbarHeightPx + browseHeightPx) / 2
-
-                    val oldToolbarOffsetHeightPx = toolbarOffsetHeightPx
-
-                    toolbarOffsetHeightPx = when {
-                        -toolbarOffsetHeightPx >= half -> -toolbarHeightPx + -browseHeightPx
-                        else -> 0f
-                    }
-
-                    gridState.animateScrollBy(value = oldToolbarOffsetHeightPx - toolbarOffsetHeightPx)
-                }
-            }
-        }
-
-        onDispose { }
     }
 
     if (mainViewModel.updateDialogVisible && mainViewModel.remindLaterCounter == -1) {

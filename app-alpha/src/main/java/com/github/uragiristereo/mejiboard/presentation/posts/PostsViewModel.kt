@@ -77,7 +77,14 @@ class PostsViewModel @Inject constructor(
                     }
 
                     _postsProgressVisible.value = false
-                    postsData.addAll(elements = result.data ?: emptyList())
+                    postsData.addAll(
+                        elements = result.data
+                            ?.filter { resultPost ->
+                                !postsData.any { post ->
+                                    post.id == resultPost.id
+                                }
+                            } ?: emptyList(),
+                    )
                 }
                 is Resource.Loading -> {
                     _postsError.value = ""
