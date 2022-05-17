@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.Divider
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
@@ -52,6 +50,8 @@ fun SettingItemList(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val preferences = mainViewModel.preferences
+
+    val enableSafeListingToggle by remember { mutableStateOf(false) }
 
     val themes = remember {
         listOf(
@@ -135,7 +135,7 @@ fun SettingItemList(
             )
         }
 
-        if (ENABLE_SAFE_LISTING_TOGGLE) {
+        if (enableSafeListingToggle) {
             item {
                 SwitchPreference(
                     title = "Safe listing only mode",

@@ -6,53 +6,36 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.domain.entity.Post
 import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
-import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
-import com.github.uragiristereo.mejiboard.presentation.posts.PostsViewModel
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostItem
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostPlaceholder
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostsProgress
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @ExperimentalCoilApi
 @Composable
 fun PostsGrid(
-    mainViewModel: MainViewModel,
-    mainNavigation: NavHostController,
-    gridCount: Int,
+    posts: List<Post>,
     gridState: LazyListState,
+    gridCount: Int,
+    loading: Boolean,
+    page: Int,
     toolbarHeight: Dp,
     browseHeightPx: Float,
-    postsViewModel: PostsViewModel = hiltViewModel(),
+    allowPostClick: Boolean,
+    onNavigateImage: (Post) -> Unit,
 ) {
     val density = LocalDensity.current
     val navigationBarsPadding = LocalFixedInsets.current.navigationBarsPadding
 
-    LaunchedEffect(postsViewModel.newSearch) {
-        if (postsViewModel.newSearch) {
-            launch {
-                delay(timeMillis = 200L)
-                gridState.scrollToItem(index = 0)
-                postsViewModel.newSearch = false
-            }
-        }
-    }
-
-    Crossfade(
-        targetState = postsViewModel.postsProgressVisible && postsViewModel.page == 0,
-    ) { target ->
+    Crossfade(targetState = loading && page == 0) { target ->
         if (!target) {
             LazyColumn(
                 state = gridState,
@@ -64,28 +47,28 @@ fun PostsGrid(
                 ),
             ) {
                 itemsIndexed(
-                    items = postsViewModel.postsData,
+                    items = posts,
                     key = { _, item ->
                         item.id
                     },
                 ) { index, _ ->
                     if (index % gridCount == 0) {
                         Row(
-                            Modifier.padding(top = if (index != 0) 8.dp else 0.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(top = if (index != 0) 8.dp else 0.dp),
                         ) {
                             val items = mutableListOf<Post>()
 
                             repeat(gridCount) {
                                 val itemIndex = index + it
-                                if (postsViewModel.postsData.size > itemIndex) items.add(postsViewModel.postsData[itemIndex])
+                                if (posts.size > itemIndex) items.add(posts[itemIndex])
                             }
 
                             items.forEachIndexed { index, item ->
                                 PostItem(
-                                    mainNavigation = mainNavigation,
-                                    post = item,
-                                    mainViewModel = mainViewModel,
+                                    item = item,
+                                    allowPostClick = allowPostClick,
+                                    onNavigateImage = onNavigateImage,
                                     modifier = Modifier.weight(weight = 1f),
                                 )
 
@@ -101,7 +84,7 @@ fun PostsGrid(
                     }
                 }
 
-                if (postsViewModel.postsData.isNotEmpty() && (postsViewModel.postsData.size == (postsViewModel.page + 1) * 100 || postsViewModel.postsProgressVisible)) {
+                if (posts.isNotEmpty() && (posts.size == (page + 1) * 100 || loading)) {
                     item(key = Constants.KEY_LOAD_MORE_PROGRESS) {
                         PostsProgress()
                     }

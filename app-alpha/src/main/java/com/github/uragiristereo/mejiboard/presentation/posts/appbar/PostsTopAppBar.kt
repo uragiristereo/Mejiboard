@@ -26,20 +26,13 @@ import kotlin.math.roundToInt
 @Composable
 fun PostsTopAppBar(
     toolbarOffsetHeightPx: Float,
-    animatedToolbarOffsetHeightPx: Float,
-    animationInProgress: Boolean,
     onBrowseHeightChange: (Float) -> Unit,
     searchTags: String,
 ) {
     Column(
         modifier = Modifier
             .offset(
-                y = with(LocalDensity.current) {
-                    when {
-                        animationInProgress -> animatedToolbarOffsetHeightPx
-                        else -> toolbarOffsetHeightPx
-                    }.toDp()
-                }
+                y = with(LocalDensity.current) { toolbarOffsetHeightPx.toDp() },
             )
             .background(color = MaterialTheme.colors.background),
     ) {

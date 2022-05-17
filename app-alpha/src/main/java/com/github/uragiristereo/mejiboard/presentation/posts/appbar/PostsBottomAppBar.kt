@@ -14,11 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
-import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
-import com.github.uragiristereo.mejiboard.presentation.posts.PostsViewModel
+import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
@@ -26,17 +23,14 @@ import kotlinx.coroutines.launch
 @ExperimentalMaterialApi
 @Composable
 fun PostsBottomAppBar(
-    mainNavigation: NavHostController,
     drawerState: ModalBottomSheetState,
-    dropDownExpanded: Boolean,
+    moreDropDownExpanded: Boolean,
+    onNavigate: (String) -> Unit,
     onDropDownExpandedChange: (Boolean) -> Unit,
-    onToolbarOffsetHeightPxChange: (Float) -> Unit,
-    mainViewModel: MainViewModel,
-    postsViewModel: PostsViewModel = hiltViewModel(),
+    onDropDownClicked: (String) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val systemUiController = rememberSystemUiController()
-    val preferences = mainViewModel.preferences
 
     BottomAppBar(
         backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.95f),
@@ -70,8 +64,9 @@ fun PostsBottomAppBar(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceEvenly,
-                        modifier = Modifier
-                            .clickable { mainNavigation.navigate("search") },
+                        modifier = Modifier.clickable {
+                            onNavigate("${MainRoute.Search}")
+                        },
                     ) {
                         Icon(imageVector = Icons.Default.Search, contentDescription = null)
 
@@ -86,24 +81,19 @@ fun PostsBottomAppBar(
                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
 
                 DropdownMenu(
-                    expanded = dropDownExpanded,
+                    expanded = moreDropDownExpanded,
                     onDismissRequest = { onDropDownExpandedChange(false) }
                 ) {
                     DropdownMenuItem(
                         onClick = {
-                            onDropDownExpandedChange(false)
-                            postsViewModel.getPosts(mainViewModel.searchTags, true, preferences.safeListingOnly)
-                            onToolbarOffsetHeightPxChange(0f)
+                            onDropDownClicked("refresh")
                         },
                         content = { Text(text = "Refresh") }
                     )
 
                     DropdownMenuItem(
                         onClick = {
-                            onDropDownExpandedChange(false)
-                            mainViewModel.saveSearchTags(query = "")
-                            postsViewModel.getPosts(mainViewModel.searchTags, true, preferences.safeListingOnly)
-                            onToolbarOffsetHeightPxChange(0f)
+                            onDropDownClicked("all_post")
                         },
                         content = { Text(text = "All posts") }
                     )

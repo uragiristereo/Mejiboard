@@ -15,30 +15,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.github.uragiristereo.mejiboard.domain.entity.Post
-import com.github.uragiristereo.mejiboard.presentation.common.extension.navigate
-import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
-import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
-import com.github.uragiristereo.mejiboard.presentation.posts.PostsViewModel
 import java.io.File
 
 @Composable
 fun PostItem(
-    mainNavigation: NavHostController,
-    post: Post,
-    mainViewModel: MainViewModel,
+    item: Post,
+    allowPostClick: Boolean,
+    onNavigateImage: (Post) -> Unit,
     modifier: Modifier = Modifier,
-    postsViewModel: PostsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
 
-    val imageType = remember { File(post.image).extension }
+    val imageType = remember { File(item.image).extension }
     val supportedTypesAnimation = remember { listOf("gif", "webm", "mp4") }
-    val url = remember { "https://img3.gelbooru.com/thumbnails/" + post.directory + "/thumbnail_" + post.hash + ".jpg" }
+    val url = remember { "https://img3.gelbooru.com/thumbnails/" + item.directory + "/thumbnail_" + item.hash + ".jpg" }
     val borderColor = remember {
         when (imageType) {
             "gif" -> Color.Cyan
@@ -59,15 +52,8 @@ fun PostItem(
                 )
             )
             .clickable {
-                if (postsViewModel.allowPostClick) {
-                    postsViewModel.allowPostClick = false
-                    mainViewModel.saveSelectedPost(post)
-                    mainViewModel.backPressedByGesture = false
-
-                    mainNavigation.navigate(
-                        route = "${MainRoute.Image}",
-                        data = MainRoute.Image.Key to post,
-                    )
+                if (allowPostClick) {
+                    onNavigateImage(item)
                 }
             }
     ) {

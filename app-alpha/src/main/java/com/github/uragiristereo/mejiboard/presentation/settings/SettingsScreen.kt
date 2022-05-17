@@ -21,8 +21,6 @@ import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsTop
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
-const val ENABLE_SAFE_LISTING_TOGGLE = false
-
 @ExperimentalCoilApi
 @ExperimentalAnimationApi
 @Composable
@@ -97,13 +95,14 @@ fun SettingsScreen(
                     .windowInsetsBottomHeight(insets = WindowInsets.navigationBars)
             )
         },
-    ) {
+    ) { innerPadding ->
         SettingItemList(
             state = state,
             columnState = columnState,
             bigHeaderOpacity = bigHeaderOpacity,
             innerPadding = WindowInsets.navigationBars.asPaddingValues(),
             mainViewModel = mainViewModel,
+            modifier = Modifier.padding(innerPadding)
         )
     }
 }

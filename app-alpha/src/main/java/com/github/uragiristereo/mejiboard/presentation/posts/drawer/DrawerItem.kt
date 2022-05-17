@@ -34,61 +34,6 @@ fun DrawerItem(
             color = MaterialTheme.colors.primary.copy(alpha = 0.2f)
             contentColor = MaterialTheme.colors.primary
         } else {
-            color = MaterialTheme.colors.primaryVariant.copy(alpha = 0.3f)
-            contentColor = MaterialTheme.colors.primaryVariant
-        }
-    } else {
-        color = MaterialTheme.colors.surface
-        contentColor = MaterialTheme.colors.onSurface
-    }
-
-    Surface(
-        color = color,
-        contentColor = contentColor,
-        shape = RoundedCornerShape(4.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                start = 8.dp,
-                end = 8.dp,
-                bottom = 8.dp,
-            ),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .clickable(onClick = onClick)
-                .padding(8.dp),
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-            Text(
-                text = text,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun DrawerItem3(
-    text: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    selected: Boolean = false,
-) {
-    val color: Color
-    val contentColor: Color
-
-    if (selected) {
-        if (!MaterialTheme.colors.isLight) {
-            color = MaterialTheme.colors.primary.copy(alpha = 0.2f)
-            contentColor = MaterialTheme.colors.primary
-        } else {
             color = MaterialTheme.colors.primary.copy(alpha = 0.4f)
             contentColor = MaterialTheme.colors.onSurface
         }

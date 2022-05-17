@@ -18,7 +18,8 @@ fun PostsProgress(
             .fillMaxWidth()
             .padding(16.dp),
         contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator()
-    }
+        content = {
+            CircularProgressIndicator()
+        },
+    )
 }
