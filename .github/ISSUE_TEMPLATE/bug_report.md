@@ -2,28 +2,36 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
-
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Describe the bug:**
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+[a clear and concise description of what you expected to happen.]
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+---
+**How to reproduce:**
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+[steps to reproduce the behavior]
 
-**Additional information**
- - Device: [e.g. Google Pixel 3]
- - OS: [e.g. Stock Android 12]
- - Mejiboard version [e.g. v1.0.0-alpha]
+---
+**Screenshot** (optional):
+
+[embed the images here using `<img src="url_here">` format]
+
+---
+**Stacktrace** (for application crash bug only):
+
+```java
+
+[paste the stacktrace here]
+
+```
+
+---
+**REQUIRED information:**
+
+- Mejiboard version: [e.g. `v1.0.0-alpha`]
+
+**Note:** additional information may be required if asked.
