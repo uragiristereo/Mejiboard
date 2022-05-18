@@ -8,7 +8,7 @@ assignees: ''
 
 **Describe the bug:**
 
-[a clear and concise description of what you expected to happen.]
+[a clear and concise description of what you expected to happen]
 
 ---
 **How to reproduce:**
@@ -16,7 +16,7 @@ assignees: ''
 [steps to reproduce the behavior]
 
 ---
-**Screenshot** (optional):
+**Screenshots** (optional):
 
 [embed the images here using `<img src="url_here">` format]
 
@@ -34,4 +34,8 @@ assignees: ''
 
 - Mejiboard version: [e.g. `v1.0.0-alpha`]
 
-**Note:** additional information may be required if asked.
+---
+
+**Notes:**
+- Remove this notes and unused section before submitting.
+- Additional information may be required if asked.
