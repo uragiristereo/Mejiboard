@@ -137,7 +137,6 @@ class PostsViewModel @Inject constructor(
 
     fun updateSessionPosition(index: Int, offset: Int) {
         savedState = PostsSavedState(
-            loadFromSession = true,
             scrollIndex = index,
             scrollOffset = offset,
         )
