@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
@@ -177,10 +178,10 @@ fun MoreInfo(
                     SheetItem(
                         text = "Show tags",
                         icon = {
-//                            Icon(
-//                                painter = painterResource(id = R.drawable.expand_more),
-//                                contentDescription = "Close",
-//                            )
+                            Icon(
+                                painter = painterResource(id = R.drawable.expand_more),
+                                contentDescription = "Close",
+                            )
                         },
                         onClick = {
                             if (state.infoData.isEmpty()) {
