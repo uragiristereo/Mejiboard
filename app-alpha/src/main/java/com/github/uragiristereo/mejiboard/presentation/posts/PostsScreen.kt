@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.posts
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -39,6 +40,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @ExperimentalAnimationApi
 @ExperimentalCoilApi
 @ExperimentalMaterialApi
@@ -149,7 +151,10 @@ fun PostsScreen(
                 scope.launch {
                     delay(timeMillis = 50L)
 
-                    gridState.scrollToItem(viewModel.savedState.scrollIndex, viewModel.savedState.scrollOffset)
+                    gridState.scrollToItem(
+                        viewModel.savedState.scrollIndex,
+                        viewModel.savedState.scrollOffset
+                    )
                 }
             }
         }
@@ -277,90 +282,86 @@ fun PostsScreen(
             start = navigationBarsPadding.calculateStartPadding(LocalLayoutDirection.current),
             end = navigationBarsPadding.calculateEndPadding(LocalLayoutDirection.current),
         ),
-    ) { innerPadding ->
+    ) {
         Box(
-            modifier = Modifier.padding(innerPadding),
-        ) {
-            Box(
-                modifier = Modifier
-                    .fixedStatusBarsPadding()
-                    .nestedScroll(
-                        connection = remember {
-                            object : NestedScrollConnection {
-                                override fun onPreScroll(
-                                    available: Offset,
-                                    source: NestedScrollSource
-                                ): Offset {
-                                    if (!viewModel.state.loading && viewModel.state.posts.size > 4) {
-                                        viewModel.scrollJob?.cancel()
+            modifier = Modifier
+                .fixedStatusBarsPadding()
+                .nestedScroll(
+                    connection = remember {
+                        object : NestedScrollConnection {
+                            override fun onPreScroll(
+                                available: Offset,
+                                source: NestedScrollSource
+                            ): Offset {
+                                if (!viewModel.state.loading && viewModel.state.posts.size > 4) {
+                                    viewModel.scrollJob?.cancel()
 
-                                        viewModel.scrollJob = scope.launch {
-                                            val delta = available.y
-                                            val newOffset =
-                                                viewModel.state.toolbarOffsetHeightPx + delta
+                                    viewModel.scrollJob = scope.launch {
+                                        val delta = available.y
+                                        val newOffset =
+                                            viewModel.state.toolbarOffsetHeightPx + delta
 
-                                            viewModel.updateState {
-                                                it.copy(
-                                                    toolbarOffsetHeightPx = newOffset.coerceIn(
-                                                        minimumValue = -toolbarHeightPx + -viewModel.state.browseHeightPx,
-                                                        maximumValue = 0f,
-                                                    )
+                                        viewModel.updateState {
+                                            it.copy(
+                                                toolbarOffsetHeightPx = newOffset.coerceIn(
+                                                    minimumValue = -toolbarHeightPx + -viewModel.state.browseHeightPx,
+                                                    maximumValue = 0f,
                                                 )
-                                            }
+                                            )
                                         }
                                     }
-
-                                    return Offset.Zero
                                 }
+
+                                return Offset.Zero
                             }
                         }
-                    ),
-            ) {
-                if (viewModel.state.error.isEmpty())
-                    PostsGrid(
-                        posts = viewModel.state.posts,
-                        gridState = gridState,
-                        gridCount = gridCount,
-                        loading = viewModel.state.loading,
-                        page = viewModel.state.page,
-                        toolbarHeight = toolbarHeight,
-                        browseHeightPx = viewModel.state.browseHeightPx,
-                        allowPostClick = viewModel.state.allowPostClick,
-                        onNavigateImage = { item ->
-                            viewModel.updateState { it.copy(allowPostClick = false) }
-                            mainViewModel.saveSelectedPost(item)
-                            mainViewModel.backPressedByGesture = false
+                    }
+                ),
+        ) {
+            if (viewModel.state.error.isEmpty())
+                PostsGrid(
+                    posts = viewModel.state.posts,
+                    gridState = gridState,
+                    gridCount = gridCount,
+                    loading = viewModel.state.loading,
+                    page = viewModel.state.page,
+                    toolbarHeight = toolbarHeight,
+                    browseHeightPx = viewModel.state.browseHeightPx,
+                    allowPostClick = viewModel.state.allowPostClick,
+                    onNavigateImage = { item ->
+                        viewModel.updateState { it.copy(allowPostClick = false) }
+                        mainViewModel.saveSelectedPost(item)
+                        mainViewModel.backPressedByGesture = false
 
-                            mainNavigation.navigate(
-                                route = "${MainRoute.Image}",
-                                data = MainRoute.Image.Key to item,
-                            )
-                        },
-                    )
-                else
-                    PostsError(errorData = viewModel.state.error)
-
-                PostsTopAppBar(
-                    toolbarOffsetHeightPx = viewModel.state.toolbarOffsetHeightPx,
-                    onBrowseHeightChange = { height ->
-                        viewModel.updateState { it.copy(browseHeightPx = height) }
+                        mainNavigation.navigate(
+                            route = "${MainRoute.Image}",
+                            data = MainRoute.Image.Key to item,
+                        )
                     },
-                    searchTags = mainViewModel.searchTags,
                 )
-            }
+            else
+                PostsError(errorData = viewModel.state.error)
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(LocalFixedInsets.current.statusBarHeight)
-                    .background(
-                        color = when {
-                            MaterialTheme.colors.isLight -> Color.White
-                            else -> Color.Black
-                        }
-                    ),
+            PostsTopAppBar(
+                toolbarOffsetHeightPx = viewModel.state.toolbarOffsetHeightPx,
+                onBrowseHeightChange = { height ->
+                    viewModel.updateState { it.copy(browseHeightPx = height) }
+                },
+                searchTags = mainViewModel.searchTags,
             )
         }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(LocalFixedInsets.current.statusBarHeight)
+                .background(
+                    color = when {
+                        MaterialTheme.colors.isLight -> Color.White
+                        else -> Color.Black
+                    }
+                ),
+        )
     }
 
     PostsBottomDrawer(

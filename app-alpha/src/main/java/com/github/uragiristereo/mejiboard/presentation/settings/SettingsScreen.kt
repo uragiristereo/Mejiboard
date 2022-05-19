@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.settings
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -21,6 +22,7 @@ import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsTop
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @ExperimentalCoilApi
 @ExperimentalAnimationApi
 @Composable
@@ -95,14 +97,13 @@ fun SettingsScreen(
                     .windowInsetsBottomHeight(insets = WindowInsets.navigationBars)
             )
         },
-    ) { innerPadding ->
+    ) {
         SettingItemList(
             state = state,
             columnState = columnState,
             bigHeaderOpacity = bigHeaderOpacity,
             innerPadding = WindowInsets.navigationBars.asPaddingValues(),
             mainViewModel = mainViewModel,
-            modifier = Modifier.padding(innerPadding)
         )
     }
 }
