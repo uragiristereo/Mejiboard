@@ -111,9 +111,9 @@ fun MoreInfo(
             item {
                 val rating = remember {
                     when (post.rating) {
-                        "s" -> "Safe"
-                        "q" -> "Questionable"
-                        "e" -> "Explicit"
+                        "safe" -> "Safe"
+                        "questionable" -> "Questionable"
+                        "explicit" -> "Explicit"
                         else -> "Safe"
                     }
                 }
