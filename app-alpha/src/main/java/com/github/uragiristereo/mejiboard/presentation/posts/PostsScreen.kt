@@ -18,8 +18,11 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.Constants
@@ -37,6 +40,7 @@ import com.github.uragiristereo.mejiboard.presentation.posts.common.UpdateDialog
 import com.github.uragiristereo.mejiboard.presentation.posts.drawer.PostsBottomDrawer
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.PostsGrid
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -51,6 +55,7 @@ fun PostsScreen(
     viewModel: PostsViewModel = hiltViewModel(),
 ) {
     val configuration = LocalConfiguration.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val navigationBarsPadding = LocalFixedInsets.current.navigationBarsPadding
 
     val drawerState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
@@ -69,7 +74,7 @@ fun PostsScreen(
 
     val fabVisible by remember {
         derivedStateOf {
-            viewModel.state.browseHeightPx == 0f && gridState.firstVisibleItemIndex >= 5
+            viewModel.state.toolbarOffsetHeightPx == 0f && gridState.firstVisibleItemIndex >= 5
         }
     }
     val gridCount by remember {
@@ -88,22 +93,35 @@ fun PostsScreen(
         }
     }
 
-    DisposableEffect(key1 = Unit) {
-        val job = scope.launch {
-            launch {
-                while (true) {
-                    viewModel.updateSessionPosition(
-                        index = gridState.firstVisibleItemIndex,
-                        offset = gridState.firstVisibleItemScrollOffset,
-                    )
+    DisposableEffect(key1 = lifecycleOwner) {
+        var job: Job? = null
 
-                    delay(timeMillis = 1000L)
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> {
+                    job = scope.launch {
+                        while (true) {
+                            viewModel.updateSessionPosition(
+                                index = gridState.firstVisibleItemIndex,
+                                offset = gridState.firstVisibleItemScrollOffset,
+                            )
+
+                            delay(timeMillis = 1000L)
+                        }
+                    }
+                }
+                Lifecycle.Event.ON_RESUME -> {}
+                else -> {
+                    job?.cancel()
                 }
             }
         }
 
+        lifecycleOwner.lifecycle.addObserver(observer)
+
         onDispose {
-            job.cancel()
+            job?.cancel()
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
