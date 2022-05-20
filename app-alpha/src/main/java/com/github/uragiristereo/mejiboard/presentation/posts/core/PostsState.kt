@@ -21,6 +21,7 @@ data class PostsState(
 
     // scaffold
     val confirmExit: Boolean = true,
+    val lastFabVisible: Boolean = false,
 
     // image post
     val allowPostClick: Boolean = true,

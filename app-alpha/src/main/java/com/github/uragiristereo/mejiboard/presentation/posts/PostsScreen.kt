@@ -74,9 +74,22 @@ fun PostsScreen(
 
     val fabVisible by remember {
         derivedStateOf {
-            viewModel.state.toolbarOffsetHeightPx == 0f && gridState.firstVisibleItemIndex >= 5
+            if (gridState.firstVisibleItemIndex >= 5) {
+                when (viewModel.state.toolbarOffsetHeightPx) {
+                    0f -> true
+                    -(toolbarHeightPx + viewModel.state.browseHeightPx) -> false
+                    else -> viewModel.state.lastFabVisible
+                }
+            } else {
+                false
+            }
         }
     }
+
+    LaunchedEffect(key1 = fabVisible) {
+        viewModel.updateState { it.copy(lastFabVisible = fabVisible) }
+    }
+
     val gridCount by remember {
         derivedStateOf {
             when (configuration.orientation) {
@@ -85,6 +98,7 @@ fun PostsScreen(
             }
         }
     }
+
     val isMoreLoadingVisible by remember {
         derivedStateOf {
             gridState.layoutInfo.visibleItemsInfo
