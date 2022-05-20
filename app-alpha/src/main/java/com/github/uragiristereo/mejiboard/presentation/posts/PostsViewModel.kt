@@ -36,6 +36,10 @@ class PostsViewModel @Inject constructor(
     var scrollJob: Job? = null
     private var sessionPosts = listOf<Post>()
 
+    init {
+        Timber.i("$savedState")
+    }
+
     inline fun updateState(body: (PostsState) -> PostsState) {
         mutableState.value = body(state)
     }
@@ -99,8 +103,7 @@ class PostsViewModel @Inject constructor(
 
     fun getPostsFromSession() {
         viewModelScope.launch(Dispatchers.IO) {
-            savedState = PostsSavedState(loadFromSession = false)
-
+            savedState = savedState.copy(loadFromSession = false)
             updateState { it.copy(loading = true) }
 
             sessionPosts = appDatabase.sessionDao()
@@ -122,7 +125,6 @@ class PostsViewModel @Inject constructor(
     fun updateSessionPosts() {
         viewModelScope.launch(Dispatchers.IO) {
             if (state.posts.toList() != sessionPosts.toList()) {
-                Timber.i("saving session")
                 appDatabase.sessionDao().deleteAll()
 
                 val convertedPosts = state.posts.mapIndexed { index, post ->
@@ -136,14 +138,14 @@ class PostsViewModel @Inject constructor(
     }
 
     fun updateSessionPosition(index: Int, offset: Int) {
-        savedState = PostsSavedState(
+        savedState = savedState.copy(
             scrollIndex = index,
             scrollOffset = offset,
         )
 
         savedStateHandle.set(
             key = Constants.STATE_KEY_POSTS,
-            value = savedState,
+            value = savedState.copy(loadFromSession = true),
         )
     }
 }
