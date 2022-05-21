@@ -9,18 +9,14 @@ import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.extension.toPost
 import com.github.uragiristereo.mejiboard.common.extension.toSessionPost
 import com.github.uragiristereo.mejiboard.data.database.AppDatabase
-import com.github.uragiristereo.mejiboard.data.model.Resource
 import com.github.uragiristereo.mejiboard.domain.entity.Post
-import com.github.uragiristereo.mejiboard.domain.usecase.GetPostsUseCase
+import com.github.uragiristereo.mejiboard.domain.usecase.api.GetPostsUseCase
 import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsSavedState
 import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,72 +29,85 @@ class PostsViewModel @Inject constructor(
     val state by mutableState
     var savedState = savedStateHandle[Constants.STATE_KEY_POSTS] ?: PostsSavedState()
 
-    var scrollJob: Job? = null
+    private var postsJob: Job? = null
     private var sessionPosts = listOf<Post>()
-
-    init {
-        Timber.i("$savedState")
-    }
 
     inline fun updateState(body: (PostsState) -> PostsState) {
         mutableState.value = body(state)
     }
 
-    fun getPosts(
-        searchTags: String,
-        refresh: Boolean,
-        safeListingOnly: Boolean,
-    ) {
-        if (refresh) {
-            updateState {
-                it.copy(
-                    page = 0,
-                    newSearch = true,
-                )
-            }
-        } else {
-            updateState {
-                it.copy(
-                    page = it.page + 1,
-                    newSearch = false,
-                )
-            }
-        }
+    fun retryGetPosts() {
+        fetchPosts(tags = state.tags, refresh = false)
+    }
 
-        getPostsUseCase(
-            pageId = state.page,
-            searchTags = if (safeListingOnly) "$searchTags rating:safe" else searchTags,
-        ).onEach { result ->
-            when (result) {
-                is Resource.Success -> {
+    private fun fetchPosts(
+        tags: String,
+        refresh: Boolean,
+        onLoaded: () -> Unit = { },
+    ) {
+        postsJob?.cancel()
+        updateState { it.copy(error = "") }
+
+        postsJob = viewModelScope.launch {
+            getPostsUseCase(
+                tags = tags,
+                pageId = state.page,
+                onLoading = { loading ->
+                    updateState { it.copy(loading = loading) }
+                },
+                onSuccess = { result ->
                     if (refresh) {
                         state.posts.clear()
                     }
 
-                    updateState { it.copy(loading = false) }
+                    onLoaded()
+
+                    updateState {
+                        it.copy(
+                            error = "",
+                            unfilteredPostsCount = state.posts.size + result.size
+                        )
+                    }
 
                     state.posts.addAll(
-                        elements = result.data
-                            ?.filter { resultPost ->
+                        elements = result
+                            .filter { resultPost ->
                                 !state.posts.any { post ->
                                     post.id == resultPost.id
                                 }
-                            } ?: emptyList(),
+                            },
                     )
-                }
-                is Resource.Loading -> {
-                    updateState {
-                        it.copy(
-                            loading = true,
-                            error = "",
-                        )
-                    }
-                }
-                is Resource.Error -> {
-                    updateState { it.copy(error = result.message ?: "An unexpected error occurred") }
-                }
-            }
-        }.launchIn(viewModelScope)
+                },
+                onFailed = { msg ->
+                    updateState { it.copy(error = msg) }
+                },
+                onError = { t ->
+                    updateState { it.copy(error = t.toString()) }
+                },
+            )
+        }
+    }
+
+    fun getPosts(
+        refresh: Boolean,
+        safeListingOnly: Boolean,
+        onLoaded: () -> Unit = { },
+    ) {
+        updateState {
+            it.copy(
+                page = if (refresh) 0 else it.page + 1,
+            )
+        }
+
+        if (refresh) {
+            state.posts.clear()
+        }
+
+        fetchPosts(
+            tags = if (safeListingOnly) "${state.tags} rating:safe" else state.tags,
+            refresh = refresh,
+            onLoaded = onLoaded,
+        )
     }
 
     fun getPostsFromSession() {
@@ -143,9 +152,6 @@ class PostsViewModel @Inject constructor(
             scrollOffset = offset,
         )
 
-        savedStateHandle.set(
-            key = Constants.STATE_KEY_POSTS,
-            value = savedState.copy(loadFromSession = true),
-        )
+        savedStateHandle[Constants.STATE_KEY_POSTS] = savedState.copy(loadFromSession = true)
     }
 }

@@ -23,6 +23,7 @@ import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostsPr
 @Composable
 fun PostsGrid(
     posts: List<Post>,
+    unfilteredPostsCount: Int,
     gridState: LazyListState,
     gridCount: Int,
     loading: Boolean,
@@ -84,7 +85,7 @@ fun PostsGrid(
                     }
                 }
 
-                if (posts.isNotEmpty() && (posts.size == (page + 1) * 100 || loading)) {
+                if (posts.isNotEmpty() && (unfilteredPostsCount == (page + 1) * 100 || loading)) {
                     item(key = Constants.KEY_LOAD_MORE_PROGRESS) {
                         PostsProgress()
                     }

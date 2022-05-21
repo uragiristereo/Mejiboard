@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
 @ExperimentalMaterialApi
 @Composable
 fun PostsScreen(
+    tags: String,
     mainNavigation: NavHostController,
     mainViewModel: MainViewModel,
     viewModel: PostsViewModel = hiltViewModel(),
@@ -64,17 +65,28 @@ fun PostsScreen(
     val scaffoldState = rememberScaffoldState()
     val systemUiController = rememberSystemUiController()
 
-    val preferences = mainViewModel.preferences
-
     val isLight = MaterialTheme.colors.isLight
     val surfaceColor = MaterialTheme.colors.surface
+
+    remember {
+        if (!viewModel.state.initialized) {
+            viewModel.updateState {
+                it.copy(
+                    tags = tags,
+                    initialized = true,
+                )
+            }
+        }
+
+        true
+    }
 
     val toolbarHeight = remember { 56.dp }
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.toPx() }
 
     val fabVisible by remember {
         derivedStateOf {
-            if (gridState.firstVisibleItemIndex >= 5) {
+            if (gridState.firstVisibleItemIndex >= 5 && viewModel.state.posts.isNotEmpty()) {
                 when (viewModel.state.toolbarOffsetHeightPx) {
                     0f -> true
                     -(toolbarHeightPx + viewModel.state.browseHeightPx) -> false
@@ -141,6 +153,7 @@ fun PostsScreen(
 
     LaunchedEffect(key1 = viewModel) {
         viewModel.updateState { it.copy(allowPostClick = true) }
+
         if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
             systemUiController.setStatusBarColor(Color.Black)
             systemUiController.setNavigationBarColor(surfaceColor)
@@ -166,7 +179,10 @@ fun PostsScreen(
             if (viewModel.savedState.loadFromSession) {
                 viewModel.getPostsFromSession()
             } else {
-                viewModel.getPosts(mainViewModel.searchTags, true, preferences.safeListingOnly)
+                viewModel.getPosts(
+                    refresh = true,
+                    safeListingOnly = mainViewModel.preferences.safeListingOnly,
+                )
             }
 
             mainViewModel.refreshNeeded = false
@@ -180,12 +196,12 @@ fun PostsScreen(
             if (viewModel.state.jumpToPosition) {
                 viewModel.updateState { it.copy(jumpToPosition = false) }
 
-                scope.launch {
+                launch {
                     delay(timeMillis = 50L)
 
                     gridState.scrollToItem(
                         viewModel.savedState.scrollIndex,
-                        viewModel.savedState.scrollOffset
+                        viewModel.savedState.scrollOffset,
                     )
                 }
             }
@@ -227,25 +243,13 @@ fun PostsScreen(
 
     LaunchedEffect(
         key1 = isMoreLoadingVisible,
-        key2 = viewModel.state.posts.size,
+        key2 = viewModel.state.unfilteredPostsCount,
     ) {
-        if (isMoreLoadingVisible && viewModel.state.posts.size == (viewModel.state.page + 1) * 100) {
+        if (isMoreLoadingVisible && viewModel.state.unfilteredPostsCount == (viewModel.state.page + 1) * 100) {
             viewModel.getPosts(
-                searchTags = mainViewModel.searchTags,
                 refresh = false,
-                safeListingOnly = preferences.safeListingOnly,
+                safeListingOnly = mainViewModel.preferences.safeListingOnly,
             )
-        }
-    }
-
-    LaunchedEffect(viewModel.state.newSearch) {
-        if (viewModel.state.newSearch) {
-            launch {
-                delay(timeMillis = 200L)
-
-                gridState.scrollToItem(index = 0)
-                viewModel.updateState { it.copy(newSearch = false) }
-            }
         }
     }
 
@@ -278,11 +282,12 @@ fun PostsScreen(
                     scope.launch {
                         gridState.animateScrollToItem(index = 0)
                     }
-                }
+                },
             )
         },
         bottomBar = {
             PostsBottomAppBar(
+                tags = viewModel.state.tags,
                 drawerState = drawerState,
                 moreDropDownExpanded = viewModel.state.moreDropDownExpanded,
                 onNavigate = { route ->
@@ -293,7 +298,7 @@ fun PostsScreen(
                 },
                 onDropDownClicked = { item ->
                     if (item == "all_post") {
-                        mainViewModel.saveSearchTags(query = "")
+                        viewModel.updateState { it.copy(tags = "") }
                     }
 
                     viewModel.updateState {
@@ -302,10 +307,13 @@ fun PostsScreen(
                             moreDropDownExpanded = false,
                         )
                     }
+
                     viewModel.getPosts(
-                        searchTags = mainViewModel.searchTags,
                         refresh = true,
-                        safeListingOnly = preferences.safeListingOnly,
+                        safeListingOnly = mainViewModel.preferences.safeListingOnly,
+                        onLoaded = {
+                            scope.launch { gridState.scrollToItem(index = 0) }
+                        },
                     )
                 },
             )
@@ -326,21 +334,17 @@ fun PostsScreen(
                                 source: NestedScrollSource
                             ): Offset {
                                 if (!viewModel.state.loading && viewModel.state.posts.size > 4) {
-                                    viewModel.scrollJob?.cancel()
+                                    val delta = available.y
+                                    val newOffset =
+                                        viewModel.state.toolbarOffsetHeightPx + delta
 
-                                    viewModel.scrollJob = scope.launch {
-                                        val delta = available.y
-                                        val newOffset =
-                                            viewModel.state.toolbarOffsetHeightPx + delta
-
-                                        viewModel.updateState {
-                                            it.copy(
-                                                toolbarOffsetHeightPx = newOffset.coerceIn(
-                                                    minimumValue = -toolbarHeightPx + -viewModel.state.browseHeightPx,
-                                                    maximumValue = 0f,
-                                                )
+                                    viewModel.updateState {
+                                        it.copy(
+                                            toolbarOffsetHeightPx = newOffset.coerceIn(
+                                                minimumValue = -toolbarHeightPx + -viewModel.state.browseHeightPx,
+                                                maximumValue = 0f,
                                             )
-                                        }
+                                        )
                                     }
                                 }
 
@@ -350,9 +354,10 @@ fun PostsScreen(
                     }
                 ),
         ) {
-            if (viewModel.state.error.isEmpty())
+            if (viewModel.state.error.isEmpty()) {
                 PostsGrid(
                     posts = viewModel.state.posts,
+                    unfilteredPostsCount = viewModel.state.unfilteredPostsCount,
                     gridState = gridState,
                     gridCount = gridCount,
                     loading = viewModel.state.loading,
@@ -362,7 +367,6 @@ fun PostsScreen(
                     allowPostClick = viewModel.state.allowPostClick,
                     onNavigateImage = { item ->
                         viewModel.updateState { it.copy(allowPostClick = false) }
-                        mainViewModel.saveSelectedPost(item)
                         mainViewModel.backPressedByGesture = false
 
                         mainNavigation.navigate(
@@ -371,15 +375,19 @@ fun PostsScreen(
                         )
                     },
                 )
-            else
-                PostsError(errorData = viewModel.state.error)
+            } else {
+                PostsError(
+                    errorData = viewModel.state.error,
+                    onRetryClick = { viewModel.retryGetPosts() },
+                )
+            }
 
             PostsTopAppBar(
                 toolbarOffsetHeightPx = viewModel.state.toolbarOffsetHeightPx,
                 onBrowseHeightChange = { height ->
                     viewModel.updateState { it.copy(browseHeightPx = height) }
                 },
-                searchTags = mainViewModel.searchTags,
+                searchTags = viewModel.state.tags,
             )
         }
 

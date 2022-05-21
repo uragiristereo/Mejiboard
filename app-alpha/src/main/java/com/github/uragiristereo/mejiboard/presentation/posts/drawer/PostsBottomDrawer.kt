@@ -20,6 +20,7 @@ import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.presentation.common.DragHandle
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
+import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
@@ -87,7 +88,7 @@ fun PostsBottomDrawer(
                     onClick = {
                         scope.launch {
                             drawerState.hide()
-                            mainNavigation.navigate("settings")
+                            mainNavigation.navigate("${MainRoute.Settings}")
                         }
                     },
                     selected = false,
@@ -99,7 +100,7 @@ fun PostsBottomDrawer(
                     onClick = {
                         scope.launch {
                             drawerState.hide()
-                            mainNavigation.navigate("about")
+                            mainNavigation.navigate("${MainRoute.About}")
                         }
                     },
                     selected = false,

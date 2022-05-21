@@ -13,6 +13,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 @ExperimentalMaterialApi
 @Composable
 fun PostsBottomAppBar(
+    tags: String,
     drawerState: ModalBottomSheetState,
     moreDropDownExpanded: Boolean,
     onNavigate: (String) -> Unit,
@@ -31,10 +33,15 @@ fun PostsBottomAppBar(
 ) {
     val scope = rememberCoroutineScope()
     val systemUiController = rememberSystemUiController()
+    val endPadding = LocalFixedInsets.current.navigationBarsPadding
+        .calculateEndPadding(LocalLayoutDirection.current)
 
     BottomAppBar(
         backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.95f),
-        contentPadding = LocalFixedInsets.current.navigationBarsPadding,
+        contentPadding = when (endPadding) {
+            0.dp -> LocalFixedInsets.current.navigationBarsPadding
+            else -> PaddingValues()
+        },
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -65,7 +72,7 @@ fun PostsBottomAppBar(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         modifier = Modifier.clickable {
-                            onNavigate("${MainRoute.Search}")
+                            onNavigate(MainRoute.Search.parseRoute(value = tags))
                         },
                     ) {
                         Icon(imageVector = Icons.Default.Search, contentDescription = null)
