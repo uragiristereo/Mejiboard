@@ -67,7 +67,7 @@ fun SearchItem(
             )
 
             Text(
-                text = item.postCount,
+                text = "%,d".format(item.postCount.toInt()),
                 textAlign = TextAlign.Right,
                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
                 modifier = Modifier.weight(weight = 0.2f),

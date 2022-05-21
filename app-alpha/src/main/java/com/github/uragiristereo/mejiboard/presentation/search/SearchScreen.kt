@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
+import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.github.uragiristereo.mejiboard.presentation.search.core.SearchView
 import com.github.uragiristereo.mejiboard.presentation.search.quickshortcutbar.QuickShortcutBar
 import com.github.uragiristereo.mejiboard.presentation.search.result.SearchResult
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 @ExperimentalComposeUiApi
 @Composable
 fun SearchScreen(
+    tags: String,
     mainNavigation: NavHostController,
     mainViewModel: MainViewModel,
     viewModel: SearchViewModel = hiltViewModel(),
@@ -51,8 +53,8 @@ fun SearchScreen(
 
         if (query.text.isEmpty()) {
             query = TextFieldValue(
-                text = mainViewModel.searchTags,
-                selection = TextRange(mainViewModel.searchTags.length),
+                text = tags,
+                selection = TextRange(tags.length),
             )
         } else {
             viewModel.parseSearchQuery(query = query.text)
@@ -122,10 +124,11 @@ fun SearchScreen(
                 onQueryTextSubmit = {
                     viewModel.parseSearchQuery(it.text)
                     mainViewModel.refreshNeeded = true
-                    mainViewModel.saveSearchTags(state.parsedQuery)
 
                     keyboardController?.hide()
-                    mainNavigation.navigate(route = "main") {
+                    mainNavigation.navigate(
+                        route = MainRoute.Posts.parseRoute(value = state.parsedQuery),
+                    ) {
                         popUpTo(id = 0)
                     }
                 },

@@ -54,7 +54,6 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
     val state = mutableStateOf(MainState())
     var okHttpClient = networkRepository.okHttpClient
-    var imageLoader = networkRepository.imageLoader
 
     // preferences
     var preferences by mutableStateOf(AppPreferences(theme = preferencesRepository.getInitialTheme()))
@@ -65,17 +64,8 @@ class MainViewModel @Inject constructor(
     // posts, search & settings
     var refreshNeeded by mutableStateOf(false)
 
-    // posts & search
-    var searchTags by mutableStateOf(savedStateHandle.get(Constants.STATE_KEY_SEARCH_TAGS) ?: "")
-
-    // posts & image
-    var selectedPost: Post? = savedStateHandle.get(Constants.STATE_KEY_SELECTED_POST)
-
-    // bookmarks
-//    var bookmarks by mutableStateOf<List<Bookmark>>(listOf())
-
     // image
-    private var notificationCount = savedStateHandle.get(Constants.STATE_KEY_NOTIFICATION_COUNT) ?: 0
+    private var notificationCount = savedStateHandle[Constants.STATE_KEY_NOTIFICATION_COUNT] ?: 0
     var backPressedByGesture = false
 
     // update
@@ -108,7 +98,7 @@ class MainViewModel @Inject constructor(
 
     private fun getNewNotificationCount(): Int {
         notificationCount = notificationCount.inc()
-        savedStateHandle.set(Constants.STATE_KEY_NOTIFICATION_COUNT, notificationCount)
+        savedStateHandle[Constants.STATE_KEY_NOTIFICATION_COUNT] = notificationCount
 
         return notificationCount
     }
@@ -119,12 +109,6 @@ class MainViewModel @Inject constructor(
     ) {
         networkRepository.renewInstance(useDnsOverHttps, dohProvider)
         okHttpClient = networkRepository.okHttpClient
-        imageLoader = networkRepository.imageLoader
-    }
-
-    fun saveSelectedPost(post: Post) {
-        selectedPost = post
-        savedStateHandle.set(Constants.STATE_KEY_SELECTED_POST, post)
     }
 
     private fun download(
@@ -336,10 +320,5 @@ class MainViewModel @Inject constructor(
                 remindLaterCounter = remindLaterCounter,
             )
         )
-    }
-
-    fun saveSearchTags(query: String) {
-        searchTags = query
-        savedStateHandle.set(Constants.STATE_KEY_SEARCH_TAGS, query)
     }
 }

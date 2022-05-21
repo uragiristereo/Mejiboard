@@ -5,6 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavType
@@ -38,20 +39,26 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
         if (splashShown) {
             MaterialMotionNavHost(
                 navController = mainNavigation,
-                startDestination = "${MainRoute.Main}",
+                startDestination = "${MainRoute.Posts}",
             ) {
                 composable(
-                    route = "${MainRoute.Main}",
+                    route = "${MainRoute.Posts}",
+                    arguments = listOf(
+                        navArgument(name = MainRoute.Posts.Key) {
+                            type = NavType.StringType
+                            defaultValue = MainRoute.Posts.defaultValue
+                        },
+                    ),
                     enterMotionSpec = {
                         when (initialState.destination.route) {
-                            "${MainRoute.Main}" -> materialFadeIn()
+                            "${MainRoute.Posts}" -> materialFadeIn()
                             "${MainRoute.Search}" -> holdIn()
                             else -> materialSharedAxisZNoFadeIn()
                         }
                     },
                     exitMotionSpec = {
                         when (targetState.destination.route) {
-                            "${MainRoute.Main}" -> materialFadeOut()
+                            "${MainRoute.Posts}" -> materialFadeOut()
                             "${MainRoute.Image}" -> holdOut()
                             "${MainRoute.Search}" -> holdOut()
                             else -> materialSharedAxisZNoFadeOut()
@@ -71,18 +78,42 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
                             else -> materialSharedAxisZNoFadeOut()
                         }
                     },
-                    content = { PostsScreen(mainNavigation, mainViewModel) },
+                    content = { entry ->
+                        val tags =
+                            remember { entry.arguments?.getString(MainRoute.Posts.Key) ?: MainRoute.Posts.defaultValue }
+
+                        PostsScreen(
+                            tags = tags,
+                            mainNavigation = mainNavigation,
+                            mainViewModel = mainViewModel,
+                        )
+                    },
                 )
 
                 composable(
                     route = "${MainRoute.Search}",
+                    arguments = listOf(
+                        navArgument(name = MainRoute.Search.Key) {
+                            type = NavType.StringType
+                            defaultValue = MainRoute.Search.defaultValue
+                        },
+                    ),
                     enterMotionSpec = {
                         holdIn()
                     },
                     popExitMotionSpec = {
                         materialFadeOut()
                     },
-                    content = { SearchScreen(mainNavigation, mainViewModel) },
+                    content = { entry ->
+                        val tags =
+                            remember { entry.arguments?.getString(MainRoute.Search.Key) ?: MainRoute.Search.defaultValue }
+
+                        SearchScreen(
+                            tags = tags,
+                            mainNavigation = mainNavigation,
+                            mainViewModel = mainViewModel,
+                        )
+                    },
                 )
 
                 composable(

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
+import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.github.uragiristereo.mejiboard.presentation.search.SearchViewModel
 import com.github.uragiristereo.mejiboard.presentation.search.core.SearchState
 
@@ -45,10 +46,11 @@ fun SearchResult(
                 onClick = {
                     mainViewModel.refreshNeeded = true
                     viewModel.parseSearchQuery(query.text)
-                    mainViewModel.saveSearchTags(state.parsedQuery)
-
                     keyboardController?.hide()
-                    mainNavigation.navigate(route = "main") {
+
+                    mainNavigation.navigate(
+                        route = MainRoute.Posts.parseRoute(value = state.parsedQuery),
+                    ) {
                         popUpTo(id = 0)
                     }
                 },
