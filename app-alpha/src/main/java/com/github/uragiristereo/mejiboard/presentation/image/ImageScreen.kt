@@ -42,6 +42,8 @@ fun ImageScreen(
         viewModel.state.update {
             it.copy(selectedPost = post)
         }
+
+        true
     }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -99,7 +101,6 @@ fun ImageScreen(
     if (imageType in Constants.SUPPORTED_TYPES_IMAGE) {
         ImagePost(
             state = viewModel.state.value,
-            imageLoader = mainViewModel.imageLoader,
             sheetState = sheetState,
             previewSize = preferences.previewSize,
             onBackRequest = {

@@ -11,7 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.ImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.imageLoader
@@ -32,7 +31,6 @@ import java.io.File
 @Composable
 fun ImagePost(
     state: ImageState,
-    imageLoader: ImageLoader,
     previewSize: String,
     sheetState: ModalBottomSheetState,
     viewModel: ImageViewModel = hiltViewModel(),

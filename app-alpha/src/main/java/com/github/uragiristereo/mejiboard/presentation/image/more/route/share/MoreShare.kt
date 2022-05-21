@@ -15,7 +15,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.presentation.image.more.MoreViewModel
-import com.github.uragiristereo.mejiboard.presentation.image.more.route.LocalImageViewModel
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.LocalMoreNavigation
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.core.SheetItem
 import com.github.uragiristereo.mejiboard.presentation.main.LocalMainViewModel
@@ -30,7 +29,6 @@ fun MoreShare(
 ) {
     val context = LocalContext.current
     val mainViewModel = LocalMainViewModel.current
-    val imageViewModel = LocalImageViewModel.current
     val moreNavigation = LocalMoreNavigation.current
     val scope = rememberCoroutineScope()
     val state by viewModel.state

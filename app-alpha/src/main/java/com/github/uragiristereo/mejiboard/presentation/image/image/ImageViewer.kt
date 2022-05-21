@@ -23,7 +23,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -175,7 +174,7 @@ fun ImageViewer(
                         },
                         onDrag = { change, dragAmount ->
                             if ((state.fingerCount == 1 || viewModel.state.value.offsetY != 0f) && sheetState.targetValue == ModalBottomSheetValue.Hidden) {
-                                change.consumeAllChanges()
+                                change.consume()
 
                                 val deceleratedDragAmount = dragAmount.y * 0.7f
 
