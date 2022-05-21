@@ -17,9 +17,9 @@ An image board ~~client~~ viewer based on [Gelbooru](https://gelbooru.com) for a
 
 ## Download
 Latest **alpha** variant:
-- Version: `1.4.0-alpha`
-- Date: 2022-05-12
-- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.4.0-alpha) • [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.4.0-alpha/Mejiboard_v1.4.0-alpha.apk)
+- Version: `1.4.1-alpha`
+- Date: 2022-05-21
+- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.4.1-alpha) • [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.4.1-alpha/Mejiboard_v1.4.1-alpha.apk)
 
 > _Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more._
 
