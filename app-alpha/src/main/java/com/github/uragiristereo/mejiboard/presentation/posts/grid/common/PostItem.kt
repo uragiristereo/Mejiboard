@@ -62,7 +62,8 @@ fun PostItem(
         SubcomposeAsyncImage(
             model = ImageRequest.Builder(context)
                 .data(url)
-                .crossfade(170)
+                .crossfade(durationMillis = 170)
+                .size(width = item.previewWidth, height = item.previewHeight)
                 .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
