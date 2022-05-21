@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.more.MoreViewModel
@@ -219,7 +220,7 @@ fun MoreInfo(
                             .padding(
                                 start = 16.dp,
                                 top = 16.dp,
-                                bottom = 4.dp,
+                                bottom = 12.dp,
                             ),
                     )
                 }
@@ -230,8 +231,9 @@ fun MoreInfo(
                         crossAxisSpacing = 12.dp,
                         modifier = Modifier
                             .padding(
-                                vertical = 12.dp,
-                                horizontal = 16.dp,
+                                bottom = 12.dp,
+                                start = 16.dp,
+                                end = 16.dp,
                             ),
                     ) {
                         sorted.forEach {

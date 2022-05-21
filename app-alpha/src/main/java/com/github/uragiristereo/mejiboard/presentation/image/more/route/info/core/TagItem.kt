@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.image.more.route.info.core
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.uragiristereo.mejiboard.common.helper.NumberHelper
+import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
 import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
 
 @Composable
@@ -67,8 +69,12 @@ fun TagItem(
 @Preview
 @Composable
 fun TagItemPreview() {
-    MejiboardTheme {
-        Column {
+    MejiboardTheme(
+        theme = Theme.Dark,
+    ) {
+        Column(
+            modifier = Modifier.background(color = MaterialTheme.colors.background),
+        ) {
             TagItem(
                 item = Tag(
                     id = 0,
