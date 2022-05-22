@@ -43,8 +43,15 @@ fun MoreNavGraph(
     val state by viewModel.state
 
     remember {
-        viewModel.state.update { it.copy(selectedPost = imageViewModel.state.value.selectedPost) }
-        viewModel.parseImageUrls()
+        viewModel.state.update {
+            it.copy(
+                selectedPost = imageViewModel.state.value.selectedPost,
+                originalImageUrl = imageViewModel.state.value.selectedPost!!.originalImage.url,
+                imageUrl = imageViewModel.state.value.selectedPost!!.scaledImage.url,
+            )
+        }
+
+        true
     }
 
     LaunchedEffect(key1 = sheetState.currentValue) {

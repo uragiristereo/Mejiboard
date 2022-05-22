@@ -3,7 +3,9 @@ package com.github.uragiristereo.mejiboard.di
 import android.content.Context
 import com.github.uragiristereo.mejiboard.common.util.CacheUtil
 import com.github.uragiristereo.mejiboard.data.repository.DownloadRepository
+import com.github.uragiristereo.mejiboard.data.repository.remote.ProvidersRepositoryImpl
 import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
+import com.github.uragiristereo.mejiboard.domain.repository.remote.ProvidersRepository
 import com.google.android.exoplayer2.database.StandaloneDatabaseProvider
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
@@ -51,5 +53,13 @@ object NetworkModule {
             LeastRecentlyUsedCacheEvictor(1024 * 1024 * 256L),
             StandaloneDatabaseProvider(context)
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideProviderRepository(
+        networkRepository: NetworkRepository,
+    ): ProvidersRepository {
+        return ProvidersRepositoryImpl(networkRepository)
     }
 }

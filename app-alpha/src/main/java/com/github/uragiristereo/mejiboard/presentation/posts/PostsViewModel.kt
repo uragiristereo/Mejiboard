@@ -6,10 +6,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.uragiristereo.mejiboard.common.Constants
-import com.github.uragiristereo.mejiboard.common.extension.toPost
-import com.github.uragiristereo.mejiboard.common.extension.toSessionPost
 import com.github.uragiristereo.mejiboard.data.database.AppDatabase
-import com.github.uragiristereo.mejiboard.domain.entity.Post
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetPostsUseCase
 import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsSavedState
 import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsState
@@ -36,7 +35,8 @@ class PostsViewModel @Inject constructor(
         mutableState.value = body(state)
     }
 
-    fun retryGetPosts() {
+    fun retryGetPosts(safeListingOnly: Boolean) {
+//        fetchPosts(tags = if (safeListingOnly) "${state.tags} rating:safe" else state.tags, refresh = false)
         fetchPosts(tags = state.tags, refresh = false)
     }
 
@@ -45,11 +45,12 @@ class PostsViewModel @Inject constructor(
         refresh: Boolean,
         onLoaded: () -> Unit = { },
     ) {
-        postsJob?.cancel()
         updateState { it.copy(error = "") }
 
+        postsJob?.cancel()
         postsJob = viewModelScope.launch {
             getPostsUseCase(
+                provider = ApiProviders.GelbooruSafe,
                 tags = tags,
                 pageId = state.page,
                 onLoading = { loading ->
@@ -60,17 +61,19 @@ class PostsViewModel @Inject constructor(
                         state.posts.clear()
                     }
 
+                    val filteredPosts = result.filter { it.id != 0 }
+
                     onLoaded()
 
                     updateState {
                         it.copy(
                             error = "",
-                            unfilteredPostsCount = state.posts.size + result.size
+                            canLoadMore = result.size == 100,
                         )
                     }
 
                     state.posts.addAll(
-                        elements = result
+                        elements = filteredPosts
                             .filter { resultPost ->
                                 !state.posts.any { post ->
                                     post.id == resultPost.id
@@ -104,7 +107,8 @@ class PostsViewModel @Inject constructor(
         }
 
         fetchPosts(
-            tags = if (safeListingOnly) "${state.tags} rating:safe" else state.tags,
+//            tags = if (safeListingOnly) "${state.tags} rating:safe" else state.tags,
+            tags = state.tags,
             refresh = refresh,
             onLoaded = onLoaded,
         )
@@ -112,37 +116,37 @@ class PostsViewModel @Inject constructor(
 
     fun getPostsFromSession() {
         viewModelScope.launch(Dispatchers.IO) {
-            savedState = savedState.copy(loadFromSession = false)
-            updateState { it.copy(loading = true) }
-
-            sessionPosts = appDatabase.sessionDao()
-                .getAll()
-                .map { it.toPost() }
-
-            state.posts.clear()
-            state.posts.addAll(elements = sessionPosts)
-
-            updateState {
-                it.copy(
-                    jumpToPosition = true,
-                    loading = false,
-                )
-            }
+//            savedState = savedState.copy(loadFromSession = false)
+//            updateState { it.copy(loading = true) }
+//
+//            sessionPosts = appDatabase.sessionDao()
+//                .getAll()
+//                .map { it.toPost() }
+//
+//            state.posts.clear()
+//            state.posts.addAll(elements = sessionPosts)
+//
+//            updateState {
+//                it.copy(
+//                    jumpToPosition = true,
+//                    loading = false,
+//                )
+//            }
         }
     }
 
     fun updateSessionPosts() {
         viewModelScope.launch(Dispatchers.IO) {
-            if (state.posts.toList() != sessionPosts.toList()) {
-                appDatabase.sessionDao().deleteAll()
-
-                val convertedPosts = state.posts.mapIndexed { index, post ->
-                    post.toSessionPost(sequence = index)
-                }
-
-                sessionPosts = state.posts.toList()
-                appDatabase.sessionDao().insert(convertedPosts)
-            }
+//            if (state.posts.toList() != sessionPosts.toList()) {
+//                appDatabase.sessionDao().deleteAll()
+//
+//                val convertedPosts = state.posts.mapIndexed { index, post ->
+//                    post.toSessionPost(sequence = index)
+//                }
+//
+//                sessionPosts = state.posts.toList()
+//                appDatabase.sessionDao().insert(convertedPosts)
+//            }
         }
     }
 

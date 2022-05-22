@@ -14,13 +14,13 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.helper.PermissionHelper
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.more.MoreViewModel
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.LocalImageViewModel
@@ -47,14 +47,13 @@ fun MoreMain(
     val context = LocalContext.current
 
     val post = state.selectedPost!!
-    val imageType = remember { File(post.image).extension }
 
     fun checkImageAndNavigate(route: String) {
-        if (state.imageSize.isEmpty()) {
+        if (post.scaled && state.imageSize.isEmpty()) {
             viewModel.checkImage(original = false)
         }
 
-        if (post.sample == 1 && state.originalImageSize.isEmpty() && imageType != "gif") {
+        if (state.originalImageSize.isEmpty()) {
             viewModel.checkImage(original = true)
         }
 
@@ -81,7 +80,7 @@ fun MoreMain(
             },
         )
 
-        if (post.sample == 1 && !imageViewModel.state.value.showOriginalImage && imageType != "gif") {
+        if (post.scaled && !imageViewModel.state.value.showOriginalImage && post.originalImage.fileType != "gif") {
             SheetItem(
                 text = "Show full size (original) image",
                 icon = { Icon(painterResource(R.drawable.open_in_full), "Show full size (original) image") },
@@ -155,7 +154,7 @@ fun MoreMain(
             onClick = {
                 scope.launch { sheetState.hide() }
 
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://gelbooru.com/index.php?page=post&s=view&id=${post.id}"))
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(ApiProviders.SafebooruOrg.parseWebUrl(post.id)))
                 context.startActivity(intent)
             }
         )

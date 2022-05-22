@@ -1,9 +1,9 @@
 package com.github.uragiristereo.mejiboard.presentation.search.core
 
-import com.github.uragiristereo.mejiboard.domain.entity.Search
+import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.Tag
 
 data class SearchState(
-    val searchData: List<Search> = emptyList(),
+    val searchData: List<Tag> = emptyList(),
     val searchProgressVisible: Boolean = false,
     val searchError: String = "",
     val searchAllowed: Boolean = false,

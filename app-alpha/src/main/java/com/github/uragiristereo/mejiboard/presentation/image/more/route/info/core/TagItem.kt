@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.uragiristereo.mejiboard.common.helper.NumberHelper
 import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
+import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.Tag
+import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagType
 import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
 
 @Composable
@@ -78,9 +80,9 @@ fun TagItemPreview() {
             TagItem(
                 item = Tag(
                     id = 0,
-                    name = "vicineko",
+                    name = "sesield",
                     count = 146,
-                    type = TermType.Artist,
+                    type = TagType.ARTIST,
                 ),
                 onClick = { },
                 modifier = Modifier.padding(bottom = 8.dp),
@@ -91,7 +93,7 @@ fun TagItemPreview() {
                     id = 0,
                     name = "hu_tao_(genshin_impact)",
                     count = 5023,
-                    type = TermType.Character,
+                    type = TagType.CHARACTER,
                 ),
                 onClick = { },
                 modifier = Modifier.padding(bottom = 8.dp),
@@ -102,7 +104,7 @@ fun TagItemPreview() {
                     id = 0,
                     name = "genshin_impact",
                     count = 72940,
-                    type = TermType.Copyright,
+                    type = TagType.COPYRIGHT,
                 ),
                 onClick = { },
                 modifier = Modifier.padding(bottom = 8.dp),
@@ -113,7 +115,7 @@ fun TagItemPreview() {
                     id = 0,
                     name = "1girl",
                     count = 3205287,
-                    type = TermType.Tag,
+                    type = TagType.GENERAL,
                 ),
                 onClick = { },
                 modifier = Modifier.padding(bottom = 8.dp),

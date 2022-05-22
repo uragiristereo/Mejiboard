@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.Constants
-import com.github.uragiristereo.mejiboard.domain.entity.Post
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostItem
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostPlaceholder
@@ -23,7 +23,7 @@ import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostsPr
 @Composable
 fun PostsGrid(
     posts: List<Post>,
-    unfilteredPostsCount: Int,
+    canLoadMore: Boolean,
     gridState: LazyListState,
     gridCount: Int,
     loading: Boolean,
@@ -85,7 +85,7 @@ fun PostsGrid(
                     }
                 }
 
-                if (posts.isNotEmpty() && (unfilteredPostsCount == (page + 1) * 100 || loading)) {
+                if (posts.isNotEmpty() && (canLoadMore || loading)) {
                     item(key = Constants.KEY_LOAD_MORE_PROGRESS) {
                         PostsProgress()
                     }

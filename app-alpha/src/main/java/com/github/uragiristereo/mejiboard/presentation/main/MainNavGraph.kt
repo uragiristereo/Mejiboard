@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import coil.annotation.ExperimentalCoilApi
-import com.github.uragiristereo.mejiboard.domain.entity.Post
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.presentation.about.AboutScreen
 import com.github.uragiristereo.mejiboard.presentation.common.*
 import com.github.uragiristereo.mejiboard.presentation.common.extension.rememberGetData

@@ -1,15 +1,16 @@
 package com.github.uragiristereo.mejiboard.domain.usecase.api
 
-import com.github.uragiristereo.mejiboard.common.extension.toPost
-import com.github.uragiristereo.mejiboard.domain.entity.Post
-import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
+import com.github.uragiristereo.mejiboard.domain.repository.remote.ProvidersRepository
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
 
 class GetPostsUseCase @Inject constructor(
-    private val networkRepository: NetworkRepository,
+    private val providersRepository: ProvidersRepository,
 ) {
     suspend operator fun invoke(
+        provider: ApiProviders,
         tags: String,
         pageId: Int,
         onLoading: (loading: Boolean) -> Unit,
@@ -20,32 +21,26 @@ class GetPostsUseCase @Inject constructor(
         onLoading(true)
 
         try {
-            val response = networkRepository.api.getPosts(
-                pid = pageId,
+            val result = providersRepository.getPosts(
+                provider = provider,
                 tags = tags,
+                page = pageId,
             )
 
-            if (response.isSuccessful) {
-                response.body()?.let { data ->
-                    if (data.post != null) {
-                        onSuccess(data.post.map { it.toPost() })
-                    } else {
-                        onSuccess(emptyList())
-                    }
-                }
+            if (result.errorMessage.isEmpty()) {
+                onSuccess(result.data)
             } else {
-                onFailed(response.raw().body.toString())
+                onFailed("${result.statusCode}: \"${result.errorMessage}\"")
             }
 
             onLoading(false)
         } catch (t: Throwable) {
             when (t) {
                 is CancellationException -> {}
-                else -> {
-                    onLoading(false)
-                    onError(t)
-                }
+                else -> onError(t)
             }
+
+            onLoading(false)
         }
     }
 }

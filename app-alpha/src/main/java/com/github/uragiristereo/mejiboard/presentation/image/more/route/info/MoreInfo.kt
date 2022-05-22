@@ -16,18 +16,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.R
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.more.MoreViewModel
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.LocalMoreNavigation
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.core.SheetItem
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.info.core.SheetInfoItem
-import com.github.uragiristereo.mejiboard.presentation.image.more.route.info.core.Tag
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.info.core.TagItem
-import com.github.uragiristereo.mejiboard.presentation.image.more.route.info.core.TermType
 import com.google.accompanist.flowlayout.FlowRow
 import kotlinx.coroutines.launch
-import java.io.File
 import java.text.DateFormat
 
 @ExperimentalMaterialApi
@@ -43,7 +41,6 @@ fun MoreInfo(
 
     val state by viewModel.state
     val post = remember { state.selectedPost!! }
-    val imageType = remember { File(post.image).extension }
     val sorted = remember(state.infoData) { state.infoData.sortedBy { it.name } }
 
     LaunchedEffect(
@@ -100,24 +97,23 @@ fun MoreInfo(
 
                 SheetInfoItem(
                     leadingText = "Date posted",
-                    trailingText = df.format(post.createdAt),
+                    trailingText = df.format(post.uploadedAt),
                 )
             }
 
             item {
                 SheetInfoItem(
                     leadingText = "Uploader",
-                    trailingText = post.owner,
+                    trailingText = post.uploader,
                 )
             }
 
             item {
                 val rating = remember {
                     when (post.rating) {
-                        "safe" -> "Safe"
-                        "questionable" -> "Questionable"
-                        "explicit" -> "Explicit"
-                        else -> "Safe"
+                        Rating.SAFE -> "Safe"
+                        Rating.QUESTIONABLE -> "Questionable"
+                        Rating.EXPLICIT -> "Explicit"
                     }
                 }
 
@@ -149,24 +145,23 @@ fun MoreInfo(
                 }
             }
 
-            if (post.sample == 1 && imageType != "gif") {
+            if (post.scaled && post.originalImage.fileType != "gif") {
                 item {
                     SheetInfoItem(
                         leadingText = "Compressed (sample) image size",
-                        trailingText = "${post.sampleWidth}x${post.sampleHeight}\n${state.imageSize} (jpg)",
+                        trailingText = with(post.scaledImage) {
+                            "${width}x$height\n${state.imageSize} ($fileType)"
+                        },
                     )
                 }
-            }
-
-            val originalImageSize = when {
-                post.sample == 1 && imageType != "gif" -> state.originalImageSize
-                else -> state.imageSize
             }
 
             item {
                 SheetInfoItem(
                     leadingText = "Full (original) image size",
-                    trailingText = "${post.width}x${post.height}\n$originalImageSize (${File(post.image).extension})",
+                    trailingText = with(post.originalImage) {
+                        "${width}x$height\n${state.originalImageSize} ($fileType)"
+                    },
                 )
             }
 
@@ -186,7 +181,7 @@ fun MoreInfo(
                         },
                         onClick = {
                             if (state.infoData.isEmpty()) {
-                                viewModel.getTagsInfo(names = post.tags)
+                                viewModel.getTagsInfo(tags = post.tags)
                             }
 
                             viewModel.state.update { it.copy(isShowTagsCollapsed = false) }
@@ -238,19 +233,7 @@ fun MoreInfo(
                     ) {
                         sorted.forEach {
                             TagItem(
-                                item = Tag(
-                                    id = it.id,
-                                    name = it.name,
-                                    count = it.count,
-                                    type = when (it.type) {
-                                        0 -> TermType.Tag
-                                        1 -> TermType.Artist
-                                        4 -> TermType.Character
-                                        3 -> TermType.Copyright
-                                        5 -> TermType.Metadata
-                                        else -> TermType.Tag
-                                    }
-                                ),
+                                item = it,
                                 onClick = { },
                             )
                         }

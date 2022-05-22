@@ -21,12 +21,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.R
-import com.github.uragiristereo.mejiboard.domain.entity.Search
+import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.Tag
 import com.github.uragiristereo.mejiboard.presentation.search.core.SearchState
 
 @Composable
 fun SearchItem(
-    item: Search,
+    item: Tag,
     state: SearchState,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -55,7 +55,7 @@ fun SearchItem(
         ) {
             Text(
                 text = buildAnnotatedString {
-                    val newQuery = "${state.delimiter}${item.value}".lowercase()
+                    val newQuery = "${state.delimiter}${item.name}".lowercase()
 
                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
                         append(text = if (newQuery.contains(state.boldWord)) state.boldWord else "")
@@ -67,7 +67,7 @@ fun SearchItem(
             )
 
             Text(
-                text = "%,d".format(item.postCount.toInt()),
+                text = "%,d".format(item.count),
                 textAlign = TextAlign.Right,
                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
                 modifier = Modifier.weight(weight = 0.2f),

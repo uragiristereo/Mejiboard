@@ -243,9 +243,9 @@ fun PostsScreen(
 
     LaunchedEffect(
         key1 = isMoreLoadingVisible,
-        key2 = viewModel.state.unfilteredPostsCount,
+        key2 = viewModel.state.canLoadMore,
     ) {
-        if (isMoreLoadingVisible && viewModel.state.unfilteredPostsCount == (viewModel.state.page + 1) * 100) {
+        if (isMoreLoadingVisible && viewModel.state.canLoadMore) {
             viewModel.getPosts(
                 refresh = false,
                 safeListingOnly = mainViewModel.preferences.safeListingOnly,
@@ -357,7 +357,7 @@ fun PostsScreen(
             if (viewModel.state.error.isEmpty()) {
                 PostsGrid(
                     posts = viewModel.state.posts,
-                    unfilteredPostsCount = viewModel.state.unfilteredPostsCount,
+                    canLoadMore = viewModel.state.canLoadMore,
                     gridState = gridState,
                     gridCount = gridCount,
                     loading = viewModel.state.loading,
@@ -378,7 +378,9 @@ fun PostsScreen(
             } else {
                 PostsError(
                     errorData = viewModel.state.error,
-                    onRetryClick = { viewModel.retryGetPosts() },
+                    onRetryClick = {
+                        viewModel.retryGetPosts(safeListingOnly = mainViewModel.preferences.safeListingOnly)
+                    },
                 )
             }
 

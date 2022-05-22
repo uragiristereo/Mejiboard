@@ -24,7 +24,6 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
-import java.io.File
 
 @ExperimentalMaterialApi
 @Composable
@@ -40,8 +39,7 @@ fun VideoPost(
     val scope = rememberCoroutineScope()
     val post = state.selectedPost!!
 
-    val imageType = remember { File(post.image).extension }
-    val videoUrl = remember { "https://video-cdn3.gelbooru.com/images/${post.directory}/${post.hash}.$imageType" }
+    val videoUrl = remember { post.originalImage.url }
     val playerView = remember { StyledPlayerView(context) }
     val player = remember {
         ExoPlayer.Builder(context)
@@ -76,9 +74,9 @@ fun VideoPost(
 
                     viewModel.state.update { it.copy(isVideoHasAudio = false) }
 
-                    tracksInfo.trackGroupInfos.forEach {
-                        for (i in 0 until it.trackGroup.length) {
-                            val trackMimeType = it.trackGroup.getFormat(i).sampleMimeType
+                    tracksInfo.trackGroupInfos.forEach { trackGroupInfo ->
+                        for (i in 0 until trackGroupInfo.trackGroup.length) {
+                            val trackMimeType = trackGroupInfo.trackGroup.getFormat(i).sampleMimeType
                             if (trackMimeType?.contains("audio") == true)
                                 viewModel.state.update { it.copy(isVideoHasAudio = true) }
                         }

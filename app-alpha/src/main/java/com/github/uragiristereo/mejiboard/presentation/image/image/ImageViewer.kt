@@ -101,7 +101,7 @@ fun ImageViewer(
     ) {
         scope.launch {
             if (state.showOriginalImage && !state.originalImageShown) {
-                val resized = ImageHelper.resizeImage(post = post)
+                val resized = ImageHelper.resizeImage(postImage = post.originalImage)
 
                 viewModel.state.update {
                     it.copy(
@@ -116,12 +116,7 @@ fun ImageViewer(
 
                 originalImageDisposable = context.imageLoader.enqueue(
                     request = imageRequest
-                        .data(
-                            data = ImageHelper.parseImageUrl(
-                                post = post,
-                                original = true,
-                            ),
-                        )
+                        .data(post.originalImage.url)
                         .size(width = resized.first, height = resized.second)
                         .build(),
                 )
