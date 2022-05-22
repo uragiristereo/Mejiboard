@@ -1,6 +1,7 @@
 package com.github.uragiristereo.mejiboard.data.repository.remote
 
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
+import com.github.uragiristereo.mejiboard.data.repository.remote.provider.DanbooruProviderRepository
 import com.github.uragiristereo.mejiboard.data.repository.remote.provider.GelbooruProviderRepository
 import com.github.uragiristereo.mejiboard.data.repository.remote.provider.GelbooruSafeProviderRepository
 import com.github.uragiristereo.mejiboard.data.repository.remote.provider.SafebooruOrgProviderRepository
@@ -20,6 +21,7 @@ class ProvidersRepositoryImpl @Inject constructor(
         ApiProviders.Gelbooru to GelbooruProviderRepository(okHttpClient),
         ApiProviders.GelbooruSafe to GelbooruSafeProviderRepository(okHttpClient),
         ApiProviders.SafebooruOrg to SafebooruOrgProviderRepository(okHttpClient),
+        ApiProviders.Danbooru to DanbooruProviderRepository(okHttpClient),
     )
 
     override suspend fun getPosts(provider: ApiProviders, tags: String, page: Int): PostsResult {

@@ -35,6 +35,15 @@ sealed class ApiProviders(
         webUrlPattern = "https://safebooru.org/index.php?page=post&s=view&id={postId}"
     )
 
+    object Danbooru: ApiProviders(
+        value = "danbooru",
+        name = "Danbooru",
+        domain = "danbooru.donmai.us",
+        baseUrl = "https://danbooru.donmai.us",
+        postsPerPage = 100,
+        webUrlPattern = "https://danbooru.donmai.us/posts/{postId}"
+    )
+
     override fun toString(): String {
         return "$name ($domain)"
     }
