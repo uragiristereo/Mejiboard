@@ -16,7 +16,7 @@ import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.extension.hideSystemBars
 import com.github.uragiristereo.mejiboard.common.extension.showSystemBars
 import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
-import com.github.uragiristereo.mejiboard.domain.entity.Post
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.core.ImageAppBar
 import com.github.uragiristereo.mejiboard.presentation.image.image.ImagePost
@@ -52,7 +52,6 @@ fun ImageScreen(
     val preferences = mainViewModel.preferences
 
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-    val imageType = remember { File(post.image).extension }
 
     BackHandler(enabled = sheetState.isVisible) {
         scope.launch { sheetState.hide() }
@@ -86,7 +85,7 @@ fun ImageScreen(
             window.hideSystemBars()
     }
 
-    if (imageType in Constants.SUPPORTED_TYPES_ANIMATION) {
+    if (post.originalImage.fileType in Constants.SUPPORTED_TYPES_VIDEO) {
         VideoPost(
             state = viewModel.state.value,
             sheetState = sheetState,
@@ -98,7 +97,7 @@ fun ImageScreen(
         )
     }
 
-    if (imageType in Constants.SUPPORTED_TYPES_IMAGE) {
+    if (post.originalImage.fileType in Constants.SUPPORTED_TYPES_IMAGE) {
         ImagePost(
             state = viewModel.state.value,
             sheetState = sheetState,

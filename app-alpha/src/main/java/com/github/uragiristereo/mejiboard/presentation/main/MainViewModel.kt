@@ -26,7 +26,7 @@ import com.github.uragiristereo.mejiboard.data.preferences.AppPreferences
 import com.github.uragiristereo.mejiboard.data.preferences.enums.DohProvider
 import com.github.uragiristereo.mejiboard.data.repository.DownloadRepository
 import com.github.uragiristereo.mejiboard.data.repository.PreferencesRepository
-import com.github.uragiristereo.mejiboard.domain.entity.Post
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainState
 import dagger.hilt.android.lifecycle.HiltViewModel

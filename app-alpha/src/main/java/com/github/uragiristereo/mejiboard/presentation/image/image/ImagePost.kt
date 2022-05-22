@@ -24,7 +24,6 @@ import com.github.uragiristereo.mejiboard.presentation.image.core.ImageState
 import com.ortiz.touchview.OnTouchImageViewListener
 import com.ortiz.touchview.TouchImageView
 import kotlinx.coroutines.launch
-import java.io.File
 
 @ExperimentalAnimationApi
 @ExperimentalMaterialApi
@@ -41,7 +40,6 @@ fun ImagePost(
     val imageViewer = remember { TouchImageView(context) }
     var imageDisposable: Disposable? = remember { null }
     val post = state.selectedPost!!
-    val imageType = remember { File(post.image).extension }
 
     val imageRequestTemplate = remember {
         ImageRequest.Builder(context)
@@ -57,7 +55,7 @@ fun ImagePost(
     }
 
     val imageRequest = remember {
-        when (imageType) {
+        when (post.originalImage.fileType) {
             "gif" -> imageRequestTemplate
                 .decoderFactory(
                     factory = when {
@@ -70,15 +68,16 @@ fun ImagePost(
     }
 
     DisposableEffect(key1 = Unit) {
-        val resized = ImageHelper.resizeImage(post = post)
+        val resized = ImageHelper.resizeImage(postImage = post.originalImage)
 
         imageDisposable = context.imageLoader.enqueue(
             request = imageRequest
                 .data(
-                    data = ImageHelper.parseImageUrl(
-                        post = post,
-                        original = previewSize == PreviewSize.Original,
-                    ),
+                    data = when {
+                        previewSize == PreviewSize.Original -> post.originalImage.url
+                        post.scaled -> post.scaledImage.url
+                        else -> post.originalImage.url
+                    },
                 )
                 .size(width = resized.first, height = resized.second)
                 .build(),

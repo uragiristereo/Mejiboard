@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -23,7 +22,6 @@ import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedStatusBarsPadding
 import kotlinx.coroutines.launch
-import java.io.File
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -37,7 +35,6 @@ fun ImageAppBar(
 ) {
     val scope = rememberCoroutineScope()
     val post = state.selectedPost!!
-    val imageType = remember { File(post.image).extension }
 
     AnimatedVisibility(
         visible = state.appBarVisible,
@@ -76,7 +73,7 @@ fun ImageAppBar(
                 )
             },
             actions = {
-                if (post.sample == 1 && !state.showOriginalImage && imageType != "gif") {
+                if (post.scaled && !state.showOriginalImage && post.originalImage.fileType != "gif") {
                     IconButton(
                         onClick = { onShowImageChange(true) },
                         content = {

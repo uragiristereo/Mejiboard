@@ -7,7 +7,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.uragiristereo.mejiboard.common.util.SearchUtil
-import com.github.uragiristereo.mejiboard.domain.usecase.api.GetTagsUseCase
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
+import com.github.uragiristereo.mejiboard.domain.usecase.api.SearchTermUseCase
 import com.github.uragiristereo.mejiboard.presentation.search.core.SearchState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -16,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val getTagsUseCase: GetTagsUseCase,
+    private val searchTermUseCase: SearchTermUseCase,
 ) : ViewModel() {
     val state = mutableStateOf(SearchState())
 
@@ -34,7 +35,8 @@ class SearchViewModel @Inject constructor(
             job?.cancel()
 
             job = viewModelScope.launch {
-                getTagsUseCase(
+                searchTermUseCase(
+                    provider = ApiProviders.GelbooruSafe,
                     term = term,
                     onLoading = { loading ->
                         _state = _state.copy(searchProgressVisible = loading)

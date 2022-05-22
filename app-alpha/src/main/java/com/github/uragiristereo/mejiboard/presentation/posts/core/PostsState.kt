@@ -1,6 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.posts.core
 
-import com.github.uragiristereo.mejiboard.domain.entity.Post
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 
 data class PostsState(
     val tags: String = "",
@@ -9,7 +9,7 @@ data class PostsState(
     val loading: Boolean = true,
     val error: String = "",
     val page: Int = 0,
-    val unfilteredPostsCount: Int = 0,
+    val canLoadMore: Boolean = true,
 
     // saved state
     val jumpToPosition: Boolean = false,

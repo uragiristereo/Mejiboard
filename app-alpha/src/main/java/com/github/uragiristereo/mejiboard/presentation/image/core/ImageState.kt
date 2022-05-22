@@ -1,6 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.image.core
 
-import com.github.uragiristereo.mejiboard.domain.entity.Post
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 
 data class ImageState(
     val selectedPost: Post? = null,

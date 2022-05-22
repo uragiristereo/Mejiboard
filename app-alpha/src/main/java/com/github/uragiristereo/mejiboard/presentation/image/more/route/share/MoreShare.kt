@@ -34,7 +34,6 @@ fun MoreShare(
     val state by viewModel.state
 
     val post = remember { state.selectedPost!! }
-    val imageType = remember { File(post.image).extension }
 
     fun shareImage(url: String) {
         scope.launch {
@@ -52,7 +51,11 @@ fun MoreShare(
             )
 
             if (instance == null) {
-                Toast.makeText(context, "Error: Image is already in download queue.", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    "Error: Image is already in download queue.",
+                    Toast.LENGTH_LONG
+                ).show()
             } else {
                 viewModel.trackShare(instance)
             }
@@ -86,10 +89,15 @@ fun MoreShare(
             style = MaterialTheme.typography.h6,
         )
 
-        val postLinkIntent = Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, "https://gelbooru.com/index.php?page=post&s=view&id=${post.id}")
-            type = "text/plain"
+        val postLinkIntent = remember {
+            Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    "https://gelbooru.com/index.php?page=post&s=view&id=${post.id}"
+                )
+                type = "text/plain"
+            }
         }
 
         SheetItem(
@@ -109,10 +117,12 @@ fun MoreShare(
             }
         )
 
-        if (post.sample == 1 && imageType != "gif") {
+        if (post.scaled && post.originalImage.fileType != "gif") {
             SheetItem(
                 title = "Compressed (sample) image",
-                subtitle = "Resolution: ${post.sampleWidth}x${post.sampleHeight} Size: ${state.imageSize}",
+                subtitle = with(post.scaledImage) {
+                    "Resolution: ${width}x$height Size: ${state.imageSize} ($fileType)"
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.aspect_ratio),
@@ -125,14 +135,11 @@ fun MoreShare(
             )
         }
 
-        val originalImageSize = when {
-            post.sample == 1 && imageType != "gif" -> state.originalImageSize
-            else -> state.imageSize
-        }
-
         SheetItem(
             title = "Full size (original) image",
-            subtitle = "Resolution: ${post.width}x${post.height} Size: $originalImageSize",
+            subtitle = with(post.originalImage) {
+                "Resolution: ${width}x$height Size: ${state.originalImageSize} ($fileType)"
+            },
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.open_in_full),

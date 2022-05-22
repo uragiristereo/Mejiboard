@@ -1,46 +1,45 @@
 package com.github.uragiristereo.mejiboard.domain.usecase.api
 
-import com.github.uragiristereo.mejiboard.common.Constants
-import com.github.uragiristereo.mejiboard.common.mapper.api.toTag
-import com.github.uragiristereo.mejiboard.domain.entity.Tag
-import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
+import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.Tag
+import com.github.uragiristereo.mejiboard.domain.repository.remote.ProvidersRepository
 import javax.inject.Inject
 
 class GetTagsInfoUseCase @Inject constructor(
-    private val networkRepository: NetworkRepository,
+    private val providersRepository: ProvidersRepository,
 ) {
     suspend operator fun invoke(
-        names: String,
+        provider: ApiProviders,
+        tags: String,
         onLoading: (loading: Boolean) -> Unit,
         onSuccess: (data: List<Tag>) -> Unit,
-        onFailed: (message: String) -> Unit,
+        onFailed: (msg: String) -> Unit,
         onError: (t: Throwable) -> Unit,
     ) {
         onLoading(true)
 
-        delay(Constants.API_DELAY)
-
         try {
-            val response = networkRepository.api.getTagsInfo(names)
+            val tagList = tags.split(' ')
 
-            if (response.isSuccessful)
-                response.body()?.let { data ->
-                    onSuccess(data.tag?.toTag() ?: emptyList())
-                }
-            else
-                onFailed(response.raw().body.toString())
+            val result = providersRepository.getTags(
+                provider = provider,
+                tags = tagList,
+            )
+
+            if (result.errorMessage.isEmpty()) {
+                onSuccess(result.data)
+            } else {
+                onFailed("${result.statusCode}: \"${result.errorMessage}\"")
+            }
 
             onLoading(false)
         } catch (t: Throwable) {
             when (t) {
-                is CancellationException -> {}
-                else -> {
-                    onLoading(false)
-                    onError(t)
-                }
+                is java.util.concurrent.CancellationException -> {}
+                else -> onError(t)
             }
+
+            onLoading(false)
         }
     }
 }

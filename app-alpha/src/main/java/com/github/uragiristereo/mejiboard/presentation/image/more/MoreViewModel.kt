@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.uragiristereo.mejiboard.data.download.DownloadInstance
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.domain.usecase.api.CheckFileUseCase
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetTagsInfoUseCase
 import com.github.uragiristereo.mejiboard.domain.usecase.common.ConvertFileSizeUseCase
@@ -13,7 +14,6 @@ import com.github.uragiristereo.mejiboard.presentation.image.more.core.MoreState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,14 +29,14 @@ class MoreViewModel @Inject constructor(
         if (original) {
             state.update {
                 it.copy(
-                    originalImageUrl = parseImageUrl(original = true),
+                    originalImageUrl = it.selectedPost!!.originalImage.url,
                     originalImageSize = "Loading...",
                 )
             }
         } else {
             state.update {
                 it.copy(
-                    imageUrl = parseImageUrl(original = false),
+                    imageUrl = it.selectedPost!!.scaledImage.url,
                     imageSize = "Loading...",
                 )
             }
@@ -55,16 +55,17 @@ class MoreViewModel @Inject constructor(
                         state.update { it.copy(imageSize = convertFileSizeUseCase(sizeBytes = size.toLong())) }
                     }
                 },
-                onFailed = {},
-                onError = {},
+                onFailed = { },
+                onError = { },
             )
         }
     }
 
-    fun getTagsInfo(names: String) {
+    fun getTagsInfo(tags: String) {
         viewModelScope.launch {
             getTagsInfoUseCase(
-                names = names,
+                provider = ApiProviders.GelbooruSafe,
+                tags = tags,
                 onLoading = { loading ->
                     state.update { it.copy(infoProgressVisible = loading) }
                 },
@@ -73,30 +74,6 @@ class MoreViewModel @Inject constructor(
                 },
                 onFailed = { },
                 onError = { },
-            )
-        }
-    }
-
-    private fun parseImageUrl(original: Boolean): String {
-        val post = _state.selectedPost!!
-        val imageType = File(post.image).extension
-        val originalImageUrl = "https://img3.gelbooru.com/images/${post.directory}/${post.hash}.$imageType"
-
-        return if (original) {
-            originalImageUrl
-        } else {
-            when {
-                post.sample == 1 && imageType != "gif" -> "https://img3.gelbooru.com/samples/${post.directory}/sample_${post.hash}.jpg"
-                else -> originalImageUrl
-            }
-        }
-    }
-
-    fun parseImageUrls() {
-        state.update {
-            it.copy(
-                imageUrl = parseImageUrl(original = false),
-                originalImageUrl = parseImageUrl(original = true),
             )
         }
     }

@@ -17,8 +17,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
-import com.github.uragiristereo.mejiboard.domain.entity.Post
-import java.io.File
+import com.github.uragiristereo.mejiboard.common.Constants
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 
 @Composable
 fun PostItem(
@@ -29,11 +29,8 @@ fun PostItem(
 ) {
     val context = LocalContext.current
 
-    val imageType = remember { File(item.image).extension }
-    val supportedTypesAnimation = remember { listOf("gif", "webm", "mp4") }
-    val url = remember { "https://img3.gelbooru.com/thumbnails/" + item.directory + "/thumbnail_" + item.hash + ".jpg" }
     val borderColor = remember {
-        when (imageType) {
+        when (item.originalImage.fileType) {
             "gif" -> Color.Cyan
             "webm" -> Color.Blue
             "mp4" -> Color.Blue
@@ -47,7 +44,7 @@ fun PostItem(
             .clip(RoundedCornerShape(size = 4.dp))
             .border(
                 BorderStroke(
-                    width = if (imageType in supportedTypesAnimation) 4.dp else 0.dp,
+                    width = if (item.originalImage.fileType in Constants.SUPPORTED_TYPES_ANIMATED) 4.dp else 0.dp,
                     color = borderColor,
                 )
             )
@@ -61,9 +58,9 @@ fun PostItem(
 
         SubcomposeAsyncImage(
             model = ImageRequest.Builder(context)
-                .data(url)
+                .data(item.previewImage.url)
                 .crossfade(durationMillis = 170)
-                .size(width = item.previewWidth, height = item.previewHeight)
+                .size(width = item.previewImage.width, height = item.previewImage.height)
                 .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,

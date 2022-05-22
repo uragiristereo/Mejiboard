@@ -73,7 +73,7 @@ fun SearchResult(
                         val result = query.text.replaceRange(
                             state.startQueryIndex,
                             state.endQueryIndex,
-                            "${state.delimiter}${item.value} "
+                            "${state.delimiter}${item.name} "
                         )
 
                         val newQuery = "$result ".replace("\\s+".toRegex(), " ")

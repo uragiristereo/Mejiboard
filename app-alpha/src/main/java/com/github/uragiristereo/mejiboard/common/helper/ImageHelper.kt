@@ -1,40 +1,23 @@
 package com.github.uragiristereo.mejiboard.common.helper
 
-import com.github.uragiristereo.mejiboard.domain.entity.Post
-import java.io.File
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.ImagePost
 
 object ImageHelper {
-    fun resizeImage(post: Post): Pair<Int, Int> {
+    fun resizeImage(postImage: ImagePost): Pair<Int, Int> {
         val maxSize = 4096f
 
-        return if (post.width > maxSize || post.height > maxSize) {
+        return if (postImage.width > maxSize || postImage.height > maxSize) {
             val scale =
-                if (post.width > post.height)
-                    maxSize.div(post.width)
+                if (postImage.width > postImage.height)
+                    maxSize.div(postImage.width)
                 else
-                    maxSize.div(post.height)
+                    maxSize.div(postImage.height)
 
-            val scaledWidth = post.width * scale
-            val scaledHeight = post.height * scale
+            val scaledWidth = postImage.width * scale
+            val scaledHeight = postImage.height * scale
 
             Pair(scaledWidth.toInt(), scaledHeight.toInt())
         } else
-            Pair(post.width, post.height)
-    }
-
-    fun parseImageUrl(
-        post: Post,
-        original: Boolean,
-    ): String {
-        val imageType = File(post.image).extension
-        val originalImageUrl = "https://img3.gelbooru.com/images/${post.directory}/${post.hash}.$imageType"
-
-        return if (original)
-            originalImageUrl
-        else
-            if (post.sample == 1 && imageType != "gif")
-                "https://img3.gelbooru.com/samples/${post.directory}/sample_${post.hash}.jpg"
-            else
-                originalImageUrl
+            Pair(postImage.width, postImage.height)
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.github.uragiristereo.mejiboard.data.database.AppDatabase
 import com.github.uragiristereo.mejiboard.data.repository.PreferencesRepository
+import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,5 +29,11 @@ object AppModule {
                 "mejiboard-database",
             )
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMoshiBuilder(): Moshi.Builder {
+        return Moshi.Builder()
     }
 }
