@@ -54,6 +54,12 @@ fun MoreNavGraph(
         true
     }
 
+    remember(mainViewModel.state.selectedProvider) {
+        viewModel.state.update { it.copy(selectedProvider = mainViewModel.state.selectedProvider) }
+
+        true
+    }
+
     LaunchedEffect(key1 = sheetState.currentValue) {
         if (sheetState.currentValue == ModalBottomSheetValue.Hidden) {
             moreNavigation.navigateUp()

@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.search.core
 
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.Tag
 
 data class SearchState(
@@ -13,4 +14,5 @@ data class SearchState(
     val wordInCursor: String = "",
     val boldWord: String = "",
     val parsedQuery: String = "",
+    val selectedProvider: ApiProviders = ApiProviders.GelbooruSafe,
 )

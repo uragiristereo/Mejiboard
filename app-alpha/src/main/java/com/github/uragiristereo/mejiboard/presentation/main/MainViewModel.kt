@@ -22,6 +22,7 @@ import com.github.uragiristereo.mejiboard.data.download.DownloadInstance
 import com.github.uragiristereo.mejiboard.data.model.AppUpdate
 import com.github.uragiristereo.mejiboard.data.model.DownloadInfo
 import com.github.uragiristereo.mejiboard.data.model.ReleaseInfo
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.data.preferences.AppPreferences
 import com.github.uragiristereo.mejiboard.data.preferences.enums.DohProvider
 import com.github.uragiristereo.mejiboard.data.repository.DownloadRepository
@@ -52,7 +53,9 @@ class MainViewModel @Inject constructor(
     private val networkRepository: NetworkRepository,
     private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
-    val state = mutableStateOf(MainState())
+    val mutableState = mutableStateOf(MainState())
+    val state by mutableState
+
     var okHttpClient = networkRepository.okHttpClient
 
     // preferences
@@ -70,7 +73,13 @@ class MainViewModel @Inject constructor(
 
     // update
     var updateStatus by mutableStateOf("idle")
-    var latestVersion by mutableStateOf(ReleaseInfo(BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME, false))
+    var latestVersion by mutableStateOf(
+        ReleaseInfo(
+            BuildConfig.VERSION_CODE,
+            BuildConfig.VERSION_NAME,
+            false
+        )
+    )
     var updateDialogVisible by mutableStateOf(false)
     var splashShown by mutableStateOf(false)
     var remindLaterCounter by mutableStateOf(0)
@@ -85,9 +94,16 @@ class MainViewModel @Inject constructor(
             val dohEnabled = preferencesRepository.data.map { it.useDnsOverHttps }.first()
             val dohProvider = preferencesRepository.data.map { it.dohProvider }.first()
             renewNetworkInstance(dohEnabled, DohProvider.getUrl(dohProvider))
+
+            updateSelectedProvider(preferencesRepository.data.map { it.provider }.first())
+
             incrementLaterCounter()
             refreshNeeded = true
         }
+    }
+
+    inline fun updateState(body: (MainState) -> MainState) {
+        mutableState.value = body(state)
     }
 
     fun updatePreferences(newData: AppPreferences) {
@@ -145,13 +161,24 @@ class MainViewModel @Inject constructor(
                                     downloaded += read.toLong()
                                     val progress = downloaded.toFloat() / length.toFloat()
 
-                                    instance.info = DownloadInfo(progress, downloaded, length, path.absolutePath, "downloading")
+                                    instance.info = DownloadInfo(
+                                        progress,
+                                        downloaded,
+                                        length,
+                                        path.absolutePath,
+                                        "downloading"
+                                    )
                                     onDownloadProgress(instance.info)
                                 }
 
                                 outputStream.flush()
                                 instance.info.status = "completed"
-                                MediaScannerConnection.scanFile(context, arrayOf(path.absolutePath.toString()), null, null)
+                                MediaScannerConnection.scanFile(
+                                    context,
+                                    arrayOf(path.absolutePath.toString()),
+                                    null,
+                                    null
+                                )
                                 onDownloadComplete()
                             } catch (e: IOException) {
                                 e.printStackTrace()
@@ -176,7 +203,12 @@ class MainViewModel @Inject constructor(
         return instance
     }
 
-    fun newDownloadInstance(context: Context, postId: Int, url: String, location: File): DownloadInstance? {
+    fun newDownloadInstance(
+        context: Context,
+        postId: Int,
+        url: String,
+        location: File
+    ): DownloadInstance? {
         return if (downloadRepository.isInstanceAlreadyAdded(postId))
             null
         else {
@@ -202,10 +234,11 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             val notificationManager = NotificationManagerCompat.from(context)
             val notificationId = getNewNotificationCount()
-            val cancelDownloadIntent = Intent(context, DownloadBroadcastReceiver::class.java).apply {
-                action = post.id.toString()
-                putExtra("notificationId", notificationId)
-            }
+            val cancelDownloadIntent =
+                Intent(context, DownloadBroadcastReceiver::class.java).apply {
+                    action = post.id.toString()
+                    putExtra("notificationId", notificationId)
+                }
             val cancelDownloadPendingIntent = PendingIntent.getBroadcast(
                 context,
                 0,
@@ -228,9 +261,23 @@ class MainViewModel @Inject constructor(
             while (instance.info.status == "downloading") {
                 notificationManager.apply {
                     notification
-                        .setProgress(100, instance.info.progress.times(100).toInt(), instance.info.progress == 0f)
-                        .setSubText("${instance.info.progress.times(100).toInt()}% - ${FileHelper.convertSize(downloadSpeed)}/s")
-                        .setContentText("${FileHelper.convertSize(instance.info.downloaded.toInt())} / ${FileHelper.convertSize(instance.info.length.toInt())}")
+                        .setProgress(
+                            100,
+                            instance.info.progress.times(100).toInt(),
+                            instance.info.progress == 0f
+                        )
+                        .setSubText(
+                            "${
+                                instance.info.progress.times(100).toInt()
+                            }% - ${FileHelper.convertSize(downloadSpeed)}/s"
+                        )
+                        .setContentText(
+                            "${FileHelper.convertSize(instance.info.downloaded.toInt())} / ${
+                                FileHelper.convertSize(
+                                    instance.info.length.toInt()
+                                )
+                            }"
+                        )
                     notify(notificationId, notification.build())
                 }
                 lastDownloaded = instance.info.downloaded
@@ -240,13 +287,22 @@ class MainViewModel @Inject constructor(
 
             val openDownloadedFileIntent = Intent().apply {
                 action = Intent.ACTION_VIEW
-                val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", File(instance.info.path))
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    File(instance.info.path)
+                )
                 val contentResolver = context.contentResolver
                 setDataAndType(uri, contentResolver.getType(uri))
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
 
-            val pendingOpenDownloadedFileIntent = PendingIntent.getActivity(context, 0, openDownloadedFileIntent, PendingIntent.FLAG_IMMUTABLE)
+            val pendingOpenDownloadedFileIntent = PendingIntent.getActivity(
+                context,
+                0,
+                openDownloadedFileIntent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
 
             if (instance.info.status == "completed") {
                 removeInstance(post.id)
@@ -280,7 +336,8 @@ class MainViewModel @Inject constructor(
 
                         response.body()?.let { appUpdate ->
                             val releases = appUpdate.releases.sortedByDescending { it.versionCode }
-                            val releasesNewerThanCurrent = releases.filter { it.versionCode > currentVersion }
+                            val releasesNewerThanCurrent =
+                                releases.filter { it.versionCode > currentVersion }
                             val updateRequired = releasesNewerThanCurrent.any { it.updateRequired }
 //                            updateStatus = "update_available"
 
@@ -319,6 +376,24 @@ class MainViewModel @Inject constructor(
             newData = preferences.copy(
                 remindLaterCounter = remindLaterCounter,
             )
+        )
+    }
+
+    fun updateSelectedProvider(provider: String) {
+        updateState {
+            it.copy(
+                selectedProvider = when (provider) {
+                    "gelbooru" -> ApiProviders.Gelbooru
+                    "gelboorusafe" -> ApiProviders.GelbooruSafe
+                    "safebooruorg" -> ApiProviders.SafebooruOrg
+                    "danbooru" -> ApiProviders.Danbooru
+                    else -> ApiProviders.GelbooruSafe
+                },
+            )
+        }
+
+        updatePreferences(
+            newData = preferences.copy(provider = state.selectedProvider.value),
         )
     }
 }

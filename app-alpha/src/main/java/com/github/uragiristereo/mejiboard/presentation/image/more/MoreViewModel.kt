@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.uragiristereo.mejiboard.data.download.DownloadInstance
-import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.domain.usecase.api.CheckFileUseCase
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetTagsInfoUseCase
 import com.github.uragiristereo.mejiboard.domain.usecase.common.ConvertFileSizeUseCase
@@ -64,7 +63,7 @@ class MoreViewModel @Inject constructor(
     fun getTagsInfo(tags: String) {
         viewModelScope.launch {
             getTagsInfoUseCase(
-                provider = ApiProviders.GelbooruSafe,
+                provider = _state.selectedProvider,
                 tags = tags,
                 onLoading = { loading ->
                     state.update { it.copy(infoProgressVisible = loading) }

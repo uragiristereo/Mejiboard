@@ -94,7 +94,7 @@ fun MoreShare(
                 action = Intent.ACTION_SEND
                 putExtra(
                     Intent.EXTRA_TEXT,
-                    "https://gelbooru.com/index.php?page=post&s=view&id=${post.id}"
+                    state.selectedProvider.parseWebUrl(post.id)
                 )
                 type = "text/plain"
             }
@@ -102,7 +102,7 @@ fun MoreShare(
 
         SheetItem(
             title = "Post link",
-            subtitle = "https://gelbooru.com/index.php?page=post&s=view&id=${post.id}",
+            subtitle = state.selectedProvider.parseWebUrl(post.id),
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.link),

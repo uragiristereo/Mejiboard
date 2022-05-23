@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.github.uragiristereo.mejiboard.presentation.search.core.SearchView
@@ -41,6 +42,12 @@ fun SearchScreen(
 
     var query by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(text = "")) }
     val focusRequester = remember { FocusRequester() }
+
+    remember(mainViewModel.state.selectedProvider) {
+        viewModel.state.update { it.copy(selectedProvider = mainViewModel.state.selectedProvider) }
+
+        true
+    }
 
     DisposableEffect(key1 = Unit) {
         systemUiController.apply {

@@ -1,6 +1,7 @@
 package com.github.uragiristereo.mejiboard.presentation.image.more.core
 
 import com.github.uragiristereo.mejiboard.data.model.DownloadInfo
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.Tag
 
@@ -16,4 +17,5 @@ data class MoreState(
     val shareDownloadSpeed: Long = 0,
     val infoProgressVisible: Boolean = false,
     val infoData: List<Tag> = emptyList(),
+    val selectedProvider: ApiProviders = ApiProviders.GelbooruSafe,
 )

@@ -7,7 +7,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.uragiristereo.mejiboard.common.util.SearchUtil
-import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.domain.usecase.api.SearchTermUseCase
 import com.github.uragiristereo.mejiboard.presentation.search.core.SearchState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,7 +35,7 @@ class SearchViewModel @Inject constructor(
 
             job = viewModelScope.launch {
                 searchTermUseCase(
-                    provider = ApiProviders.GelbooruSafe,
+                    provider = _state.selectedProvider,
                     term = term,
                     onLoading = { loading ->
                         _state = _state.copy(searchProgressVisible = loading)

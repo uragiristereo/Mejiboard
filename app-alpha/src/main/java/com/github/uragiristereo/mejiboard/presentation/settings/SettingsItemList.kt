@@ -14,13 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.github.uragiristereo.mejiboard.BuildConfig
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.data.preferences.enums.DohProvider
 import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
 import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
@@ -59,6 +59,20 @@ fun SettingItemList(
             Theme.Light to "Light",
             Theme.Dark to "Dark",
         )
+    }
+    val providers = remember {
+        listOf(
+            ApiProviders.GelbooruSafe.toPair(),
+            ApiProviders.SafebooruOrg.toPair(),
+        ).let {
+            when {
+                enableSafeListingToggle -> it + listOf(
+                    ApiProviders.Gelbooru.toPair(),
+                    ApiProviders.Danbooru.toPair(),
+                )
+                else -> it
+            }
+        }
     }
     val previewSizes = remember {
         listOf(
@@ -126,6 +140,18 @@ fun SettingItemList(
 
         item {
             DropDownPreference(
+                title = "Booru provider",
+                items = providers,
+                selectedItem = preferences.provider,
+                onItemSelected = {
+                    mainViewModel.updateSelectedProvider(it)
+                    mainViewModel.refreshNeeded = true
+                }
+            )
+        }
+
+        item {
+            DropDownPreference(
                 title = "Preview size",
                 items = previewSizes,
                 selectedItem = preferences.previewSize,
@@ -135,37 +161,39 @@ fun SettingItemList(
             )
         }
 
-        if (enableSafeListingToggle) {
-            item {
-                SwitchPreference(
-                    title = "Safe listing only mode",
-                    subtitle = buildAnnotatedString {
-                        append("Filter ")
-
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("questionable")
-                        }
-
-                        append(" & ")
-
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("explicit")
-                        }
-
-                        append(" rated posts\n")
-
-                        withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
-                            append("(Feature not yet toggleable)")
-                        }
-                    },
-                    checked = preferences.safeListingOnly,
-                    onCheckedChange = {
-                        mainViewModel.updatePreferences(newData = preferences.copy(safeListingOnly = it))
-                        mainViewModel.refreshNeeded = true
-                    }
-                )
-            }
-        }
+//        if (enableSafeListingToggle) {
+//            item {
+//                SwitchPreference(
+//                    title = "Safe listing only mode",
+//                    subtitle = buildAnnotatedString {
+//                        append("Filter ")
+//
+//                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+//                            append("questionable")
+//                        }
+//
+//                        append(" & ")
+//
+//                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+//                            append("explicit")
+//                        }
+//
+//                        append(" rated posts\n")
+//
+//                        withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
+//                            append("(Feature not yet toggleable)")
+//                        }
+//                    },
+//                    checked = preferences.safeListingOnly,
+//                    onCheckedChange = {
+//                        mainViewModel.apply {
+//                            updateSelectedProvider(safeListingOnly = it)
+//                            refreshNeeded = true
+//                        }
+//                    }
+//                )
+//            }
+//        }
 
         item { Divider() }
 

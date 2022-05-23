@@ -81,6 +81,12 @@ fun PostsScreen(
         true
     }
 
+    remember(mainViewModel.state.selectedProvider) {
+        viewModel.updateState { it.copy(selectedProvider = mainViewModel.state.selectedProvider) }
+
+        true
+    }
+
     val toolbarHeight = remember { 56.dp }
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.toPx() }
 
@@ -179,10 +185,7 @@ fun PostsScreen(
             if (viewModel.savedState.loadFromSession) {
                 viewModel.getPostsFromSession()
             } else {
-                viewModel.getPosts(
-                    refresh = true,
-                    safeListingOnly = mainViewModel.preferences.safeListingOnly,
-                )
+                viewModel.getPosts(refresh = true)
             }
 
             mainViewModel.refreshNeeded = false
@@ -246,10 +249,7 @@ fun PostsScreen(
         key2 = viewModel.state.canLoadMore,
     ) {
         if (isMoreLoadingVisible && viewModel.state.canLoadMore) {
-            viewModel.getPosts(
-                refresh = false,
-                safeListingOnly = mainViewModel.preferences.safeListingOnly,
-            )
+            viewModel.getPosts(refresh = false)
         }
     }
 
@@ -310,7 +310,6 @@ fun PostsScreen(
 
                     viewModel.getPosts(
                         refresh = true,
-                        safeListingOnly = mainViewModel.preferences.safeListingOnly,
                         onLoaded = {
                             scope.launch { gridState.scrollToItem(index = 0) }
                         },
@@ -379,7 +378,7 @@ fun PostsScreen(
                 PostsError(
                     errorData = viewModel.state.error,
                     onRetryClick = {
-                        viewModel.retryGetPosts(safeListingOnly = mainViewModel.preferences.safeListingOnly)
+                        viewModel.retryGetPosts()
                     },
                 )
             }
