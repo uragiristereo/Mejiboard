@@ -22,6 +22,7 @@ fun List<SafebooruOrgPost>.toPostList(): List<Post> {
             )
 
         Post(
+            type = "safebooruorg",
             id = it.id,
             scaled = it.sample,
             rating = when (it.rating) {

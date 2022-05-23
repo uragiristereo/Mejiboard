@@ -19,6 +19,7 @@ fun GelbooruPostsResult.toPostList(): List<Post> {
         val fileType = File(it.image).extension
 
         Post(
+            type = "gelbooru",
             id = it.id,
             scaled = it.sample == 1,
             rating = when (it.rating) {

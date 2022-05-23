@@ -12,6 +12,7 @@ import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagType
 fun List<DanbooruPost>.toPostList(): List<Post> {
     return this.map {
         Post(
+            type = "danbooru",
             id = it.id ?: 0,
             scaled = it.hasLarge ?: false,
             rating = when (it.rating) {
