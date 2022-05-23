@@ -14,7 +14,7 @@ class GetPostsUseCase @Inject constructor(
         tags: String,
         pageId: Int,
         onLoading: (loading: Boolean) -> Unit,
-        onSuccess: (data: List<Post>) -> Unit,
+        onSuccess: (data: List<Post>, canLoadMore: Boolean) -> Unit,
         onFailed: (msg: String) -> Unit,
         onError: (t: Throwable) -> Unit,
     ) {
@@ -28,7 +28,7 @@ class GetPostsUseCase @Inject constructor(
             )
 
             if (result.errorMessage.isEmpty()) {
-                onSuccess(result.data)
+                onSuccess(result.data, result.canLoadMore)
             } else {
                 onFailed("${result.statusCode}: \"${result.errorMessage}\"")
             }

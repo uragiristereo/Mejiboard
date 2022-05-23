@@ -13,7 +13,10 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
-class DanbooruProviderRepository(okHttpClient: OkHttpClient) : ApiProviderRepository {
+@Suppress("BlockingMethodInNonBlockingContext")
+class DanbooruProviderRepository(
+    okHttpClient: OkHttpClient
+) : ApiProviderRepository {
     override val provider = ApiProviders.Danbooru
 
     private val moshi = Moshi.Builder()
@@ -35,13 +38,16 @@ class DanbooruProviderRepository(okHttpClient: OkHttpClient) : ApiProviderReposi
         )
 
         if (response.isSuccessful) {
+            val posts = response.body()!!.toPostList()
+
             return PostsResult(
-                data = response.body()!!.toPostList(),
+                data = posts.filter { it.id != 0 },
+                canLoadMore = posts.size == provider.postsPerPage,
             )
         }
 
         return PostsResult(
-            errorMessage = response.errorBody().toString(),
+            errorMessage = response.errorBody()!!.string(),
             statusCode = response.code(),
         )
     }
@@ -56,7 +62,7 @@ class DanbooruProviderRepository(okHttpClient: OkHttpClient) : ApiProviderReposi
         }
 
         return TagsResult(
-            errorMessage = response.errorBody().toString(),
+            errorMessage = response.errorBody()!!.string(),
             statusCode = response.code(),
         )
     }
@@ -71,7 +77,7 @@ class DanbooruProviderRepository(okHttpClient: OkHttpClient) : ApiProviderReposi
         }
 
         return TagsResult(
-            errorMessage = response.errorBody().toString(),
+            errorMessage = response.errorBody()!!.string(),
             statusCode = response.code(),
         )
     }

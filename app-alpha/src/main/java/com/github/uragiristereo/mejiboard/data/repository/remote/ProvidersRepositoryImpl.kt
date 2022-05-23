@@ -3,7 +3,6 @@ package com.github.uragiristereo.mejiboard.data.repository.remote
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.data.repository.remote.provider.DanbooruProviderRepository
 import com.github.uragiristereo.mejiboard.data.repository.remote.provider.GelbooruProviderRepository
-import com.github.uragiristereo.mejiboard.data.repository.remote.provider.GelbooruSafeProviderRepository
 import com.github.uragiristereo.mejiboard.data.repository.remote.provider.SafebooruOrgProviderRepository
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.PostsResult
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagsResult
@@ -18,8 +17,14 @@ class ProvidersRepositoryImpl @Inject constructor(
     private val okHttpClient = networkRepository.okHttpClient
 
     override val providers: Map<ApiProviders, ApiProviderRepository> = mapOf(
-        ApiProviders.Gelbooru to GelbooruProviderRepository(okHttpClient),
-        ApiProviders.GelbooruSafe to GelbooruSafeProviderRepository(okHttpClient),
+        ApiProviders.Gelbooru to GelbooruProviderRepository(
+            okHttpClient = okHttpClient,
+            safe = false,
+        ),
+        ApiProviders.GelbooruSafe to GelbooruProviderRepository(
+            okHttpClient = okHttpClient,
+            safe = true,
+        ),
         ApiProviders.SafebooruOrg to SafebooruOrgProviderRepository(okHttpClient),
         ApiProviders.Danbooru to DanbooruProviderRepository(okHttpClient),
     )

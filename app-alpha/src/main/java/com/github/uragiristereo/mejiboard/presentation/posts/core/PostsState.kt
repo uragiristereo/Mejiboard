@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.posts.core
 
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 
 data class PostsState(
@@ -27,4 +28,7 @@ data class PostsState(
 
     // image post
     val allowPostClick: Boolean = true,
+
+    // provider
+    val selectedProvider: ApiProviders = ApiProviders.GelbooruSafe,
 )

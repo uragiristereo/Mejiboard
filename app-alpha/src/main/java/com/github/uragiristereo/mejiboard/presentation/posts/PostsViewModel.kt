@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.data.database.AppDatabase
-import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetPostsUseCase
 import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsSavedState
@@ -35,8 +34,7 @@ class PostsViewModel @Inject constructor(
         mutableState.value = body(state)
     }
 
-    fun retryGetPosts(safeListingOnly: Boolean) {
-//        fetchPosts(tags = if (safeListingOnly) "${state.tags} rating:safe" else state.tags, refresh = false)
+    fun retryGetPosts() {
         fetchPosts(tags = state.tags, refresh = false)
     }
 
@@ -50,30 +48,28 @@ class PostsViewModel @Inject constructor(
         postsJob?.cancel()
         postsJob = viewModelScope.launch {
             getPostsUseCase(
-                provider = ApiProviders.GelbooruSafe,
+                provider = state.selectedProvider,
                 tags = tags,
                 pageId = state.page,
                 onLoading = { loading ->
                     updateState { it.copy(loading = loading) }
                 },
-                onSuccess = { result ->
+                onSuccess = { result, canLoadMore ->
                     if (refresh) {
                         state.posts.clear()
                     }
-
-                    val filteredPosts = result.filter { it.id != 0 }
 
                     onLoaded()
 
                     updateState {
                         it.copy(
                             error = "",
-                            canLoadMore = result.size == 100,
+                            canLoadMore = canLoadMore,
                         )
                     }
 
                     state.posts.addAll(
-                        elements = filteredPosts
+                        elements = result
                             .filter { resultPost ->
                                 !state.posts.any { post ->
                                     post.id == resultPost.id
@@ -93,7 +89,6 @@ class PostsViewModel @Inject constructor(
 
     fun getPosts(
         refresh: Boolean,
-        safeListingOnly: Boolean,
         onLoaded: () -> Unit = { },
     ) {
         updateState {
@@ -107,7 +102,6 @@ class PostsViewModel @Inject constructor(
         }
 
         fetchPosts(
-//            tags = if (safeListingOnly) "${state.tags} rating:safe" else state.tags,
             tags = state.tags,
             refresh = refresh,
             onLoaded = onLoaded,
