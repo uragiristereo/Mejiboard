@@ -33,7 +33,7 @@ class SafebooruOrgProviderRepository(okHttpClient: OkHttpClient) : ApiProviderRe
         .create(SafebooruApi::class.java)
 
     private val gelbooruClient = retrofitBuilder
-        .baseUrl(provider.baseUrl)
+        .baseUrl(ApiProviders.Gelbooru.baseUrl)
         .build()
         .create(GelbooruApi::class.java)
 
