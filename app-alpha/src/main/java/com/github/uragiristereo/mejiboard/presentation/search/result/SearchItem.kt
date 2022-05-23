@@ -63,14 +63,13 @@ fun SearchItem(
 
                     append(text = newQuery.replaceFirst(oldValue = state.boldWord, newValue = ""))
                 },
-                modifier = Modifier.weight(weight = 0.6f)
+                modifier = Modifier.weight(weight = 1f, fill = true)
             )
 
             Text(
                 text = "%,d".format(item.count),
                 textAlign = TextAlign.Right,
                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
-                modifier = Modifier.weight(weight = 0.2f),
             )
         }
 

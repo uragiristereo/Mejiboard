@@ -37,6 +37,7 @@ fun PostsError(
             Text(
                 text = "Error:\n($errorData)",
                 textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
         }
 
