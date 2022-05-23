@@ -12,9 +12,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
-import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
+import com.github.uragiristereo.mejiboard.data.local.preferences.enums.Theme
 import com.github.uragiristereo.mejiboard.presentation.main.core.FixedInsets
-import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
+import com.github.uragiristereo.mejiboard.presentation.common.theme.MejiboardTheme
 import kotlinx.coroutines.launch
 import java.io.File
 

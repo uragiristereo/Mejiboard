@@ -17,18 +17,18 @@ import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.helper.FileHelper
-import com.github.uragiristereo.mejiboard.data.download.DownloadBroadcastReceiver
-import com.github.uragiristereo.mejiboard.data.download.DownloadInstance
-import com.github.uragiristereo.mejiboard.data.model.AppUpdate
-import com.github.uragiristereo.mejiboard.data.model.DownloadInfo
-import com.github.uragiristereo.mejiboard.data.model.ReleaseInfo
+import com.github.uragiristereo.mejiboard.data.local.download.DownloadBroadcastReceiver
+import com.github.uragiristereo.mejiboard.data.local.download.DownloadInstance
+import com.github.uragiristereo.mejiboard.data.local.preferences.AppPreferences
+import com.github.uragiristereo.mejiboard.data.local.preferences.enums.DohProvider
+import com.github.uragiristereo.mejiboard.data.model.local.DownloadInfo
+import com.github.uragiristereo.mejiboard.data.model.remote.app.AppUpdate
+import com.github.uragiristereo.mejiboard.data.model.remote.app.ReleaseInfo
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
-import com.github.uragiristereo.mejiboard.data.preferences.AppPreferences
-import com.github.uragiristereo.mejiboard.data.preferences.enums.DohProvider
-import com.github.uragiristereo.mejiboard.data.repository.DownloadRepository
-import com.github.uragiristereo.mejiboard.data.repository.PreferencesRepository
+import com.github.uragiristereo.mejiboard.data.repository.local.DownloadRepository
+import com.github.uragiristereo.mejiboard.data.repository.local.PreferencesRepository
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
-import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
+import com.github.uragiristereo.mejiboard.domain.repository.remote.NetworkRepository
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -75,9 +75,9 @@ class MainViewModel @Inject constructor(
     var updateStatus by mutableStateOf("idle")
     var latestVersion by mutableStateOf(
         ReleaseInfo(
-            BuildConfig.VERSION_CODE,
-            BuildConfig.VERSION_NAME,
-            false
+            versionCode = BuildConfig.VERSION_CODE,
+            versionName = BuildConfig.VERSION_NAME,
+            updateRequired = false,
         )
     )
     var updateDialogVisible by mutableStateOf(false)

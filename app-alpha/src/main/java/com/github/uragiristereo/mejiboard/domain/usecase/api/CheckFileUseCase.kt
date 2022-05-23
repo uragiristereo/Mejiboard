@@ -1,7 +1,7 @@
 package com.github.uragiristereo.mejiboard.domain.usecase.api
 
 import com.github.uragiristereo.mejiboard.common.Constants
-import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
+import com.github.uragiristereo.mejiboard.domain.repository.remote.NetworkRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import okhttp3.Headers

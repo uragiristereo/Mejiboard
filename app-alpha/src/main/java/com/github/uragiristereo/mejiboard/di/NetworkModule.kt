@@ -2,9 +2,10 @@ package com.github.uragiristereo.mejiboard.di
 
 import android.content.Context
 import com.github.uragiristereo.mejiboard.common.util.CacheUtil
-import com.github.uragiristereo.mejiboard.data.repository.DownloadRepository
+import com.github.uragiristereo.mejiboard.data.repository.local.DownloadRepository
+import com.github.uragiristereo.mejiboard.data.repository.remote.NetworkRepositoryImpl
 import com.github.uragiristereo.mejiboard.data.repository.remote.ProvidersRepositoryImpl
-import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
+import com.github.uragiristereo.mejiboard.domain.repository.remote.NetworkRepository
 import com.github.uragiristereo.mejiboard.domain.repository.remote.ProvidersRepository
 import com.google.android.exoplayer2.database.StandaloneDatabaseProvider
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
@@ -31,14 +32,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideNetworkRepository(
-        @ApplicationContext context: Context,
-        okHttpClient: OkHttpClient,
-    ): NetworkRepository {
-        return NetworkRepository(
-            context = context,
-            bootstrapOkHttpClient = okHttpClient,
-        )
+    fun provideNetworkRepository(okHttpClient: OkHttpClient): NetworkRepository {
+        return NetworkRepositoryImpl(okHttpClient)
     }
 
     @Provides

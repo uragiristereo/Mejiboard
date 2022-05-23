@@ -21,9 +21,9 @@ import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
-import com.github.uragiristereo.mejiboard.data.preferences.enums.DohProvider
-import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
-import com.github.uragiristereo.mejiboard.data.preferences.enums.Theme
+import com.github.uragiristereo.mejiboard.data.local.preferences.enums.DohProvider
+import com.github.uragiristereo.mejiboard.data.local.preferences.enums.PreviewSize
+import com.github.uragiristereo.mejiboard.data.local.preferences.enums.Theme
 import com.github.uragiristereo.mejiboard.presentation.common.SettingsCategory
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel

@@ -6,8 +6,8 @@ import com.github.uragiristereo.mejiboard.data.repository.remote.provider.Gelboo
 import com.github.uragiristereo.mejiboard.data.repository.remote.provider.SafebooruOrgProviderRepository
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.PostsResult
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagsResult
-import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
 import com.github.uragiristereo.mejiboard.domain.repository.remote.ApiProviderRepository
+import com.github.uragiristereo.mejiboard.domain.repository.remote.NetworkRepository
 import com.github.uragiristereo.mejiboard.domain.repository.remote.ProvidersRepository
 import javax.inject.Inject
 

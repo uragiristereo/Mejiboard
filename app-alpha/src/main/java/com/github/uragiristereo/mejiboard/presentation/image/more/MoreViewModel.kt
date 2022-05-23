@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.uragiristereo.mejiboard.data.download.DownloadInstance
+import com.github.uragiristereo.mejiboard.data.local.download.DownloadInstance
 import com.github.uragiristereo.mejiboard.domain.usecase.api.CheckFileUseCase
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetTagsInfoUseCase
 import com.github.uragiristereo.mejiboard.domain.usecase.common.ConvertFileSizeUseCase

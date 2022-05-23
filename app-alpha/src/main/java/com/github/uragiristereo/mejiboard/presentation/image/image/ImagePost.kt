@@ -17,7 +17,7 @@ import coil.imageLoader
 import coil.request.Disposable
 import coil.request.ImageRequest
 import com.github.uragiristereo.mejiboard.common.helper.ImageHelper
-import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
+import com.github.uragiristereo.mejiboard.data.local.preferences.enums.PreviewSize
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.ImageViewModel
 import com.github.uragiristereo.mejiboard.presentation.image.core.ImageState

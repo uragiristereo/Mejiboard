@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.core.net.toUri
 import androidx.navigation.*
-import com.github.uragiristereo.mejiboard.common.CustomDateAdapter
+import com.github.uragiristereo.mejiboard.data.model.remote.adapter.MoshiDateAdapter
 import com.squareup.moshi.Moshi
 
 inline fun <reified T> NavController.navigate(
@@ -25,7 +25,7 @@ inline fun <reified T> NavController.navigate(
     }
 
     val out = Moshi.Builder()
-        .add(CustomDateAdapter())
+        .add(MoshiDateAdapter(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
         .build()
         .adapter(T::class.java)
         .toJson(data.second)
@@ -48,7 +48,7 @@ inline fun <reified T> NavBackStackEntry.getData(key: String): T? {
 
     return when {
         data != null -> Moshi.Builder()
-            .add(CustomDateAdapter())
+            .add(MoshiDateAdapter(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
             .build()
             .adapter(T::class.java)
             .fromJson(data)

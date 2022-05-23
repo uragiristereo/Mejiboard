@@ -16,7 +16,6 @@ import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.splash.common.SplashLogo
 import com.github.uragiristereo.mejiboard.presentation.splash.common.SplashUpdate
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import kotlinx.coroutines.delay
 
 @ExperimentalAnimationApi
 @Composable

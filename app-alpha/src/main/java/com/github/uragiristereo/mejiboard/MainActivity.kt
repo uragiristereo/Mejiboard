@@ -14,7 +14,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.core.view.WindowCompat
 import coil.annotation.ExperimentalCoilApi
-import com.github.uragiristereo.mejiboard.data.repository.PreferencesRepository
+import com.github.uragiristereo.mejiboard.data.repository.local.PreferencesRepository
 import com.github.uragiristereo.mejiboard.presentation.main.MainScreen
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

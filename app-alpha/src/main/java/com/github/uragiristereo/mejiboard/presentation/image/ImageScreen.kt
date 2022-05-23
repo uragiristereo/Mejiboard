@@ -13,9 +13,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.Constants
-import com.github.uragiristereo.mejiboard.common.extension.hideSystemBars
-import com.github.uragiristereo.mejiboard.common.extension.showSystemBars
-import com.github.uragiristereo.mejiboard.data.preferences.enums.PreviewSize
+import com.github.uragiristereo.mejiboard.presentation.common.extension.hideSystemBars
+import com.github.uragiristereo.mejiboard.presentation.common.extension.showSystemBars
+import com.github.uragiristereo.mejiboard.data.local.preferences.enums.PreviewSize
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.core.ImageAppBar

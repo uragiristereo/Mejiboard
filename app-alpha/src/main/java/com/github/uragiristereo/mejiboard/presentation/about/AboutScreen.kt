@@ -40,7 +40,7 @@ import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
-import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
+import com.github.uragiristereo.mejiboard.presentation.common.theme.MejiboardTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @ExperimentalCoilApi

@@ -13,7 +13,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.R
-import com.github.uragiristereo.mejiboard.presentation.theme.MejiboardTheme
+import com.github.uragiristereo.mejiboard.presentation.common.theme.MejiboardTheme
 
 @Composable
 fun SheetInfoItem(

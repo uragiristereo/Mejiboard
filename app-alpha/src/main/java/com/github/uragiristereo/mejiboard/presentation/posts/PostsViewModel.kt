@@ -6,7 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.uragiristereo.mejiboard.common.Constants
-import com.github.uragiristereo.mejiboard.data.database.AppDatabase
+import com.github.uragiristereo.mejiboard.data.local.database.AppDatabase
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetPostsUseCase
 import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsSavedState

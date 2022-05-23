@@ -2,8 +2,8 @@ package com.github.uragiristereo.mejiboard.di
 
 import android.content.Context
 import androidx.room.Room
-import com.github.uragiristereo.mejiboard.data.database.AppDatabase
-import com.github.uragiristereo.mejiboard.data.repository.PreferencesRepository
+import com.github.uragiristereo.mejiboard.data.local.database.AppDatabase
+import com.github.uragiristereo.mejiboard.data.repository.local.PreferencesRepository
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides

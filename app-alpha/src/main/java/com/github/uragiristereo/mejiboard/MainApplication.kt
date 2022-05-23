@@ -3,7 +3,7 @@ package com.github.uragiristereo.mejiboard
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
-import com.github.uragiristereo.mejiboard.domain.repository.NetworkRepository
+import com.github.uragiristereo.mejiboard.domain.repository.remote.NetworkRepository
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 import javax.inject.Inject
