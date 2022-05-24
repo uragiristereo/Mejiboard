@@ -133,6 +133,8 @@ fun SearchScreen(
                     mainViewModel.refreshNeeded = true
 
                     keyboardController?.hide()
+                    viewModel.cancelSearch()
+
                     mainNavigation.navigate(
                         route = MainRoute.Posts.parseRoute(value = state.parsedQuery),
                     ) {
@@ -159,12 +161,6 @@ fun SearchScreen(
             verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.padding(paddingValues = innerPadding),
         ) {
-//            LinearProgressIndicator(
-//                modifier = Modifier
-//                    .alpha(if (state.searchProgressVisible) 1f else 0f)
-//                    .fillMaxWidth()
-//            )
-
             SearchResult(
                 state = state,
                 columnState = columnState,
