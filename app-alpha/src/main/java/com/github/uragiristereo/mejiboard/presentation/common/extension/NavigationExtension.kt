@@ -25,7 +25,7 @@ inline fun <reified T> NavController.navigate(
     }
 
     val out = Moshi.Builder()
-        .add(MoshiDateAdapter(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
+        .add(MoshiDateAdapter(pattern = "EEE MMM dd HH:mm:ss ZZZ yyyy"))
         .build()
         .adapter(T::class.java)
         .toJson(data.second)
@@ -48,7 +48,7 @@ inline fun <reified T> NavBackStackEntry.getData(key: String): T? {
 
     return when {
         data != null -> Moshi.Builder()
-            .add(MoshiDateAdapter(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
+            .add(MoshiDateAdapter(pattern = "EEE MMM dd HH:mm:ss ZZZ yyyy"))
             .build()
             .adapter(T::class.java)
             .fromJson(data)
