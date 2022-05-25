@@ -1,5 +1,7 @@
 package com.github.uragiristereo.mejiboard.data.repository.remote.provider
 
+import com.github.uragiristereo.mejiboard.common.Constants
+import com.github.uragiristereo.mejiboard.common.RatingFilter
 import com.github.uragiristereo.mejiboard.data.model.remote.adapter.MoshiDateAdapter
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.gelbooru.search.GelbooruSearch
@@ -10,6 +12,7 @@ import com.github.uragiristereo.mejiboard.data.model.remote.provider.safebooruor
 import com.github.uragiristereo.mejiboard.data.remote.api.GelbooruApi
 import com.github.uragiristereo.mejiboard.data.remote.api.SafebooruApi
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.PostsResult
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagsResult
 import com.github.uragiristereo.mejiboard.domain.repository.remote.ApiProviderRepository
 import com.squareup.moshi.Moshi
@@ -23,10 +26,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 @Suppress("BlockingMethodInNonBlockingContext")
-class GelbooruProviderRepository(
-    okHttpClient: OkHttpClient,
-    private val safe: Boolean,
-) : ApiProviderRepository {
+class GelbooruProviderRepository(okHttpClient: OkHttpClient) : ApiProviderRepository {
     override val provider = ApiProviders.Gelbooru
 
     private val moshi = Moshi.Builder()
@@ -38,20 +38,29 @@ class GelbooruProviderRepository(
         .addConverterFactory(MoshiConverterFactory.create(moshi))
 
     private val client = retrofitBuilder
-        .baseUrl(provider.baseUrl)
+        .baseUrl(provider.baseUrl())
         .build()
         .create(GelbooruApi::class.java)
 
     private val clientSafe = retrofitBuilder
-        .baseUrl(ApiProviders.SafebooruOrg.baseUrl)
+        .baseUrl(ApiProviders.SafebooruOrg.baseUrl())
         .build()
         .create(SafebooruApi::class.java)
 
-    override suspend fun getPosts(tags: String, page: Int): PostsResult {
+    override suspend fun getPosts(tags: String, page: Int, filters: List<Rating>): PostsResult {
+        // Gelbooru allows unlimited tags to search so we can filter ratings from server
+        val filterTags = when (filters) {
+            RatingFilter.GENERAL_ONLY -> " rating:general"
+            RatingFilter.SAFE -> " -rating:questionable -rating:explicit"
+            RatingFilter.NO_EXPLICIT -> " -rating:explicit"
+            RatingFilter.UNFILTERED -> ""
+            else -> " rating:general"
+        }
+
         val response = client.getPosts(
-            tags = if (safe) "$tags rating:general" else tags,
+            tags = tags + filterTags,
             pageId = page,
-            postsPerPage = provider.postsPerPage,
+            postsPerPage = Constants.POSTS_PER_PAGE,
         )
 
         if (response.isSuccessful) {
@@ -59,18 +68,17 @@ class GelbooruProviderRepository(
 
             return PostsResult(
                 data = posts,
-                canLoadMore = posts.size == provider.postsPerPage,
+                canLoadMore = posts.size == Constants.POSTS_PER_PAGE,
             )
         }
 
         return PostsResult(
-            errorMessage = response.errorBody()!!.string(),
-            statusCode = response.code(),
+            errorMessage = "${response.code()}: ${response.errorBody()!!.string()}",
         )
     }
 
-    override suspend fun searchTerm(term: String): TagsResult {
-        if (!safe) {
+    override suspend fun searchTerm(term: String, filters: List<Rating>): TagsResult {
+        if (filters == RatingFilter.NO_EXPLICIT || filters == RatingFilter.UNFILTERED) {
             val response = client.searchTerm(term)
 
             if (response.isSuccessful) {
@@ -80,8 +88,7 @@ class GelbooruProviderRepository(
             }
 
             return TagsResult(
-                errorMessage = response.errorBody()!!.string(),
-                statusCode = response.code(),
+                errorMessage = "${response.code()}: ${response.errorBody()!!.string()}",
             )
         } else {
             return searchTermSafe(term)
@@ -125,8 +132,7 @@ class GelbooruProviderRepository(
         }
 
         return TagsResult(
-            errorMessage = response.errorBody()!!.string(),
-            statusCode = response.code(),
+            errorMessage = "${response.code()}: ${response.errorBody()!!.string()}",
         )
     }
 
@@ -142,8 +148,7 @@ class GelbooruProviderRepository(
         }
 
         return TagsResult(
-            errorMessage = response.errorBody()!!.string(),
-            statusCode = response.code(),
+            errorMessage = "${response.code()}: ${response.errorBody()!!.string()}",
         )
     }
 }

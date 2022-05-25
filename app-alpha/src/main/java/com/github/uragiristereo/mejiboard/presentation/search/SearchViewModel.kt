@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.uragiristereo.mejiboard.common.RatingFilter
 import com.github.uragiristereo.mejiboard.domain.usecase.api.SearchTermUseCase
 import com.github.uragiristereo.mejiboard.presentation.search.core.SearchState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,6 +36,7 @@ class SearchViewModel @Inject constructor(
             job = viewModelScope.launch {
                 searchTermUseCase(
                     provider = _state.selectedProvider,
+                    filters = RatingFilter.GENERAL_ONLY,
                     term = term,
                     onLoading = { loading ->
                         _state = _state.copy(searchProgressVisible = loading)
@@ -73,28 +75,28 @@ class SearchViewModel @Inject constructor(
         }
 
         delimiters.forEachIndexed { index, delimiter ->
-            nextIndexes[index] = if (text.indexOf(char = delimiter, startIndex = position) != -1)
-                text.indexOf(delimiter, position)
-            else
-                text.length
+            nextIndexes[index] = when {
+                text.indexOf(char = delimiter, startIndex = position) != -1 -> text.indexOf(delimiter, position)
+                else -> text.length
+            }
         }
 
         val prevDelimiterIndex = prevIndexes.maxOrNull()!!
         val nextDelimiterIndex =
-            if (nextIndexes.minOrNull()!! != text.length)
-                nextIndexes.minOrNull()!!
-            else
-                -1
+            when {
+                nextIndexes.minOrNull()!! != text.length -> nextIndexes.minOrNull()!!
+                else -> -1
+            }
         var startIndex =
-            if (prevDelimiterIndex < 0)
-                0
-            else
-                prevDelimiterIndex + 1
+            when {
+                prevDelimiterIndex < 0 -> 0
+                else -> prevDelimiterIndex + 1
+            }
         val endIndex =
-            if (nextDelimiterIndex < 0)
-                text.length
-            else
-                nextDelimiterIndex
+            when {
+                nextDelimiterIndex < 0 -> text.length
+                else -> nextDelimiterIndex
+            }
 
         if (startIndex >= endIndex) {
             startIndex = 0

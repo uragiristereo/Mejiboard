@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.data.model.remote.provider.danbooru
 
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.danbooru.posts.DanbooruPost
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.danbooru.search.DanbooruSearch
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.danbooru.tags.DanbooruTag
@@ -10,9 +11,23 @@ import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.Tag
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagType
 
 fun List<DanbooruPost>.toPostList(): List<Post> {
+    val cdnUrl = "https://cdn.donmai.us"
+
     return this.map {
+        val directory: String
+        var originalImageUrl = ""
+        var scaledImageUrl = ""
+        var previewImageUrl = ""
+
+        it.md5?.let { md5 ->
+            directory = "${md5.substring(0, 2)}/${md5.substring(2, 4)}"
+            originalImageUrl = "$cdnUrl/original/$directory/$md5.${it.fileExt}"
+            scaledImageUrl = "$cdnUrl/sample/$directory/sample-$md5.jpg"
+            previewImageUrl = "$cdnUrl/preview/$directory/$md5.jpg"
+        }
+
         Post(
-            type = "danbooru",
+            provider = ApiProviders.Danbooru.key,
             id = it.id ?: 0,
             scaled = it.hasLarge ?: false,
             rating = when (it.rating) {
@@ -20,26 +35,26 @@ fun List<DanbooruPost>.toPostList(): List<Post> {
                 "s" -> Rating.SENSITIVE
                 "q" -> Rating.QUESTIONABLE
                 "e" -> Rating.EXPLICIT
-                else -> Rating.SENSITIVE
+                else -> Rating.GENERAL
             },
             tags = it.tagString,
             uploadedAt = it.createdAt,
             uploader = it.uploaderId.toString(),
             source = it.source,
             originalImage = ImagePost(
-                url = it.largeFileUrl ?: "",
+                url = originalImageUrl,
                 fileType = it.fileExt,
                 height = it.imageHeight,
                 width = it.imageWidth,
             ),
             scaledImage = ImagePost(
-                url = it.fileUrl ?: "",
+                url = scaledImageUrl,
                 fileType = "jpg",
                 height = it.imageHeight,
                 width = it.imageWidth,
             ),
             previewImage = ImagePost(
-                url = it.previewFileUrl ?: "",
+                url = previewImageUrl,
                 fileType = "jpg",
                 height = 180,
                 width = ((180f / it.imageHeight) * it.imageWidth).toInt(),

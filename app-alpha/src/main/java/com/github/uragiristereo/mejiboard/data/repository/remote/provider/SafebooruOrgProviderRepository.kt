@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.data.repository.remote.provider
 
+import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.data.model.remote.adapter.MoshiDateAdapter
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.gelbooru.toTagList
@@ -8,6 +9,7 @@ import com.github.uragiristereo.mejiboard.data.model.remote.provider.safebooruor
 import com.github.uragiristereo.mejiboard.data.remote.api.GelbooruApi
 import com.github.uragiristereo.mejiboard.data.remote.api.SafebooruApi
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.PostsResult
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagsResult
 import com.github.uragiristereo.mejiboard.domain.repository.remote.ApiProviderRepository
 import com.squareup.moshi.Moshi
@@ -28,37 +30,36 @@ class SafebooruOrgProviderRepository(okHttpClient: OkHttpClient) : ApiProviderRe
         .addConverterFactory(MoshiConverterFactory.create(moshi))
 
     private val client = retrofitBuilder
-        .baseUrl(provider.baseUrl)
+        .baseUrl(provider.baseUrl())
         .build()
         .create(SafebooruApi::class.java)
 
     private val gelbooruClient = retrofitBuilder
-        .baseUrl(ApiProviders.Gelbooru.baseUrl)
+        .baseUrl(ApiProviders.Gelbooru.baseUrl())
         .build()
         .create(GelbooruApi::class.java)
 
-    override suspend fun getPosts(tags: String, page: Int): PostsResult {
+    override suspend fun getPosts(tags: String, page: Int, filters: List<Rating>): PostsResult {
         val response = client.getPosts(
             tags = tags,
             pageId = page,
-            postsPerPage = provider.postsPerPage,
+            postsPerPage = Constants.POSTS_PER_PAGE,
         )
 
         if (response.isSuccessful) {
             val posts = response.body()!!.toPostList()
             return PostsResult(
                 data = posts,
-                canLoadMore = posts.size == provider.postsPerPage,
+                canLoadMore = posts.size == Constants.POSTS_PER_PAGE,
             )
         }
 
         return PostsResult(
-            errorMessage = response.errorBody()!!.string(),
-            statusCode = response.code(),
+            errorMessage = "${response.code()}: ${response.errorBody()!!.string()}",
         )
     }
 
-    override suspend fun searchTerm(term: String): TagsResult {
+    override suspend fun searchTerm(term: String, filters: List<Rating>): TagsResult {
         val response = client.searchTerm(term)
 
         if (response.isSuccessful) {
@@ -68,8 +69,7 @@ class SafebooruOrgProviderRepository(okHttpClient: OkHttpClient) : ApiProviderRe
         }
 
         return TagsResult(
-            errorMessage = response.errorBody()!!.string(),
-            statusCode = response.code(),
+            errorMessage = "${response.code()}: ${response.errorBody()!!.string()}",
         )
     }
 
@@ -87,8 +87,7 @@ class SafebooruOrgProviderRepository(okHttpClient: OkHttpClient) : ApiProviderRe
         }
 
         return TagsResult(
-            errorMessage = response.errorBody()!!.string(),
-            statusCode = response.code(),
+            errorMessage = "${response.code()}: ${response.errorBody()!!.string()}",
         )
     }
 }

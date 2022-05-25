@@ -1,10 +1,10 @@
 package com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet
 
-import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
+import com.github.uragiristereo.mejiboard.domain.entity.provider.ApiProvider
 
-fun ApiProviders.toPreferenceItem(): PreferenceItem {
+fun ApiProvider.toPreferenceItem(): PreferenceItem {
     return PreferenceItem(
-        key = value,
+        key = key,
         title = name,
         subtitle = domain,
     )

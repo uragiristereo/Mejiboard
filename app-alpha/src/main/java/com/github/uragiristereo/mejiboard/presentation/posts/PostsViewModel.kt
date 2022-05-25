@@ -6,9 +6,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.uragiristereo.mejiboard.common.Constants
+import com.github.uragiristereo.mejiboard.common.RatingFilter
 import com.github.uragiristereo.mejiboard.data.local.database.AppDatabase
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetPostsUseCase
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.toPost
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.toSessionPost
 import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsSavedState
 import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,6 +52,7 @@ class PostsViewModel @Inject constructor(
         postsJob = viewModelScope.launch {
             getPostsUseCase(
                 provider = state.selectedProvider,
+                filters = RatingFilter.GENERAL_ONLY,
                 tags = tags,
                 pageId = state.page,
                 onLoading = { loading ->
@@ -68,14 +72,15 @@ class PostsViewModel @Inject constructor(
                         )
                     }
 
-                    state.posts.addAll(
-                        elements = result
-                            .filter { resultPost ->
-                                !state.posts.any { post ->
-                                    post.id == resultPost.id
-                                }
-                            },
-                    )
+                    val filteredPosts = result
+                        // filter posts by rating
+                        .filter { it.rating !in RatingFilter.GENERAL_ONLY }
+                        // filter posts duplicate
+                        .filter { resultPost ->
+                            !state.posts.any { it.id == resultPost.id }
+                        }
+
+                    state.posts.addAll(elements = filteredPosts)
                 },
                 onFailed = { msg ->
                     updateState { it.copy(error = msg) }
@@ -110,37 +115,37 @@ class PostsViewModel @Inject constructor(
 
     fun getPostsFromSession() {
         viewModelScope.launch(Dispatchers.IO) {
-//            savedState = savedState.copy(loadFromSession = false)
-//            updateState { it.copy(loading = true) }
-//
-//            sessionPosts = appDatabase.sessionDao()
-//                .getAll()
-//                .map { it.toPost() }
-//
-//            state.posts.clear()
-//            state.posts.addAll(elements = sessionPosts)
-//
-//            updateState {
-//                it.copy(
-//                    jumpToPosition = true,
-//                    loading = false,
-//                )
-//            }
+            savedState = savedState.copy(loadFromSession = false)
+            updateState { it.copy(loading = true) }
+
+            sessionPosts = appDatabase.sessionDao()
+                .getAll()
+                .map { it.toPost() }
+
+            state.posts.clear()
+            state.posts.addAll(elements = sessionPosts)
+
+            updateState {
+                it.copy(
+                    jumpToPosition = true,
+                    loading = false,
+                )
+            }
         }
     }
 
     fun updateSessionPosts() {
         viewModelScope.launch(Dispatchers.IO) {
-//            if (state.posts.toList() != sessionPosts.toList()) {
-//                appDatabase.sessionDao().deleteAll()
-//
-//                val convertedPosts = state.posts.mapIndexed { index, post ->
-//                    post.toSessionPost(sequence = index)
-//                }
-//
-//                sessionPosts = state.posts.toList()
-//                appDatabase.sessionDao().insert(convertedPosts)
-//            }
+            if (state.posts.toList() != sessionPosts.toList()) {
+                appDatabase.sessionDao().deleteAll()
+
+                val convertedPosts = state.posts.mapIndexed { index, post ->
+                    post.toSessionPost(sequence = index)
+                }
+
+                sessionPosts = state.posts.toList()
+                appDatabase.sessionDao().insert(convertedPosts)
+            }
         }
     }
 

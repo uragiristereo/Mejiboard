@@ -103,18 +103,9 @@ fun MoreInfo(
             }
 
             item {
-                val providers = remember {
-                    mapOf(
-                        ApiProviders.GelbooruSafe.toPair(),
-                        ApiProviders.SafebooruOrg.toPair(),
-                        ApiProviders.Gelbooru.toPair(),
-                        ApiProviders.Danbooru.toPair(),
-                    )
-                }
-
                 SheetInfoItem(
                     leadingText = "Provider",
-                    trailingText = providers[post.type]?.name ?: "Unknown",
+                    trailingText = ApiProviders.map[post.provider]?.name ?: "Unknown",
                 )
             }
 

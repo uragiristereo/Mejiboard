@@ -1,11 +1,13 @@
 package com.github.uragiristereo.mejiboard.data.repository.remote.provider
 
+import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.data.model.remote.adapter.MoshiDateAdapter
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.danbooru.toPostList
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.danbooru.toTagList
 import com.github.uragiristereo.mejiboard.data.remote.api.DanbooruApi
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.PostsResult
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagsResult
 import com.github.uragiristereo.mejiboard.domain.repository.remote.ApiProviderRepository
 import com.squareup.moshi.Moshi
@@ -24,17 +26,17 @@ class DanbooruProviderRepository(
         .build()
 
     private val client = Retrofit.Builder()
-        .baseUrl(provider.baseUrl)
+        .baseUrl(provider.baseUrl())
         .client(okHttpClient)
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build()
         .create(DanbooruApi::class.java)
 
-    override suspend fun getPosts(tags: String, page: Int): PostsResult {
+    override suspend fun getPosts(tags: String, page: Int, filters: List<Rating>): PostsResult {
         val response = client.getPosts(
             tags = tags,
             pageId = page + 1,
-            postsPerPage = provider.postsPerPage,
+            postsPerPage = Constants.POSTS_PER_PAGE,
         )
 
         if (response.isSuccessful) {
@@ -42,17 +44,16 @@ class DanbooruProviderRepository(
 
             return PostsResult(
                 data = posts.filter { it.id != 0 },
-                canLoadMore = posts.size == provider.postsPerPage,
+                canLoadMore = posts.size == Constants.POSTS_PER_PAGE,
             )
         }
 
         return PostsResult(
-            errorMessage = response.errorBody()!!.string(),
-            statusCode = response.code(),
+            errorMessage = "${response.code()}: ${response.errorBody()!!.string()}",
         )
     }
 
-    override suspend fun searchTerm(term: String): TagsResult {
+    override suspend fun searchTerm(term: String, filters: List<Rating>): TagsResult {
         val response = client.searchTerm(term)
 
         if (response.isSuccessful) {
@@ -62,8 +63,7 @@ class DanbooruProviderRepository(
         }
 
         return TagsResult(
-            errorMessage = response.errorBody()!!.string(),
-            statusCode = response.code(),
+            errorMessage = "${response.code()}: ${response.errorBody()!!.string()}",
         )
     }
 
@@ -77,8 +77,7 @@ class DanbooruProviderRepository(
         }
 
         return TagsResult(
-            errorMessage = response.errorBody()!!.string(),
-            statusCode = response.code(),
+            errorMessage = "${response.code()}: ${response.errorBody()!!.string()}",
         )
     }
 }

@@ -1,58 +1,32 @@
 package com.github.uragiristereo.mejiboard.data.model.remote.provider
 
-sealed class ApiProviders(
-    val value: String,
-    val name: String,
-    val domain: String,
-    val baseUrl: String,
-    val postsPerPage: Int,
-    private val webUrlPattern: String,
-) {
-    object Gelbooru: ApiProviders(
-        value = "gelbooru",
+import com.github.uragiristereo.mejiboard.domain.entity.provider.ApiProvider
+
+object ApiProviders {
+    val Gelbooru = ApiProvider(
+        key = "gelbooru",
         name = "Gelbooru",
         domain = "gelbooru.com",
-        baseUrl = "https://gelbooru.com",
-        postsPerPage = 100,
-        webUrlPattern = "https://gelbooru.com/index.php?page=post&s=view&id={postId}"
+        webUrlPattern = "https://gelbooru.com/index.php?page=post&s=view&id={postId}",
     )
-
-    object GelbooruSafe: ApiProviders(
-        value = "gelboorusafe",
-        name = "Gelbooru (safe)",
-        domain = "gelbooru.com",
-        baseUrl = "https://gelbooru.com",
-        postsPerPage = 100,
-        webUrlPattern = "https://gelbooru.com/index.php?page=post&s=view&id={postId}"
-    )
-
-    object SafebooruOrg: ApiProviders(
-        value = "safebooruorg",
-        name = "Safebooru.org",
-        domain = "safebooru.org",
-        baseUrl = "https://safebooru.org",
-        postsPerPage = 100,
-        webUrlPattern = "https://safebooru.org/index.php?page=post&s=view&id={postId}"
-    )
-
-    object Danbooru: ApiProviders(
-        value = "danbooru",
+    val Danbooru = ApiProvider(
+        key = "danbooru",
         name = "Danbooru",
         domain = "danbooru.donmai.us",
-        baseUrl = "https://danbooru.donmai.us",
-        postsPerPage = 100,
-        webUrlPattern = "https://danbooru.donmai.us/posts/{postId}"
+        webUrlPattern = "https://danbooru.donmai.us/posts/{postId}",
+    )
+    val SafebooruOrg =  ApiProvider(
+        key = "safebooruorg",
+        name = "Safebooru.org",
+        domain = "safebooru.org",
+        webUrlPattern = "https://safebooru.org/index.php?page=post&s=view&id={postId}",
     )
 
-    override fun toString(): String {
-        return "$name ($domain)"
-    }
+    val list = listOf(
+        Gelbooru,
+        Danbooru,
+        SafebooruOrg,
+    )
 
-    fun parseWebUrl(postId: Int): String {
-        return this.webUrlPattern.replace(oldValue = "{postId}", newValue = postId.toString())
-    }
-
-    fun toPair(): Pair<String, ApiProviders> {
-        return this.value to this
-    }
+    val map = list.associate { it.toPair() }
 }

@@ -13,7 +13,7 @@ data class DanbooruPost(
     val uploaderId: Int,
     val score: Int,
     val source: String,
-    val md5: String,
+    val md5: String?,
 
     @field:Json(name = "last_comment_bumped_at")
     val lastCommentBumpedAt: String?,

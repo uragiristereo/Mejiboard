@@ -1,6 +1,6 @@
 package com.github.uragiristereo.mejiboard.domain.usecase.api
 
-import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
+import com.github.uragiristereo.mejiboard.domain.entity.provider.ApiProvider
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.Tag
 import com.github.uragiristereo.mejiboard.domain.repository.remote.ProvidersRepository
 import javax.inject.Inject
@@ -9,7 +9,7 @@ class GetTagsInfoUseCase @Inject constructor(
     private val providersRepository: ProvidersRepository,
 ) {
     suspend operator fun invoke(
-        provider: ApiProviders,
+        provider: ApiProvider,
         tags: String,
         onLoading: (loading: Boolean) -> Unit,
         onSuccess: (data: List<Tag>) -> Unit,
@@ -29,7 +29,7 @@ class GetTagsInfoUseCase @Inject constructor(
             if (result.errorMessage.isEmpty()) {
                 onSuccess(result.data)
             } else {
-                onFailed("${result.statusCode}: \"${result.errorMessage}\"")
+                onFailed(result.errorMessage)
             }
 
             onLoading(false)

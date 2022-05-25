@@ -31,7 +31,7 @@ object NetworkModule {
                 HttpLoggingInterceptor()
                     .setLevel(
                         when {
-//                            BuildConfig.DEBUG -> HttpLoggingInterceptor.Level.BASIC
+//                            com.github.uragiristereo.mejiboard.BuildConfig.DEBUG -> HttpLoggingInterceptor.Level.BASIC
                             else -> HttpLoggingInterceptor.Level.NONE
                         }
                     )

@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
-import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
@@ -120,18 +119,7 @@ fun SettingsScreen(
 
     SettingsBottomSheet(
         state = bottomSheetState,
-        items = listOf(
-            ApiProviders.GelbooruSafe.toPreferenceItem(),
-            ApiProviders.SafebooruOrg.toPreferenceItem(),
-        ).let {
-              when {
-                  Constants.SAFE_LISTING_ONLY_MODE -> it + listOf(
-                      ApiProviders.Gelbooru.toPreferenceItem(),
-                      ApiProviders.Danbooru.toPreferenceItem(),
-                  )
-                  else -> it
-              }
-        },
+        items = ApiProviders.list.map { it.toPreferenceItem() },
         selectedItem = mainViewModel.state.selectedProvider.toPreferenceItem(),
         onItemSelected = {
             mainViewModel.updateSelectedProvider(it.key)

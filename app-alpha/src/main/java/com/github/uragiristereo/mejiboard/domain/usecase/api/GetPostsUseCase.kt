@@ -1,7 +1,8 @@
 package com.github.uragiristereo.mejiboard.domain.usecase.api
 
-import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
+import com.github.uragiristereo.mejiboard.domain.entity.provider.ApiProvider
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.github.uragiristereo.mejiboard.domain.repository.remote.ProvidersRepository
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
@@ -10,7 +11,8 @@ class GetPostsUseCase @Inject constructor(
     private val providersRepository: ProvidersRepository,
 ) {
     suspend operator fun invoke(
-        provider: ApiProviders,
+        provider: ApiProvider,
+        filters: List<Rating>,
         tags: String,
         pageId: Int,
         onLoading: (loading: Boolean) -> Unit,
@@ -23,6 +25,7 @@ class GetPostsUseCase @Inject constructor(
         try {
             val result = providersRepository.getPosts(
                 provider = provider,
+                filters = filters,
                 tags = tags,
                 page = pageId,
             )
@@ -30,7 +33,7 @@ class GetPostsUseCase @Inject constructor(
             if (result.errorMessage.isEmpty()) {
                 onSuccess(result.data, result.canLoadMore)
             } else {
-                onFailed("${result.statusCode}: \"${result.errorMessage}\"")
+                onFailed(result.errorMessage)
             }
 
             onLoading(false)

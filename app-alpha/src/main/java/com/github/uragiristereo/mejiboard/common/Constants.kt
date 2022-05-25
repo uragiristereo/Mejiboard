@@ -7,6 +7,7 @@ object Constants {
     const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0"
     const val KEY_LOAD_MORE_PROGRESS = "posts.post.load.more"
     const val SAFE_LISTING_ONLY_MODE = false
+    const val POSTS_PER_PAGE = 100
 
     val SUPPORTED_TYPES_IMAGE = listOf("jpg", "jpeg", "png", "gif")
     val SUPPORTED_TYPES_VIDEO = listOf("webm", "mp4")

@@ -1,7 +1,8 @@
 package com.github.uragiristereo.mejiboard.domain.usecase.api
 
 import com.github.uragiristereo.mejiboard.common.Constants
-import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
+import com.github.uragiristereo.mejiboard.domain.entity.provider.ApiProvider
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.Tag
 import com.github.uragiristereo.mejiboard.domain.repository.remote.ProvidersRepository
 import kotlinx.coroutines.delay
@@ -12,7 +13,8 @@ class SearchTermUseCase @Inject constructor(
     private val providersRepository: ProvidersRepository,
 ) {
     suspend operator fun invoke(
-        provider: ApiProviders,
+        provider: ApiProvider,
+        filters: List<Rating>,
         term: String,
         onLoading: (loading: Boolean) -> Unit,
         onSuccess: (data: List<Tag>) -> Unit,
@@ -26,13 +28,14 @@ class SearchTermUseCase @Inject constructor(
         try {
             val result = providersRepository.searchTerm(
                 provider = provider,
+                filters = filters,
                 term = term,
             )
 
             if (result.errorMessage.isEmpty()) {
                 onSuccess(result.data)
             } else {
-                onFailed("${result.statusCode}: \"${result.errorMessage}\"")
+                onFailed(result.errorMessage)
             }
 
             onLoading(false)

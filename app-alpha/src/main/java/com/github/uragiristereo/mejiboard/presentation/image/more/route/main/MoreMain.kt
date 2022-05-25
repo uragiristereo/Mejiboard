@@ -20,7 +20,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.helper.PermissionHelper
-import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.more.MoreViewModel
 import com.github.uragiristereo.mejiboard.presentation.image.more.route.LocalImageViewModel
@@ -154,7 +153,7 @@ fun MoreMain(
             onClick = {
                 scope.launch { sheetState.hide() }
 
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(ApiProviders.SafebooruOrg.parseWebUrl(post.id)))
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(state.selectedProvider.parseWebUrl(post.id)))
                 context.startActivity(intent)
             }
         )

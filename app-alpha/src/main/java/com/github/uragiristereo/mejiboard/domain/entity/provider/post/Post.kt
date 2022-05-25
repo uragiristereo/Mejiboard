@@ -3,7 +3,7 @@ package com.github.uragiristereo.mejiboard.domain.entity.provider.post
 import java.util.*
 
 data class Post(
-    val type: String,
+    val provider: String,
     val id: Int,
     val scaled: Boolean,
     val rating: Rating,

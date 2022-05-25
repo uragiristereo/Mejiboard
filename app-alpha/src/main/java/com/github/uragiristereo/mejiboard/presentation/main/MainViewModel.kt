@@ -382,18 +382,12 @@ class MainViewModel @Inject constructor(
     fun updateSelectedProvider(provider: String) {
         updateState {
             it.copy(
-                selectedProvider = when (provider) {
-                    "gelbooru" -> ApiProviders.Gelbooru
-                    "gelboorusafe" -> ApiProviders.GelbooruSafe
-                    "safebooruorg" -> ApiProviders.SafebooruOrg
-                    "danbooru" -> ApiProviders.Danbooru
-                    else -> ApiProviders.GelbooruSafe
-                },
+                selectedProvider = ApiProviders.map[provider] ?: ApiProviders.Gelbooru,
             )
         }
 
         updatePreferences(
-            newData = preferences.copy(provider = state.selectedProvider.value),
+            newData = preferences.copy(provider = state.selectedProvider.key),
         )
 
         refreshNeeded = true

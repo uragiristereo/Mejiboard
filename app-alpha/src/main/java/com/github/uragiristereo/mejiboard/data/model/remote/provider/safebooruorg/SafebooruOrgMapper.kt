@@ -12,7 +12,7 @@ import java.io.File
 import java.util.*
 
 fun List<SafebooruOrgPost>.toPostList(): List<Post> {
-    val baseUrl = ApiProviders.SafebooruOrg.baseUrl
+    val baseUrl = ApiProviders.SafebooruOrg.baseUrl()
 
     return this.map {
         val fileNameWithoutExtension = it.image
@@ -22,7 +22,7 @@ fun List<SafebooruOrgPost>.toPostList(): List<Post> {
             )
 
         Post(
-            type = "safebooruorg",
+            provider = ApiProviders.SafebooruOrg.key,
             id = it.id,
             scaled = it.sample,
             rating = Rating.GENERAL,

@@ -19,7 +19,7 @@ fun GelbooruPostsResult.toPostList(): List<Post> {
         val fileType = File(it.image).extension
 
         Post(
-            type = "gelbooru",
+            provider = ApiProviders.Gelbooru.key,
             id = it.id,
             scaled = it.sample == 1,
             rating = when (it.rating) {
@@ -27,7 +27,7 @@ fun GelbooruPostsResult.toPostList(): List<Post> {
                 "sensitive" -> Rating.SENSITIVE
                 "questionable" -> Rating.QUESTIONABLE
                 "explicit" -> Rating.EXPLICIT
-                else -> Rating.SENSITIVE
+                else -> Rating.GENERAL
             },
             tags = it.tags,
             uploadedAt = it.createdAt,
