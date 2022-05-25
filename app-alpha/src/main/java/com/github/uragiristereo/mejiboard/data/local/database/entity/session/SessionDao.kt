@@ -8,10 +8,10 @@ import androidx.room.Query
 @Dao
 interface SessionDao {
     @Query(value = "SELECT * FROM session ORDER BY sequence ASC")
-    fun getAll(): List<SessionPost>
+    fun getAll(): List<PostSession>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(posts: List<SessionPost>)
+    fun insert(posts: List<PostSession>)
 
     @Query("DELETE FROM session")
     fun deleteAll()

@@ -11,7 +11,7 @@ import com.github.uragiristereo.mejiboard.data.local.database.AppDatabase
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetPostsUseCase
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.toPost
-import com.github.uragiristereo.mejiboard.presentation.common.mapper.toSessionPost
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.toPostSession
 import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsSavedState
 import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -140,7 +140,7 @@ class PostsViewModel @Inject constructor(
                 appDatabase.sessionDao().deleteAll()
 
                 val convertedPosts = state.posts.mapIndexed { index, post ->
-                    post.toSessionPost(sequence = index)
+                    post.toPostSession(sequence = index)
                 }
 
                 sessionPosts = state.posts.toList()
