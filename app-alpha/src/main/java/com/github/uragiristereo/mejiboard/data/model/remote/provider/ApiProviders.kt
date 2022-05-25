@@ -28,7 +28,7 @@ sealed class ApiProviders(
 
     object SafebooruOrg: ApiProviders(
         value = "safebooruorg",
-        name = "Safebooru",
+        name = "Safebooru.org",
         domain = "safebooru.org",
         baseUrl = "https://safebooru.org",
         postsPerPage = 100,
@@ -50,5 +50,9 @@ sealed class ApiProviders(
 
     fun parseWebUrl(postId: Int): String {
         return this.webUrlPattern.replace(oldValue = "{postId}", newValue = postId.toString())
+    }
+
+    fun toPair(): Pair<String, ApiProviders> {
+        return this.value to this
     }
 }

@@ -25,12 +25,7 @@ fun List<SafebooruOrgPost>.toPostList(): List<Post> {
             type = "safebooruorg",
             id = it.id,
             scaled = it.sample,
-            rating = when (it.rating) {
-                "safe" -> Rating.SAFE
-                "questionable" -> Rating.QUESTIONABLE
-                "explicit" -> Rating.EXPLICIT
-                else -> Rating.SAFE
-            },
+            rating = Rating.GENERAL,
             tags = it.tags,
             uploadedAt = Date(it.change * 1000L),
             uploader = it.owner,

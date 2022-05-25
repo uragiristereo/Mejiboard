@@ -23,10 +23,11 @@ fun GelbooruPostsResult.toPostList(): List<Post> {
             id = it.id,
             scaled = it.sample == 1,
             rating = when (it.rating) {
-                "safe" -> Rating.SAFE
+                "general" -> Rating.GENERAL
+                "sensitive" -> Rating.SENSITIVE
                 "questionable" -> Rating.QUESTIONABLE
                 "explicit" -> Rating.EXPLICIT
-                else -> Rating.SAFE
+                else -> Rating.SENSITIVE
             },
             tags = it.tags,
             uploadedAt = it.createdAt,

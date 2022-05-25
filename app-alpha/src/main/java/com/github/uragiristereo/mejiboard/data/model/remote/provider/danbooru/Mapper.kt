@@ -16,10 +16,11 @@ fun List<DanbooruPost>.toPostList(): List<Post> {
             id = it.id ?: 0,
             scaled = it.hasLarge ?: false,
             rating = when (it.rating) {
-                "s" -> Rating.SAFE
+                "g" -> Rating.GENERAL
+                "s" -> Rating.SENSITIVE
                 "q" -> Rating.QUESTIONABLE
                 "e" -> Rating.EXPLICIT
-                else -> Rating.SAFE
+                else -> Rating.SENSITIVE
             },
             tags = it.tagString,
             uploadedAt = it.createdAt,

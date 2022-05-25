@@ -8,7 +8,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface GelbooruApi {
-    @GET("/index.php?page=dapi&s=post&q=index&limit=100&json=1")
+    @GET("/index.php?page=dapi&s=post&q=index&json=1")
     suspend fun getPosts(
         @Query("tags") tags: String,
         @Query("pid") pageId: Int,

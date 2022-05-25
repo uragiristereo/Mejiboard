@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.R
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
@@ -102,6 +103,22 @@ fun MoreInfo(
             }
 
             item {
+                val providers = remember {
+                    mapOf(
+                        ApiProviders.GelbooruSafe.toPair(),
+                        ApiProviders.SafebooruOrg.toPair(),
+                        ApiProviders.Gelbooru.toPair(),
+                        ApiProviders.Danbooru.toPair(),
+                    )
+                }
+
+                SheetInfoItem(
+                    leadingText = "Provider",
+                    trailingText = providers[post.type]?.name ?: "Unknown",
+                )
+            }
+
+            item {
                 SheetInfoItem(
                     leadingText = "Uploader",
                     trailingText = post.uploader,
@@ -111,7 +128,8 @@ fun MoreInfo(
             item {
                 val rating = remember {
                     when (post.rating) {
-                        Rating.SAFE -> "Safe"
+                        Rating.GENERAL -> "General"
+                        Rating.SENSITIVE -> "Sensitive"
                         Rating.QUESTIONABLE -> "Questionable"
                         Rating.EXPLICIT -> "Explicit"
                     }

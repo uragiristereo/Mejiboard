@@ -1,7 +1,8 @@
 package com.github.uragiristereo.mejiboard.domain.entity.provider.post
 
 enum class Rating {
-    SAFE,
+    GENERAL,
+    SENSITIVE,
     QUESTIONABLE,
     EXPLICIT,
 }

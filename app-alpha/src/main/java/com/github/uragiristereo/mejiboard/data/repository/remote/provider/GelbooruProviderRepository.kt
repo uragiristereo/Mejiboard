@@ -49,7 +49,7 @@ class GelbooruProviderRepository(
 
     override suspend fun getPosts(tags: String, page: Int): PostsResult {
         val response = client.getPosts(
-            tags = if (safe) "$tags rating:safe" else tags,
+            tags = if (safe) "$tags rating:general" else tags,
             pageId = page,
             postsPerPage = provider.postsPerPage,
         )
