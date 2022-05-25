@@ -16,6 +16,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import java.io.File
 import javax.inject.Singleton
 
@@ -26,6 +27,16 @@ object NetworkModule {
     @Singleton
     fun providesOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor {
+                HttpLoggingInterceptor()
+                    .setLevel(
+                        when {
+//                            BuildConfig.DEBUG -> HttpLoggingInterceptor.Level.BASIC
+                            else -> HttpLoggingInterceptor.Level.NONE
+                        }
+                    )
+                    .intercept(it)
+            }
             .cache(CacheUtil.createDefaultCache(context, "image_cache"))
             .build()
     }
