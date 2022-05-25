@@ -6,8 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,14 +14,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
+import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
+import com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet.SettingsBottomSheet
+import com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet.toPreferenceItem
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsTopAppBar
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@ExperimentalMaterialApi
 @ExperimentalCoilApi
 @ExperimentalAnimationApi
 @Composable
@@ -33,6 +37,8 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val columnState = rememberLazyListState()
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val systemUiController = rememberSystemUiController()
     val scope = rememberCoroutineScope()
     val state by viewModel.state
@@ -94,7 +100,7 @@ fun SettingsScreen(
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .windowInsetsBottomHeight(insets = WindowInsets.navigationBars)
+                    .windowInsetsBottomHeight(insets = WindowInsets.navigationBars),
             )
         },
     ) {
@@ -104,6 +110,35 @@ fun SettingsScreen(
             bigHeaderOpacity = bigHeaderOpacity,
             innerPadding = WindowInsets.navigationBars.asPaddingValues(),
             mainViewModel = mainViewModel,
+            onBottomSheetSettingClicked = {
+                scope.launch {
+                    bottomSheetState.animateTo(targetValue = ModalBottomSheetValue.Expanded)
+                }
+            },
         )
     }
+
+    SettingsBottomSheet(
+        state = bottomSheetState,
+        items = listOf(
+            ApiProviders.GelbooruSafe.toPreferenceItem(),
+            ApiProviders.SafebooruOrg.toPreferenceItem(),
+        ).let {
+              when {
+                  Constants.SAFE_LISTING_ONLY_MODE -> it + listOf(
+                      ApiProviders.Gelbooru.toPreferenceItem(),
+                      ApiProviders.Danbooru.toPreferenceItem(),
+                  )
+                  else -> it
+              }
+        },
+        selectedItem = mainViewModel.state.selectedProvider.toPreferenceItem(),
+        onItemSelected = {
+            mainViewModel.updateSelectedProvider(it.key)
+
+            scope.launch {
+                bottomSheetState.animateTo(targetValue = ModalBottomSheetValue.Hidden)
+            }
+        },
+    )
 }

@@ -2,10 +2,10 @@ package com.github.uragiristereo.mejiboard.data.model.remote.provider
 
 sealed class ApiProviders(
     val value: String,
+    val name: String,
     val domain: String,
     val baseUrl: String,
     val postsPerPage: Int,
-    private val name: String,
     private val webUrlPattern: String,
 ) {
     object Gelbooru: ApiProviders(
@@ -19,7 +19,7 @@ sealed class ApiProviders(
 
     object GelbooruSafe: ApiProviders(
         value = "gelboorusafe",
-        name = "Gelbooru (Safe)",
+        name = "Gelbooru (safe)",
         domain = "gelbooru.com",
         baseUrl = "https://gelbooru.com",
         postsPerPage = 100,
@@ -50,9 +50,5 @@ sealed class ApiProviders(
 
     fun parseWebUrl(postId: Int): String {
         return this.webUrlPattern.replace(oldValue = "{postId}", newValue = postId.toString())
-    }
-
-    fun toPair(): Pair<String, String> {
-        return this.value to this.toString()
     }
 }

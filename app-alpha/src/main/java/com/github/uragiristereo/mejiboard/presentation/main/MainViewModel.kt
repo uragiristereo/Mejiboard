@@ -395,5 +395,7 @@ class MainViewModel @Inject constructor(
         updatePreferences(
             newData = preferences.copy(provider = state.selectedProvider.value),
         )
+
+        refreshNeeded = true
     }
 }
