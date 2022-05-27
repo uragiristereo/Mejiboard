@@ -17,7 +17,7 @@ class ProvidersRepositoryImpl @Inject constructor(
 ) : ProvidersRepository {
     private val okHttpClient = networkRepository.okHttpClient
 
-    override val providers = mapOf(
+    override var providers = mapOf(
         ApiProviders.Gelbooru to GelbooruProviderRepository(okHttpClient),
         ApiProviders.Danbooru to DanbooruProviderRepository(okHttpClient),
         ApiProviders.SafebooruOrg to SafebooruOrgProviderRepository(okHttpClient),

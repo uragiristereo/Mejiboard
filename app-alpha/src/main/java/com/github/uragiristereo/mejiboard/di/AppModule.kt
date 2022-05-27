@@ -17,7 +17,9 @@ import javax.inject.Singleton
 object AppModule {
     @Provides
     @Singleton
-    fun providePreferencesRepository(@ApplicationContext context: Context) = PreferencesRepository(context)
+    fun providePreferencesRepository(@ApplicationContext context: Context): PreferencesRepository {
+        return PreferencesRepository(context)
+    }
 
     @Provides
     @Singleton

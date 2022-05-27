@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.uragiristereo.mejiboard.common.helper.NumberHelper
-import com.github.uragiristereo.mejiboard.data.local.preferences.enums.Theme
+import com.github.uragiristereo.mejiboard.data.model.local.preferences.Theme
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.Tag
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagType
 import com.github.uragiristereo.mejiboard.presentation.common.theme.MejiboardTheme

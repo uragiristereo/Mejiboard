@@ -9,8 +9,8 @@ import com.github.uragiristereo.mejiboard.data.model.remote.provider.gelbooru.to
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.gelbooru.toTagList
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.safebooruorg.search.SafebooruOrgSearch
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.safebooruorg.toTagList
-import com.github.uragiristereo.mejiboard.data.remote.api.GelbooruApi
-import com.github.uragiristereo.mejiboard.data.remote.api.SafebooruApi
+import com.github.uragiristereo.mejiboard.data.remote.provider.GelbooruApi
+import com.github.uragiristereo.mejiboard.data.remote.provider.SafebooruApi
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.PostsResult
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagsResult

@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.data.local.database.entity.session
+package com.github.uragiristereo.mejiboard.domain.entity.session
 
 import androidx.room.Dao
 import androidx.room.Insert

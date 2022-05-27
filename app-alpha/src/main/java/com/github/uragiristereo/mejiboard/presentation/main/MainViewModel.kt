@@ -18,15 +18,14 @@ import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.helper.FileHelper
 import com.github.uragiristereo.mejiboard.data.local.download.DownloadBroadcastReceiver
-import com.github.uragiristereo.mejiboard.data.local.download.DownloadInstance
-import com.github.uragiristereo.mejiboard.data.local.preferences.AppPreferences
-import com.github.uragiristereo.mejiboard.data.local.preferences.enums.DohProvider
-import com.github.uragiristereo.mejiboard.data.model.local.DownloadInfo
+import com.github.uragiristereo.mejiboard.data.model.local.download.DownloadInfo
+import com.github.uragiristereo.mejiboard.data.model.local.download.DownloadInstance
 import com.github.uragiristereo.mejiboard.data.model.remote.app.AppUpdate
 import com.github.uragiristereo.mejiboard.data.model.remote.app.ReleaseInfo
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.data.repository.local.DownloadRepository
 import com.github.uragiristereo.mejiboard.data.repository.local.PreferencesRepository
+import com.github.uragiristereo.mejiboard.domain.entity.preferences.AppPreferences
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.domain.repository.remote.NetworkRepository
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainState
@@ -51,7 +50,7 @@ class MainViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val downloadRepository: DownloadRepository,
     private val networkRepository: NetworkRepository,
-    private val preferencesRepository: PreferencesRepository,
+    val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
     val mutableState = mutableStateOf(MainState())
     val state by mutableState
@@ -91,14 +90,12 @@ class MainViewModel @Inject constructor(
         }.launchIn(viewModelScope)
 
         viewModelScope.launch {
-            val dohEnabled = preferencesRepository.data.map { it.useDnsOverHttps }.first()
-            val dohProvider = preferencesRepository.data.map { it.dohProvider }.first()
-            renewNetworkInstance(dohEnabled, DohProvider.getUrl(dohProvider))
+            renewNetworkInstance()
 
             updateSelectedProvider(preferencesRepository.data.map { it.provider }.first())
 
             incrementLaterCounter()
-            refreshNeeded = true
+            triggerRefresh()
         }
     }
 
@@ -106,9 +103,11 @@ class MainViewModel @Inject constructor(
         mutableState.value = body(state)
     }
 
-    fun updatePreferences(newData: AppPreferences) {
+    inline fun updatePreferences(crossinline body: (AppPreferences) -> AppPreferences) {
         viewModelScope.launch {
-            preferencesRepository.update(newData)
+            val data = body(preferences)
+
+            preferencesRepository.update(data)
         }
     }
 
@@ -119,12 +118,15 @@ class MainViewModel @Inject constructor(
         return notificationCount
     }
 
-    fun renewNetworkInstance(
-        useDnsOverHttps: Boolean,
-        dohProvider: String,
-    ) {
-        networkRepository.renewInstance(useDnsOverHttps, dohProvider)
+    fun renewNetworkInstance() {
+        networkRepository.renewInstance(
+            useDnsOverHttps = preferences.useDnsOverHttps,
+            dohProvider = preferences.dohProvider,
+        )
+
         okHttpClient = networkRepository.okHttpClient
+
+        triggerRefresh()
     }
 
     private fun download(
@@ -372,11 +374,11 @@ class MainViewModel @Inject constructor(
             if (remindLaterCounter != -1)
                 remindLaterCounter += 1
 
-        updatePreferences(
-            newData = preferences.copy(
+        updatePreferences {
+            it.copy(
                 remindLaterCounter = remindLaterCounter,
             )
-        )
+        }
     }
 
     fun updateSelectedProvider(provider: String) {
@@ -386,10 +388,16 @@ class MainViewModel @Inject constructor(
             )
         }
 
-        updatePreferences(
-            newData = preferences.copy(provider = state.selectedProvider.key),
-        )
+        updatePreferences {
+            it.copy(
+                provider = state.selectedProvider.key,
+            )
+        }
 
+        triggerRefresh()
+    }
+    
+    fun triggerRefresh() {
         refreshNeeded = true
     }
 }

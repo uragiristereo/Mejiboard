@@ -1,6 +1,7 @@
 package com.github.uragiristereo.mejiboard.presentation.settings
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -15,11 +16,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
-import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet.SettingsBottomSheet
-import com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet.toPreferenceItem
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsTopAppBar
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
@@ -87,6 +86,15 @@ fun SettingsScreen(
         viewModel.state.update { it.copy(useBigHeader = useBigHeader) }
     }
 
+    BackHandler(
+        enabled = bottomSheetState.isVisible,
+        onBack = {
+            scope.launch {
+                bottomSheetState.animateTo(targetValue = ModalBottomSheetValue.Hidden)
+            }
+        }
+    )
+
     Scaffold(
         topBar = {
             SettingsTopAppBar(
@@ -105,28 +113,18 @@ fun SettingsScreen(
     ) {
         SettingItemList(
             state = state,
+            bottomSheetState = bottomSheetState,
             columnState = columnState,
             bigHeaderOpacity = bigHeaderOpacity,
             innerPadding = WindowInsets.navigationBars.asPaddingValues(),
             mainViewModel = mainViewModel,
-            onBottomSheetSettingClicked = {
-                scope.launch {
-                    bottomSheetState.animateTo(targetValue = ModalBottomSheetValue.Expanded)
-                }
-            },
         )
     }
 
-    SettingsBottomSheet(
-        state = bottomSheetState,
-        items = ApiProviders.list.map { it.toPreferenceItem() },
-        selectedItem = mainViewModel.state.selectedProvider.toPreferenceItem(),
-        onItemSelected = {
-            mainViewModel.updateSelectedProvider(it.key)
-
-            scope.launch {
-                bottomSheetState.animateTo(targetValue = ModalBottomSheetValue.Hidden)
-            }
-        },
-    )
+    viewModel.state.value.selectedBottomSheetData?.let {
+        SettingsBottomSheet(
+            state = bottomSheetState,
+            data = it,
+        )
+    }
 }

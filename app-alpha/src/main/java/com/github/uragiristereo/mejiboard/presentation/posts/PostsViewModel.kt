@@ -2,12 +2,14 @@ package com.github.uragiristereo.mejiboard.presentation.posts
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.uragiristereo.mejiboard.common.Constants
-import com.github.uragiristereo.mejiboard.common.RatingFilter
 import com.github.uragiristereo.mejiboard.data.local.database.AppDatabase
+import com.github.uragiristereo.mejiboard.domain.entity.preferences.AppPreferences
+import com.github.uragiristereo.mejiboard.data.repository.local.PreferencesRepository
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetPostsUseCase
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.toPost
@@ -17,6 +19,8 @@ import com.github.uragiristereo.mejiboard.presentation.posts.core.PostsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,13 +29,23 @@ class PostsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val getPostsUseCase: GetPostsUseCase,
     private val appDatabase: AppDatabase,
+    val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
     val mutableState = mutableStateOf(PostsState())
     val state by mutableState
     var savedState = savedStateHandle[Constants.STATE_KEY_POSTS] ?: PostsSavedState()
 
+    var preferences by mutableStateOf(AppPreferences())
+        private set
+
     private var postsJob: Job? = null
     private var sessionPosts = listOf<Post>()
+
+    init {
+        preferencesRepository.data
+            .onEach { preferences = it }
+            .launchIn(viewModelScope)
+    }
 
     inline fun updateState(body: (PostsState) -> PostsState) {
         mutableState.value = body(state)
@@ -52,7 +66,7 @@ class PostsViewModel @Inject constructor(
         postsJob = viewModelScope.launch {
             getPostsUseCase(
                 provider = state.selectedProvider,
-                filters = RatingFilter.GENERAL_ONLY,
+                filters = preferences.ratingFilter,
                 tags = tags,
                 pageId = state.page,
                 onLoading = { loading ->
@@ -74,7 +88,7 @@ class PostsViewModel @Inject constructor(
 
                     val filteredPosts = result
                         // filter posts by rating
-                        .filter { it.rating !in RatingFilter.GENERAL_ONLY }
+                        .filter { it.rating !in preferences.ratingFilter }
                         // filter posts duplicate
                         .filter { resultPost ->
                             !state.posts.any { it.id == resultPost.id }

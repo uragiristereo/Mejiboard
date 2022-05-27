@@ -1,8 +1,10 @@
-package com.github.uragiristereo.mejiboard.data.local.preferences
+package com.github.uragiristereo.mejiboard.domain.entity.preferences
 
-import com.github.uragiristereo.mejiboard.data.local.preferences.enums.DohProvider
-import com.github.uragiristereo.mejiboard.data.local.preferences.enums.PreviewSize
-import com.github.uragiristereo.mejiboard.data.local.preferences.enums.Theme
+import com.github.uragiristereo.mejiboard.common.RatingFilter
+import com.github.uragiristereo.mejiboard.data.model.local.preferences.DohProvider
+import com.github.uragiristereo.mejiboard.data.model.local.preferences.PreviewSize
+import com.github.uragiristereo.mejiboard.data.model.local.preferences.Theme
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.squareup.moshi.Json
 
 
@@ -12,8 +14,11 @@ data class AppPreferences(
     @field:Json(name = "black_theme")
     val blackTheme: Boolean = false,
 
-    @field:Json(name = "selected_provider")
-    val provider: String = "gelboorusafe",
+    @field:Json(name = "provider")
+    val provider: String = "gelbooru",
+
+    @field:Json(name = "rating_filter")
+    val ratingFilter: List<Rating> = RatingFilter.SAFE,
 
     @field:Json(name = "preview_size")
     val previewSize: String = PreviewSize.Sample,

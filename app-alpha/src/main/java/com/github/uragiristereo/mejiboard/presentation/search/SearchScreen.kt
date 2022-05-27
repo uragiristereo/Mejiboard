@@ -126,11 +126,11 @@ fun SearchScreen(
                 onBackPressed = {
                     keyboardController?.hide()
                     mainNavigation.navigateUp()
-                    viewModel.updateState(updatedState = state.copy(searchAllowed = false))
+                    viewModel.state.update{ it.copy(searchAllowed = false) }
                 },
                 onQueryTextSubmit = {
                     viewModel.parseSearchQuery(it.text)
-                    mainViewModel.refreshNeeded = true
+                    mainViewModel.triggerRefresh()
 
                     keyboardController?.hide()
                     viewModel.cancelSearch()

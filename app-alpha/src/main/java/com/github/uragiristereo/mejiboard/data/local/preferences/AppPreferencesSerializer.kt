@@ -1,6 +1,7 @@
 package com.github.uragiristereo.mejiboard.data.local.preferences
 
 import androidx.datastore.core.Serializer
+import com.github.uragiristereo.mejiboard.domain.entity.preferences.AppPreferences
 import com.squareup.moshi.Moshi
 import java.io.InputStream
 import java.io.OutputStream

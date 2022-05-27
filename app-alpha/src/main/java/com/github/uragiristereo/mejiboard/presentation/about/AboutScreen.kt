@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.about
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -39,10 +40,11 @@ import coil.request.ImageRequest
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.R
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
-import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.common.theme.MejiboardTheme
+import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @ExperimentalCoilApi
 @Composable
 fun AboutScreen(
@@ -141,7 +143,8 @@ fun AboutScreen(
                         ) {
                             append("client")
                         }
-                        append(" viewer based on Gelbooru for Android.")
+                        append(" viewer for Android.\n")
+                        append("Supported providers: Gelbooru, Danbooru, Safebooru.\n")
                     },
                     Modifier
                         .fillMaxWidth()
@@ -184,14 +187,6 @@ fun AboutScreen(
                     )
                     Spacer(
                         Modifier.width(8.dp)
-                    )
-                    LinkIconButton(
-                        painter = painterResource(R.drawable.gelbooru_logo),
-                        text = "Gelbooru",
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://gelbooru.com"))
-                            context.startActivity(intent)
-                        }
                     )
                 }
             }

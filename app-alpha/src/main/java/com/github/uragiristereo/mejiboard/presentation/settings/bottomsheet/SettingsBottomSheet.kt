@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,16 +15,17 @@ import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.presentation.common.DragHandle
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.settings.preference.RadioPreferenceItem
+import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
 @Composable
 fun SettingsBottomSheet(
     state: ModalBottomSheetState,
-    items: List<PreferenceItem>,
-    selectedItem: PreferenceItem?,
-    onItemSelected: (PreferenceItem) -> Unit,
+    data: SettingsBottomSheetData,
     modifier: Modifier = Modifier,
 ) {
+    val scope = rememberCoroutineScope()
+
     ModalBottomSheetLayout(
         sheetState = state,
         sheetShape = RoundedCornerShape(
@@ -47,7 +49,7 @@ fun SettingsBottomSheet(
                 )
 
                 Text(
-                    text = "Select Booru provider",
+                    text = data.title,
                     style = MaterialTheme.typography.h6,
                     modifier = Modifier.padding(
                         horizontal = 16.dp,
@@ -55,13 +57,17 @@ fun SettingsBottomSheet(
                     ),
                 )
 
-                items.forEach { item ->
+                data.items.forEach { item ->
                     RadioPreferenceItem(
                         title = item.title,
                         subtitle = item.subtitle,
-                        selected = item == selectedItem,
+                        selected = item == data.selectedItem,
                         onClick = {
-                            onItemSelected(item)
+                            data.onItemSelected(item)
+
+                            scope.launch {
+                                state.animateTo(targetValue = ModalBottomSheetValue.Hidden)
+                            }
                         },
                     )
                 }

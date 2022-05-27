@@ -9,9 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.Divider
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
@@ -22,12 +23,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.github.uragiristereo.mejiboard.BuildConfig
-import com.github.uragiristereo.mejiboard.data.local.preferences.enums.DohProvider
-import com.github.uragiristereo.mejiboard.data.local.preferences.enums.PreviewSize
-import com.github.uragiristereo.mejiboard.data.local.preferences.enums.Theme
+import com.github.uragiristereo.mejiboard.common.RatingFilter
+import com.github.uragiristereo.mejiboard.data.model.local.preferences.DohProvider
+import com.github.uragiristereo.mejiboard.data.model.local.preferences.PreviewSize
+import com.github.uragiristereo.mejiboard.data.model.local.preferences.Theme
+import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.presentation.common.SettingsCategory
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
+import com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet.SettingsBottomSheetData
+import com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet.toPreferenceItem
 import com.github.uragiristereo.mejiboard.presentation.settings.core.BigHeader
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsState
 import com.github.uragiristereo.mejiboard.presentation.settings.preference.DropDownPreference
@@ -36,22 +41,25 @@ import com.github.uragiristereo.mejiboard.presentation.settings.preference.Switc
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@ExperimentalMaterialApi
 @ExperimentalCoilApi
 @ExperimentalAnimationApi
 @Composable
 fun SettingItemList(
     state: SettingsState,
+    bottomSheetState: ModalBottomSheetState,
     columnState: LazyListState,
     bigHeaderOpacity: Float,
     innerPadding: PaddingValues,
     mainViewModel: MainViewModel,
-    onBottomSheetSettingClicked: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val preferences = mainViewModel.preferences
+
+    val safeListingOnly by remember { mutableStateOf(true) }
 
     val themes = remember {
         listOf(
@@ -95,12 +103,8 @@ fun SettingItemList(
                 title = "Theme",
                 items = themes,
                 selectedItem = preferences.theme,
-                onItemSelected = {
-                    mainViewModel.updatePreferences(
-                        newData = preferences.copy(
-                            theme = it,
-                        )
-                    )
+                onItemSelected = { theme ->                    
+                    viewModel.updatePreferences { it.copy(theme = theme) }
                 }
             )
         }
@@ -112,8 +116,8 @@ fun SettingItemList(
                         title = "Black dark theme",
                         subtitle = "Use pitch black theme instead of regular dark theme, useful for OLED screens",
                         checked = preferences.blackTheme,
-                        onCheckedChange = {
-                            mainViewModel.updatePreferences(newData = preferences.copy(blackTheme = it))
+                        onCheckedChange = { blackTheme ->
+                            viewModel.updatePreferences { it.copy(blackTheme = blackTheme) }
                         }
                     )
                 }
@@ -129,7 +133,59 @@ fun SettingItemList(
                 title = "Booru provider",
                 subtitle = mainViewModel.state.selectedProvider.name,
                 onClick = {
-                    onBottomSheetSettingClicked()
+                    viewModel.state.update { state ->
+                        state.copy(
+                            selectedBottomSheetData = SettingsBottomSheetData(
+                                title = "Select Booru provider",
+                                items = ApiProviders.list.map { it.toPreferenceItem() },
+                                selectedItem = mainViewModel.state.selectedProvider.toPreferenceItem(),
+                                onItemSelected = {
+                                    mainViewModel.updateSelectedProvider(it.key)
+                                },
+                            ),
+                        )
+                    }
+
+                    scope.launch {
+                        bottomSheetState.animateTo(targetValue = ModalBottomSheetValue.Expanded)
+                    }
+                },
+            )
+        }
+
+        item {
+            RegularPreference(
+                title = "Booru listing mode",
+                subtitle = RatingFilter.getPair(mainViewModel.preferences.ratingFilter)
+                    .toPreferenceItem()
+                    .title,
+                onClick = {
+                    viewModel.state.update { state ->
+                        state.copy(
+                            selectedBottomSheetData = SettingsBottomSheetData(
+                                title = "Select Booru listing mode",
+                                items = RatingFilter.getAvailableRatings(safeListingOnly)
+                                    .toList()
+                                    .map { it.toPreferenceItem() },
+                                selectedItem = RatingFilter.getPair(mainViewModel.preferences.ratingFilter)
+                                    .toPreferenceItem(),
+                                onItemSelected = { selectedItem ->
+                                    viewModel.updatePreferences {
+                                        it.copy(
+                                            ratingFilter = RatingFilter.map[selectedItem.key]
+                                                ?: RatingFilter.SAFE,
+                                        )
+                                    }
+
+                                    mainViewModel.triggerRefresh()
+                                },
+                            ),
+                        )
+                    }
+
+                    scope.launch {
+                        bottomSheetState.animateTo(targetValue = ModalBottomSheetValue.Expanded)
+                    }
                 },
             )
         }
@@ -139,8 +195,8 @@ fun SettingItemList(
                 title = "Preview size",
                 items = previewSizes,
                 selectedItem = preferences.previewSize,
-                onItemSelected = {
-                    mainViewModel.updatePreferences(newData = preferences.copy(previewSize = it))
+                onItemSelected = { selectedItem ->
+                    viewModel.updatePreferences { it.copy(previewSize = selectedItem) }
                 }
             )
         }
@@ -160,16 +216,10 @@ fun SettingItemList(
                     }
                 },
                 checked = preferences.useDnsOverHttps,
-                onCheckedChange = {
-                    mainViewModel.apply {
-                        renewNetworkInstance(
-                            useDnsOverHttps = preferences.useDnsOverHttps,
-                            dohProvider = DohProvider.getUrl(preferences.dohProvider),
-                        )
-                        updatePreferences(newData = preferences.copy(useDnsOverHttps = it))
-                        refreshNeeded = true
-                    }
-                }
+                onCheckedChange = { checked ->
+                    viewModel.updatePreferences { it.copy(useDnsOverHttps = checked) }
+                    mainViewModel.renewNetworkInstance()
+                },
             )
         }
         item {
@@ -178,15 +228,9 @@ fun SettingItemList(
                 title = "DNS over HTTPS provider",
                 items = dohProviders,
                 selectedItem = preferences.dohProvider,
-                onItemSelected = {
-                    mainViewModel.apply {
-                        renewNetworkInstance(
-                            useDnsOverHttps = preferences.useDnsOverHttps,
-                            dohProvider = DohProvider.getUrl(preferences.dohProvider),
-                        )
-                        updatePreferences(newData = preferences.copy(dohProvider = it))
-                        refreshNeeded = true
-                    }
+                onItemSelected = { selectedItem ->
+                    viewModel.updatePreferences { it.copy(dohProvider = selectedItem) }
+                    mainViewModel.renewNetworkInstance()
                 },
             )
         }
@@ -196,8 +240,8 @@ fun SettingItemList(
                 title = "Block content from Recent apps",
                 subtitle = "Prevent content from showing in Recent apps",
                 checked = preferences.blockFromRecents,
-                onCheckedChange = {
-                    mainViewModel.updatePreferences(newData = preferences.copy(blockFromRecents = it))
+                onCheckedChange = { checked ->
+                    viewModel.updatePreferences { it.copy(blockFromRecents = checked) }
                 }
             )
         }
@@ -211,8 +255,8 @@ fun SettingItemList(
                 title = "Auto clean cache",
                 subtitle = "Automatically clean cache that older than 12 hours at startup",
                 checked = preferences.autoCleanCache,
-                onCheckedChange = {
-                    mainViewModel.updatePreferences(newData = preferences.copy(autoCleanCache = it))
+                onCheckedChange = { checked ->
+                    viewModel.updatePreferences { it.copy(autoCleanCache = checked) }
                 }
             )
         }

@@ -1,6 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.common.mapper
 
-import com.github.uragiristereo.mejiboard.data.local.database.entity.session.PostSession
+import com.github.uragiristereo.mejiboard.domain.entity.session.PostSession
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 
 fun PostSession.toPost(): Post {

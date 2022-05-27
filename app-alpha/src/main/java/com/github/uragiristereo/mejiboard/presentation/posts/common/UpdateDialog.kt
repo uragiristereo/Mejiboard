@@ -25,7 +25,6 @@ import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 @Composable
 fun UpdateDialog(mainViewModel: MainViewModel) {
     val context = LocalContext.current
-    val preferences = mainViewModel.preferences
 
     AlertDialog(
         onDismissRequest = {
@@ -81,13 +80,11 @@ fun UpdateDialog(mainViewModel: MainViewModel) {
 
                 TextButton(
                     onClick = {
-                        mainViewModel.updateDialogVisible = false
-                        mainViewModel.remindLaterCounter = 0
-                        mainViewModel.updatePreferences(
-                            newData = preferences.copy(
-                                remindLaterCounter = 0,
-                            ),
-                        )
+                        mainViewModel.apply {
+                            updateDialogVisible = false
+                            remindLaterCounter = 0
+                            updatePreferences { it.copy(remindLaterCounter = 0) }
+                        }
                         Toast.makeText(context, "You can check for update manually at:\nSettings > Check for update", Toast.LENGTH_LONG).show()
                     }
                 ) {

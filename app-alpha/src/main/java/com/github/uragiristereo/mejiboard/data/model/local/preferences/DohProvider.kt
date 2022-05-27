@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.data.local.preferences.enums
+package com.github.uragiristereo.mejiboard.data.model.local.preferences
 
 
 object DohProvider {

@@ -2,9 +2,9 @@ package com.github.uragiristereo.mejiboard.data.repository.local
 
 import android.content.Context
 import androidx.datastore.dataStore
-import com.github.uragiristereo.mejiboard.data.local.preferences.AppPreferences
+import com.github.uragiristereo.mejiboard.domain.entity.preferences.AppPreferences
 import com.github.uragiristereo.mejiboard.data.local.preferences.AppPreferencesSerializer
-import com.github.uragiristereo.mejiboard.data.model.local.Reference
+import com.github.uragiristereo.mejiboard.data.model.local.Ref
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
@@ -19,8 +19,8 @@ class PreferencesRepository(context: Context) {
     val data = appDataStore.data
 
     // deprecated
-    val permissionState = Reference("")
-    var blockFromRecents = Reference(false)
+    val permissionState = Ref("")
+    var blockFromRecents = Ref(false)
 
     suspend fun update(newData: AppPreferences) {
         appDataStore.updateData { newData }

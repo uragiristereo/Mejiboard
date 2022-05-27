@@ -1,7 +1,10 @@
 package com.github.uragiristereo.mejiboard.data.repository.remote
 
+import com.github.uragiristereo.mejiboard.data.model.local.preferences.DohProvider
+import com.github.uragiristereo.mejiboard.data.model.remote.adapter.MoshiDateAdapter
 import com.github.uragiristereo.mejiboard.data.remote.api.MejiboardApi
 import com.github.uragiristereo.mejiboard.domain.repository.remote.NetworkRepository
+import com.squareup.moshi.Moshi
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.dnsoverhttps.DnsOverHttps
@@ -30,14 +33,7 @@ class NetworkRepositoryImpl(
                     useDnsOverHttps -> {
                         val dns = DnsOverHttps.Builder()
                             .client(bootstrapOkHttpClient)
-                            .url(
-                                when (dohProvider) {
-                                    "cloudflare" -> "https://cloudflare-dns.com/dns-query"
-                                    "google" -> "https://dns.google/dns-query"
-                                    "tuna" -> "https://101.6.6.6:8443/dns-query"
-                                    else -> "https://cloudflare-dns.com/dns-query"
-                                }.toHttpUrl()
-                            )
+                            .url(DohProvider.getUrl(dohProvider).toHttpUrl())
                             .build()
 
                         it.dns(dns)

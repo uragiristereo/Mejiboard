@@ -1,6 +1,6 @@
 package com.github.uragiristereo.mejiboard.data.repository.local
 
-import com.github.uragiristereo.mejiboard.data.local.download.DownloadInstance
+import com.github.uragiristereo.mejiboard.data.model.local.download.DownloadInstance
 
 
 class DownloadRepository {

@@ -6,7 +6,7 @@ import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagsResult
 
 interface ProvidersRepository {
-    val providers: Map<ApiProvider, ApiProviderRepository>
+    var providers: Map<ApiProvider, ApiProviderRepository>
 
     suspend fun getPosts(provider: ApiProvider, tags: String, page: Int, filters: List<Rating>): PostsResult
 

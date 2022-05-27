@@ -3,21 +3,46 @@ package com.github.uragiristereo.mejiboard.presentation.settings
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.github.uragiristereo.mejiboard.domain.entity.preferences.AppPreferences
+import com.github.uragiristereo.mejiboard.data.repository.local.PreferencesRepository
 import com.github.uragiristereo.mejiboard.domain.usecase.common.ConvertFileSizeUseCase
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val convertFileSizeUseCase: ConvertFileSizeUseCase,
+    val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
     val state = mutableStateOf(value = SettingsState())
     private val _state by state
+
+    var preferences by mutableStateOf(AppPreferences())
+        private set
+
+    init {
+        preferencesRepository.data
+            .onEach { preferences = it }
+            .launchIn(viewModelScope)
+    }
+
+    inline fun updatePreferences(crossinline body: (AppPreferences) -> AppPreferences) {
+        viewModelScope.launch {
+            val data = body(preferences)
+
+            preferencesRepository.update(data)
+        }
+    }
 
     fun getFormattedFolderSize(file: File) {
         val folderSize = getFolderSize(file)

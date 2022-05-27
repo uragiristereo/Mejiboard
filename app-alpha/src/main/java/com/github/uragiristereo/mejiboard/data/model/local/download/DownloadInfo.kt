@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.data.model.local
+package com.github.uragiristereo.mejiboard.data.model.local.download
 
 data class DownloadInfo(
     val progress: Float = 0f,

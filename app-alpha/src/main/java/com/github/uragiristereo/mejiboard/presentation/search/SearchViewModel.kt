@@ -6,58 +6,74 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.uragiristereo.mejiboard.common.RatingFilter
+import com.github.uragiristereo.mejiboard.domain.entity.preferences.AppPreferences
+import com.github.uragiristereo.mejiboard.data.repository.local.PreferencesRepository
 import com.github.uragiristereo.mejiboard.domain.usecase.api.SearchTermUseCase
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.search.core.SearchState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val searchTermUseCase: SearchTermUseCase,
+    val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
     val state = mutableStateOf(SearchState())
+    private val _state by state
 
-    private var _state by state
+    var preferences by mutableStateOf(AppPreferences())
+        private set
+
     private var job: Job? = null
     private val keywords = arrayOf(' ', '{', '}', '~')
 
-    fun updateState(updatedState: SearchState) {
-        _state = updatedState
+    init {
+        preferencesRepository.data
+            .onEach { preferences = it }
+            .launchIn(viewModelScope)
     }
 
     private fun getTags(term: String) {
         if (term.isNotEmpty()) {
-            _state = _state.copy(searchError = "")
+            state.update { it.copy(searchError = "") }
             job?.cancel()
 
             job = viewModelScope.launch {
                 searchTermUseCase(
                     provider = _state.selectedProvider,
-                    filters = RatingFilter.GENERAL_ONLY,
+                    filters = preferences.ratingFilter,
                     term = term,
                     onLoading = { loading ->
-                        _state = _state.copy(searchProgressVisible = loading)
+                        state.update { it.copy(searchProgressVisible = loading)}
                     },
                     onSuccess = { data ->
-                        _state = _state.copy(
-                            searchData = data,
-                            searchError = "",
-                        )
+                        state.update {
+                            it.copy(
+                                searchData = data,
+                                searchError = "",
+                            )
+                        }
                     },
                     onFailed = { message ->
-                        _state = _state.copy(
-                            searchData = emptyList(),
-                            searchError = message,
-                        )
+                        state.update {
+                            it.copy(
+                                searchData = emptyList(),
+                                searchError = message,
+                            )
+                        }
                     },
                     onError = { t ->
-                        _state = _state.copy(
-                            searchData = emptyList(),
-                            searchError = t.toString(),
-                        )
+                        state.update {
+                            it.copy(
+                                searchData = emptyList(),
+                                searchError = t.toString(),
+                            )
+                        }
                     },
                 )
             }
@@ -121,18 +137,19 @@ class SearchViewModel @Inject constructor(
                     text = textField.text,
                     position = textField.selection.end,
                 )
-                _state = _state.copy(wordInCursor = result.first)
+                state.update { it.copy(wordInCursor = result.first) }
 
                 if (_state.wordInCursor.isNotEmpty() && _state.wordInCursor != "-") {
-
-                    _state = _state.copy(
-                        delimiter = when {
-                            _state.wordInCursor.take(1) == "-" -> "-"
-                            else -> ""
-                        },
-                        startQueryIndex = result.second,
-                        endQueryIndex = result.third,
-                    )
+                    state.update {
+                        it.copy(
+                            delimiter = when {
+                                _state.wordInCursor.take(1) == "-" -> "-"
+                                else -> ""
+                            },
+                            startQueryIndex = result.second,
+                            endQueryIndex = result.third,
+                        )
+                    }
 
                     getTags(_state.wordInCursor)
 
@@ -140,20 +157,22 @@ class SearchViewModel @Inject constructor(
                 }
             } else {
                 clearSearches()
-                _state = _state.copy(wordInCursor = "")
+                state.update { it.copy(wordInCursor = "") }
             }
         } else {
             clearSearches()
-            _state = _state.copy(wordInCursor = "")
+            state.update { it.copy(wordInCursor = "") }
         }
     }
 
     fun clearSearches() {
-        _state = _state.copy(
-            searchData = emptyList(),
-            searchError = "",
-            searchProgressVisible = false,
-        )
+        state.update {
+            it.copy(
+                searchData = emptyList(),
+                searchError = "",
+                searchProgressVisible = false,
+            )
+        }
     }
 
     fun parseSearchQuery(query: String) {
@@ -171,7 +190,7 @@ class SearchViewModel @Inject constructor(
             submitQuery = ""
         }
 
-        _state = _state.copy(parsedQuery = submitQuery.lowercase())
+        state.update { it.copy(parsedQuery = submitQuery.lowercase()) }
     }
 
     fun cancelSearch() {

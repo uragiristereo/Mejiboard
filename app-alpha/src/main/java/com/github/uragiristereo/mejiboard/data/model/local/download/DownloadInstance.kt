@@ -1,6 +1,5 @@
-package com.github.uragiristereo.mejiboard.data.local.download
+package com.github.uragiristereo.mejiboard.data.model.local.download
 
-import com.github.uragiristereo.mejiboard.data.model.local.DownloadInfo
 import okhttp3.ResponseBody
 import retrofit2.Call
 

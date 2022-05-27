@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.github.uragiristereo.mejiboard.presentation.search.SearchViewModel
@@ -44,7 +45,7 @@ fun SearchResult(
             BrowseButton(
                 state = state,
                 onClick = {
-                    mainViewModel.refreshNeeded = true
+                    mainViewModel.triggerRefresh()
                     viewModel.parseSearchQuery(query.text)
                     keyboardController?.hide()
 
@@ -61,14 +62,14 @@ fun SearchResult(
 
         if (state.wordInCursor.isNotEmpty()) {
             if (!state.searchProgressVisible)
-                viewModel.updateState(updatedState = state.copy(boldWord = state.wordInCursor.lowercase()))
+                viewModel.state.update { it.copy(boldWord = state.wordInCursor.lowercase()) }
 
             items(items = state.searchData) { item ->
                 SearchItem(
                     item = item,
                     state = state,
                     onClick = {
-                        viewModel.updateState(updatedState = state.copy(searchAllowed = false))
+                        viewModel.state.update { it.copy(searchAllowed = false) }
 
                         val result = query.text.replaceRange(
                             state.startQueryIndex,
@@ -80,7 +81,7 @@ fun SearchResult(
 
                         onQueryChange(TextFieldValue(newQuery, TextRange(newQuery.length)))
                         viewModel.clearSearches()
-                        viewModel.updateState(updatedState = state.copy(searchAllowed = true))
+                        viewModel.state.update { it.copy(searchAllowed = true) }
                     }
                 )
             }

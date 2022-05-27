@@ -13,10 +13,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.Constants
+import com.github.uragiristereo.mejiboard.data.model.local.preferences.PreviewSize
+import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.presentation.common.extension.hideSystemBars
 import com.github.uragiristereo.mejiboard.presentation.common.extension.showSystemBars
-import com.github.uragiristereo.mejiboard.data.local.preferences.enums.PreviewSize
-import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.image.core.ImageAppBar
 import com.github.uragiristereo.mejiboard.presentation.image.image.ImagePost
@@ -91,8 +91,8 @@ fun ImageScreen(
             sheetState = sheetState,
             okHttpClient = mainViewModel.okHttpClient,
             videoVolume = preferences.videoVolume,
-            onVideoVolumeChange = {
-                mainViewModel.updatePreferences(preferences.copy(videoVolume = it))
+            onVideoVolumeChange = { volume ->
+                mainViewModel.updatePreferences { it.copy(videoVolume = volume) }
             },
         )
     }

@@ -5,7 +5,7 @@ import com.github.uragiristereo.mejiboard.data.model.remote.adapter.MoshiDateAda
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.danbooru.toPostList
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.danbooru.toTagList
-import com.github.uragiristereo.mejiboard.data.remote.api.DanbooruApi
+import com.github.uragiristereo.mejiboard.data.remote.provider.DanbooruApi
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.PostsResult
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Rating
 import com.github.uragiristereo.mejiboard.domain.entity.provider.tag.TagsResult

@@ -1,4 +1,4 @@
-package com.github.uragiristereo.mejiboard.data.remote.api
+package com.github.uragiristereo.mejiboard.data.remote.provider
 
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.safebooruorg.posts.SafebooruOrgPost
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.safebooruorg.search.SafebooruOrgSearch
