@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.data.local.database.AppDatabase
-import com.github.uragiristereo.mejiboard.domain.entity.preferences.AppPreferences
 import com.github.uragiristereo.mejiboard.data.repository.local.PreferencesRepository
+import com.github.uragiristereo.mejiboard.domain.entity.preferences.AppPreferences
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.domain.usecase.api.GetPostsUseCase
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.toPost
@@ -34,6 +34,9 @@ class PostsViewModel @Inject constructor(
     val mutableState = mutableStateOf(PostsState())
     val state by mutableState
     var savedState = savedStateHandle[Constants.STATE_KEY_POSTS] ?: PostsSavedState()
+
+    var toolbarOffsetHeightPx by mutableStateOf(0f)
+    var browseHeightPx by mutableStateOf(0f)
 
     var preferences by mutableStateOf(AppPreferences())
         private set

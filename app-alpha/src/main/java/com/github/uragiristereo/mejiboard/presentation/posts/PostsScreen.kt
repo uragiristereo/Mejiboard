@@ -93,9 +93,9 @@ fun PostsScreen(
     val fabVisible by remember {
         derivedStateOf {
             if (gridState.firstVisibleItemIndex >= 5 && viewModel.state.posts.isNotEmpty()) {
-                when (viewModel.state.toolbarOffsetHeightPx) {
+                when (viewModel.toolbarOffsetHeightPx) {
                     0f -> true
-                    -(toolbarHeightPx + viewModel.state.browseHeightPx) -> false
+                    -(toolbarHeightPx + viewModel.browseHeightPx) -> false
                     else -> viewModel.state.lastFabVisible
                 }
             } else {
@@ -180,7 +180,8 @@ fun PostsScreen(
 
     LaunchedEffect(key1 = mainViewModel.refreshNeeded) {
         if (mainViewModel.refreshNeeded) {
-            viewModel.updateState { it.copy(toolbarOffsetHeightPx = 0f) }
+//            viewModel.updateState { it.copy(toolbarOffsetHeightPx = 0f) }
+            viewModel.toolbarOffsetHeightPx = 0f
 
             if (viewModel.savedState.loadFromSession) {
                 viewModel.getPostsFromSession()
@@ -301,9 +302,10 @@ fun PostsScreen(
                         viewModel.updateState { it.copy(tags = "") }
                     }
 
+                    viewModel.toolbarOffsetHeightPx = 0f
                     viewModel.updateState {
                         it.copy(
-                            toolbarOffsetHeightPx = 0f,
+//                            toolbarOffsetHeightPx = 0f,
                             moreDropDownExpanded = false,
                         )
                     }
@@ -335,16 +337,21 @@ fun PostsScreen(
                                 if (!viewModel.state.loading && viewModel.state.posts.size > 4) {
                                     val delta = available.y
                                     val newOffset =
-                                        viewModel.state.toolbarOffsetHeightPx + delta
+                                        viewModel.toolbarOffsetHeightPx + delta
 
-                                    viewModel.updateState {
-                                        it.copy(
-                                            toolbarOffsetHeightPx = newOffset.coerceIn(
-                                                minimumValue = -toolbarHeightPx + -viewModel.state.browseHeightPx,
-                                                maximumValue = 0f,
-                                            )
-                                        )
-                                    }
+//                                    viewModel.updateState {
+//                                        it.copy(
+//                                            toolbarOffsetHeightPx = newOffset.coerceIn(
+//                                                minimumValue = -toolbarHeightPx + -viewModel.state.browseHeightPx,
+//                                                maximumValue = 0f,
+//                                            )
+//                                        )
+//                                    }
+
+                                    viewModel.toolbarOffsetHeightPx = newOffset.coerceIn(
+                                        minimumValue = -toolbarHeightPx + -viewModel.browseHeightPx,
+                                        maximumValue = 0f,
+                                    )
                                 }
 
                                 return Offset.Zero
@@ -362,7 +369,7 @@ fun PostsScreen(
                     loading = viewModel.state.loading,
                     page = viewModel.state.page,
                     toolbarHeight = toolbarHeight,
-                    browseHeightPx = viewModel.state.browseHeightPx,
+                    browseHeightPx = viewModel.browseHeightPx,
                     allowPostClick = viewModel.state.allowPostClick,
                     onNavigateImage = { item ->
                         viewModel.updateState { it.copy(allowPostClick = false) }
@@ -384,9 +391,10 @@ fun PostsScreen(
             }
 
             PostsTopAppBar(
-                toolbarOffsetHeightPx = viewModel.state.toolbarOffsetHeightPx,
+                toolbarOffsetHeightPx = viewModel.toolbarOffsetHeightPx,
                 onBrowseHeightChange = { height ->
-                    viewModel.updateState { it.copy(browseHeightPx = height) }
+//                    viewModel.updateState { it.copy(browseHeightPx = height) }
+                    viewModel.browseHeightPx = height
                 },
                 searchTags = viewModel.state.tags,
             )

@@ -17,8 +17,8 @@ data class PostsState(
     val jumpToPosition: Boolean = false,
 
     // top app bar
-    val toolbarOffsetHeightPx: Float = 0f,
-    val browseHeightPx: Float = 0f,
+//    val toolbarOffsetHeightPx: Float = 0f,
+//    val browseHeightPx: Float = 0f,
 
     // bottom app bar
     val moreDropDownExpanded: Boolean = false,
