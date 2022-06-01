@@ -23,11 +23,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -137,13 +134,7 @@ fun AboutScreen(
             item {
                 Text(
                     text = buildAnnotatedString {
-                        append("An image board ")
-                        withStyle(
-                            style = SpanStyle(textDecoration = TextDecoration.LineThrough),
-                        ) {
-                            append("client")
-                        }
-                        append(" viewer for Android.\n")
+                        append("An anime image board viewer for Android.\n\n")
                         append("Supported providers: Gelbooru, Danbooru, Safebooru.\n")
                     },
                     Modifier

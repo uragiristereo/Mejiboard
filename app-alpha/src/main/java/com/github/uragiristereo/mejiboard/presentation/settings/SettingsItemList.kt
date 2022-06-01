@@ -209,7 +209,7 @@ fun SettingItemList(
             SwitchPreference(
                 title = "DNS over HTTPS",
                 subtitle = buildAnnotatedString {
-                    append("Enable if Gelbooru is blocked in your country ")
+                    append("Enable if Booru providers are blocked in your country ")
 
                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
                         append("(recommended)")

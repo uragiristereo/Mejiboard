@@ -1,25 +1,32 @@
-<img src="docs/banner.png" width="100%">
+<img src="https://github.com/uragiristereo/Mejiboard/raw/main/docs/banner.png" width="100%">
 
 # Mejiboard
 image (イメージ) + board = メジboard (mejiboard)
 
-An image board ~~client~~ viewer based on [Gelbooru](https://gelbooru.com) for android, made from Jetpack Compose 🚀.
+An anime image board (booru) viewer for android, made from Jetpack Compose 🚀.
+
+### Supported Booru providers:
+_Note: all providers are filtered as rated safe (general & sensitive)._
+
+- [Gelbooru](https://gelbooru.com)
+- [Danbooru](https://danbooru.donmai.us)
+- [Safebooru.org](https://safebooru.org)
 
 ## Features
 - Material Design UI
 - Easy one-handed operation
-- Lightweight
 - System-based theme with 3 themes available (Light, Dark & Black)
 - Search images with tags
-- Image viewer with zoom & pan support
+- Image viewer with zoom, pan & gesture support
 - Download and share image
 - DNS over HTTPS enabled by default
+- Using latest Android tech stacks
 
 ## Download
 Latest **alpha** variant:
-- Version: `1.4.1-alpha`
-- Date: 2022-05-21
-- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.4.1-alpha) • [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.4.1-alpha/Mejiboard_v1.4.1-alpha.apk)
+- Version: `1.5.0-alpha`
+- Date: 2022-06-01
+- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.5.0-alpha) • [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.4.1-alpha/Mejiboard_v1.5.0-alpha.apk)
 
 > _Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more._
 
