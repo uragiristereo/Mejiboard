@@ -5,7 +5,8 @@ image (イメージ) + board = メジboard (mejiboard)
 
 An anime image board (booru) viewer for android, made from Jetpack Compose 🚀.
 
-### Supported Booru providers:
+**Supported Booru providers:**
+
 _Note: all providers are filtered as rated safe (general & sensitive)._
 
 - [Gelbooru](https://gelbooru.com)
@@ -26,7 +27,7 @@ _Note: all providers are filtered as rated safe (general & sensitive)._
 Latest **alpha** variant:
 - Version: `1.5.0-alpha`
 - Date: 2022-06-01
-- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.5.0-alpha) • [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.4.1-alpha/Mejiboard_v1.5.0-alpha.apk)
+- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.5.0-alpha) • [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.5.0-alpha/Mejiboard_v1.5.0-alpha.apk)
 
 > _Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more._
 
