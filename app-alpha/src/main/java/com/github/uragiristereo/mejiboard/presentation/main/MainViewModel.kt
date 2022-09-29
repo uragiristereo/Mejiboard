@@ -42,7 +42,11 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
-import java.io.*
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
 import javax.inject.Inject
 
 @HiltViewModel
@@ -86,7 +90,6 @@ class MainViewModel @Inject constructor(
     init {
         preferencesRepository.data.onEach {
             preferences = it
-            preferencesRepository.blockFromRecents.value = preferences.blockFromRecents
         }.launchIn(viewModelScope)
 
         viewModelScope.launch {
