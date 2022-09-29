@@ -13,8 +13,13 @@ import androidx.navigation.navArgument
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.presentation.about.AboutScreen
-import com.github.uragiristereo.mejiboard.presentation.common.*
 import com.github.uragiristereo.mejiboard.presentation.common.extension.rememberGetData
+import com.github.uragiristereo.mejiboard.presentation.common.materialFadeIn
+import com.github.uragiristereo.mejiboard.presentation.common.materialFadeOut
+import com.github.uragiristereo.mejiboard.presentation.common.materialSharedAxisZNoFadeIn
+import com.github.uragiristereo.mejiboard.presentation.common.materialSharedAxisZNoFadeOut
+import com.github.uragiristereo.mejiboard.presentation.common.translateYFadeIn
+import com.github.uragiristereo.mejiboard.presentation.common.translateYFadeOut
 import com.github.uragiristereo.mejiboard.presentation.image.ImageScreen
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.github.uragiristereo.mejiboard.presentation.posts.PostsScreen
@@ -130,7 +135,14 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
                     popExitMotionSpec = {
                         materialSharedAxisZNoFadeOut()
                     },
-                    content = { SettingsScreen(mainNavigation, mainViewModel) },
+                    content = {
+                        SettingsScreen(
+                            onNavigateUp = {
+                                mainNavigation.navigateUp()
+                            },
+                            mainViewModel = mainViewModel,
+                        )
+                    },
                 )
 
                 composable(

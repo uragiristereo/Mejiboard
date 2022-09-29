@@ -4,16 +4,28 @@ import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
@@ -22,6 +34,7 @@ import com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet.Sett
 import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsTopAppBar
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @ExperimentalMaterialApi
@@ -29,7 +42,7 @@ import kotlinx.coroutines.launch
 @ExperimentalAnimationApi
 @Composable
 fun SettingsScreen(
-    mainNavigation: NavHostController,
+    onNavigateUp: () -> Unit,
     mainViewModel: MainViewModel,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -46,11 +59,6 @@ fun SettingsScreen(
 
     val smallHeaderOpacity by animateFloatAsState(
         targetValue = if (state.useBigHeader) 0f else 1f,
-        animationSpec = tween(durationMillis = 350),
-    )
-    val bigHeaderOpacity by animateFloatAsState(
-        targetValue = if (state.useBigHeader) 1f else 0f,
-        animationSpec = tween(durationMillis = 350),
     )
 
     val useBigHeader by remember {
@@ -98,9 +106,9 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             SettingsTopAppBar(
-                state = state,
+                useBigHeader = state.useBigHeader,
                 smallHeaderOpacity = smallHeaderOpacity,
-                onBackArrowClick = { mainNavigation.navigateUp() },
+                onNavigateUp = onNavigateUp,
             )
         },
         bottomBar = {
@@ -115,7 +123,7 @@ fun SettingsScreen(
             state = state,
             bottomSheetState = bottomSheetState,
             columnState = columnState,
-            bigHeaderOpacity = bigHeaderOpacity,
+            bigHeaderOpacity = abs(1f - smallHeaderOpacity),
             innerPadding = WindowInsets.navigationBars.asPaddingValues(),
             mainViewModel = mainViewModel,
         )
