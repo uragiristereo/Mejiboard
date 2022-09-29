@@ -3,8 +3,8 @@
     <item android:drawable="@color/white" />
 
     <item
-        android:width="92dp"
-        android:height="92dp"
+        android:width="160dp"
+        android:height="160dp"
         android:drawable="@drawable/mejiboard_round"
         android:gravity="center" />
 </layer-list>
