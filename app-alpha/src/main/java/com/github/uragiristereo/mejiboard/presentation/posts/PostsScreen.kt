@@ -5,10 +5,27 @@ import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -35,7 +52,6 @@ import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.github.uragiristereo.mejiboard.presentation.posts.appbar.PostsBottomAppBar
 import com.github.uragiristereo.mejiboard.presentation.posts.appbar.PostsTopAppBar
 import com.github.uragiristereo.mejiboard.presentation.posts.common.PostsError
-import com.github.uragiristereo.mejiboard.presentation.posts.common.PostsFab
 import com.github.uragiristereo.mejiboard.presentation.posts.common.UpdateDialog
 import com.github.uragiristereo.mejiboard.presentation.posts.drawer.PostsBottomDrawer
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.PostsGrid
@@ -67,6 +83,7 @@ fun PostsScreen(
 
     val isLight = MaterialTheme.colors.isLight
     val surfaceColor = MaterialTheme.colors.surface
+    val navigationBarColor = MaterialTheme.colors.surface.copy(alpha = 0.4f)
 
     remember {
         if (!viewModel.state.initialized) {
@@ -89,24 +106,6 @@ fun PostsScreen(
 
     val toolbarHeight = remember { 56.dp }
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.toPx() }
-
-    val fabVisible by remember {
-        derivedStateOf {
-            if (gridState.firstVisibleItemIndex >= 5 && viewModel.state.posts.isNotEmpty()) {
-                when (viewModel.toolbarOffsetHeightPx) {
-                    0f -> true
-                    -(toolbarHeightPx + viewModel.browseHeightPx) -> false
-                    else -> viewModel.state.lastFabVisible
-                }
-            } else {
-                false
-            }
-        }
-    }
-
-    LaunchedEffect(key1 = fabVisible) {
-        viewModel.updateState { it.copy(lastFabVisible = fabVisible) }
-    }
 
     val gridCount by remember {
         derivedStateOf {
@@ -276,20 +275,9 @@ fun PostsScreen(
 
     Scaffold(
         scaffoldState = scaffoldState,
-        floatingActionButton = {
-            PostsFab(
-                visible = fabVisible,
-                onClick = {
-                    scope.launch {
-                        gridState.animateScrollToItem(index = 0)
-                    }
-                },
-            )
-        },
         bottomBar = {
             PostsBottomAppBar(
                 tags = viewModel.state.tags,
-                drawerState = drawerState,
                 moreDropDownExpanded = viewModel.state.moreDropDownExpanded,
                 onNavigate = { route ->
                     mainNavigation.navigate(route)
@@ -298,10 +286,6 @@ fun PostsScreen(
                     viewModel.updateState { it.copy(moreDropDownExpanded = value) }
                 },
                 onDropDownClicked = { item ->
-                    if (item == "all_post") {
-                        viewModel.updateState { it.copy(tags = "") }
-                    }
-
                     viewModel.toolbarOffsetHeightPx = 0f
                     viewModel.updateState {
                         it.copy(
@@ -310,12 +294,38 @@ fun PostsScreen(
                         )
                     }
 
-                    viewModel.getPosts(
-                        refresh = true,
-                        onLoaded = {
-                            scope.launch { gridState.scrollToItem(index = 0) }
-                        },
-                    )
+                    fun getPosts() {
+                        viewModel.getPosts(
+                            refresh = true,
+                            onLoaded = {
+                                scope.launch { gridState.scrollToItem(index = 0) }
+                            },
+                        )
+                    }
+
+                    when (item) {
+                        "all_post" -> {
+                            viewModel.updateState { it.copy(tags = "") }
+                            getPosts()
+                        }
+
+                        "refresh" -> {
+                            getPosts()
+                        }
+
+                        "go_top" -> {
+                            scope.launch {
+                                gridState.animateScrollToItem(index = 0)
+                            }
+                        }
+                    }
+                },
+                onMenuClicked = {
+                    systemUiController.setNavigationBarColor(color = navigationBarColor)
+
+                    scope.launch {
+                        drawerState.show()
+                    }
                 },
             )
         },
