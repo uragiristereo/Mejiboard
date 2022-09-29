@@ -1,6 +1,7 @@
 package com.github.uragiristereo.mejiboard.presentation.posts
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -33,6 +34,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -71,6 +73,7 @@ fun PostsScreen(
     mainViewModel: MainViewModel,
     viewModel: PostsViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val navigationBarsPadding = LocalFixedInsets.current.navigationBarsPadding
@@ -267,6 +270,10 @@ fun PostsScreen(
             )
             viewModel.updateState { it.copy(confirmExit = true) }
         }
+    }
+
+    BackHandler(enabled = !viewModel.state.confirmExit && !drawerState.isVisible) {
+        (context as Activity).finishAffinity()
     }
 
     if (mainViewModel.updateDialogVisible && mainViewModel.remindLaterCounter == -1) {
