@@ -391,7 +391,9 @@ fun PostsScreen(
             }
 
             PostsTopAppBar(
-                toolbarOffsetHeightPx = viewModel.toolbarOffsetHeightPx,
+                toolbarOffsetHeightPx = {
+                    viewModel.toolbarOffsetHeightPx
+                },
                 onBrowseHeightChange = { height ->
 //                    viewModel.updateState { it.copy(browseHeightPx = height) }
                     viewModel.browseHeightPx = height
