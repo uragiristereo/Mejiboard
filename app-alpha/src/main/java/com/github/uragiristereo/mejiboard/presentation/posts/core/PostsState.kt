@@ -1,13 +1,12 @@
 package com.github.uragiristereo.mejiboard.presentation.posts.core
 
+import androidx.compose.runtime.Immutable
 import com.github.uragiristereo.mejiboard.data.model.remote.provider.ApiProviders
 import com.github.uragiristereo.mejiboard.domain.entity.provider.ApiProvider
-import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 
 data class PostsState(
     val tags: String = "",
     val initialized: Boolean = false,
-    val posts: MutableList<Post> = mutableListOf(),
     val loading: Boolean = true,
     val error: String = "",
     val page: Int = 0,
@@ -15,10 +14,6 @@ data class PostsState(
 
     // saved state
     val jumpToPosition: Boolean = false,
-
-    // top app bar
-//    val toolbarOffsetHeightPx: Float = 0f,
-//    val browseHeightPx: Float = 0f,
 
     // bottom app bar
     val moreDropDownExpanded: Boolean = false,
@@ -32,3 +27,13 @@ data class PostsState(
     // provider
     val selectedProvider: ApiProvider = ApiProviders.Gelbooru,
 )
+
+
+@Immutable
+data class ImmutableList<T>(
+    val value: List<T>
+)
+
+fun <T> immutableListOf(value: List<T> = listOf()): ImmutableList<T> {
+    return ImmutableList(value)
+}

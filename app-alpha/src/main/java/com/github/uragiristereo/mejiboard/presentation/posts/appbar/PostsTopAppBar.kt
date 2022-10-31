@@ -15,8 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -28,15 +27,12 @@ import com.github.uragiristereo.mejiboard.R
 
 @Composable
 fun PostsTopAppBar(
-    toolbarOffsetHeightPx: () -> Float,
     onBrowseHeightChange: (Float) -> Unit,
     searchTags: String,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier
-            .graphicsLayer {
-                translationY = toolbarOffsetHeightPx()
-            }
+        modifier = modifier
             .background(color = MaterialTheme.colors.background),
     ) {
         Card(
@@ -74,7 +70,9 @@ fun PostsTopAppBar(
             },
             fontSize = 16.sp,
             modifier = Modifier
-                .onGloballyPositioned { onBrowseHeightChange(it.size.height.toFloat()) }
+                .onSizeChanged {
+                    onBrowseHeightChange(it.height.toFloat())
+                }
                 .padding(
                     horizontal = 8.dp,
                     vertical = 4.dp,
