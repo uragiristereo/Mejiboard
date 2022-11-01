@@ -29,7 +29,7 @@ fun SplashLogo(
             Image(
                 painter = painterResource(R.drawable.mejiboard_round),
                 contentDescription = null,
-                modifier = Modifier.size(92.dp)
+                modifier = Modifier.size(160.dp)
             )
         }
     }

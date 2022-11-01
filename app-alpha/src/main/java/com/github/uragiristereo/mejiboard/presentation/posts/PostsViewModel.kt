@@ -1,6 +1,7 @@
 package com.github.uragiristereo.mejiboard.presentation.posts
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
@@ -36,7 +37,8 @@ class PostsViewModel @Inject constructor(
     var savedState = savedStateHandle[Constants.STATE_KEY_POSTS] ?: PostsSavedState()
 
     var toolbarOffsetHeightPx by mutableStateOf(0f)
-    var browseHeightPx by mutableStateOf(0f)
+    var combinedToolbarHeightPx by mutableStateOf(0f)
+    val posts = mutableStateListOf<Post>()
 
     var preferences by mutableStateOf(AppPreferences())
         private set
@@ -77,7 +79,7 @@ class PostsViewModel @Inject constructor(
                 },
                 onSuccess = { result, canLoadMore ->
                     if (refresh) {
-                        state.posts.clear()
+                        posts.clear()
                     }
 
                     onLoaded()
@@ -94,10 +96,10 @@ class PostsViewModel @Inject constructor(
                         .filter { it.rating !in preferences.ratingFilter }
                         // filter posts duplicate
                         .filter { resultPost ->
-                            !state.posts.any { it.id == resultPost.id }
+                            !posts.any { it.id == resultPost.id }
                         }
 
-                    state.posts.addAll(elements = filteredPosts)
+                    posts.addAll(filteredPosts)
                 },
                 onFailed = { msg ->
                     updateState { it.copy(error = msg) }
@@ -120,7 +122,7 @@ class PostsViewModel @Inject constructor(
         }
 
         if (refresh) {
-            state.posts.clear()
+            posts.clear()
         }
 
         fetchPosts(
@@ -139,8 +141,9 @@ class PostsViewModel @Inject constructor(
                 .getAll()
                 .map { it.toPost() }
 
-            state.posts.clear()
-            state.posts.addAll(elements = sessionPosts)
+//            posts = immutableListOf(sessionPosts)
+            posts.clear()
+            posts.addAll(sessionPosts)
 
             updateState {
                 it.copy(
@@ -153,14 +156,17 @@ class PostsViewModel @Inject constructor(
 
     fun updateSessionPosts() {
         viewModelScope.launch(Dispatchers.IO) {
-            if (state.posts.toList() != sessionPosts.toList()) {
+//            if (posts.value.toList() != sessionPosts.toList()) {
+            if (posts.toList() != sessionPosts.toList()) {
                 appDatabase.sessionDao().deleteAll()
 
-                val convertedPosts = state.posts.mapIndexed { index, post ->
+//                val convertedPosts = posts.value.mapIndexed { index, post ->
+                val convertedPosts = posts.mapIndexed { index, post ->
                     post.toPostSession(sequence = index)
                 }
 
-                sessionPosts = state.posts.toList()
+//                sessionPosts = posts.value.toList()
+                sessionPosts = posts.toList()
                 appDatabase.sessionDao().insert(convertedPosts)
             }
         }

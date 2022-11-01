@@ -6,7 +6,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -53,7 +60,10 @@ fun SearchView(
                 disabledIndicatorColor = Color.Transparent,
                 backgroundColor = Color.Transparent,
             ),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardOptions = KeyboardOptions(
+                autoCorrect = false,
+                imeAction = ImeAction.Search,
+            ),
             keyboardActions = KeyboardActions(
                 onSearch = { onQueryTextSubmit(query) }
             ),

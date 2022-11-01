@@ -1,7 +1,17 @@
 package com.github.uragiristereo.mejiboard.presentation.settings.core
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
@@ -13,13 +23,13 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsTopAppBar(
-    state: SettingsState,
+    useBigHeader: Boolean,
     smallHeaderOpacity: Float,
-    onBackArrowClick: () -> Unit,
+    onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
-        elevation = if (!state.useBigHeader) 4.dp else 0.dp,
+        elevation = if (!useBigHeader) 4.dp else 0.dp,
         shape = RectangleShape,
     ) {
         TopAppBar(
@@ -37,13 +47,22 @@ fun SettingsTopAppBar(
 //            ),
             navigationIcon = {
                 IconButton(
-                    onClick = onBackArrowClick,
-                    content = { Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null) }
+                    onClick = onNavigateUp,
+                    content = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = null,
+                        )
+                    },
                 )
             },
             modifier = modifier
                 .fillMaxWidth()
-                .padding(WindowInsets.statusBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top).asPaddingValues()),
+                .padding(
+                    paddingValues = WindowInsets.statusBars
+                        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                        .asPaddingValues()
+                ),
         )
     }
 }

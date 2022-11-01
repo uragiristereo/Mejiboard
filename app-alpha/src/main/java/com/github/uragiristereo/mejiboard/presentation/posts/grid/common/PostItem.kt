@@ -57,11 +57,13 @@ fun PostItem(
         PostPlaceholderLoading()
 
         SubcomposeAsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(item.previewImage.url)
-                .crossfade(durationMillis = 170)
-                .size(width = item.previewImage.width, height = item.previewImage.height)
-                .build(),
+            model = remember {
+                ImageRequest.Builder(context)
+                    .data(item.previewImage.url)
+                    .crossfade(durationMillis = 170)
+                    .size(width = item.previewImage.width, height = item.previewImage.height)
+                    .build()
+            },
             contentDescription = null,
             contentScale = ContentScale.Crop,
             loading = {

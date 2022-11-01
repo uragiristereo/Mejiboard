@@ -5,18 +5,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Divider
+import androidx.compose.material.DrawerDefaults
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.presentation.common.DragHandle
 import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
@@ -26,12 +32,10 @@ import kotlinx.coroutines.launch
 @ExperimentalMaterialApi
 @Composable
 fun PostsBottomDrawer(
-    mainNavigation: NavHostController,
     drawerState: ModalBottomSheetState,
+    onNavigate: (String) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-
-    var drawerItemSelected by remember { mutableStateOf("home") }
 
     ModalBottomSheetLayout(
         sheetState = drawerState,
@@ -72,24 +76,35 @@ fun PostsBottomDrawer(
 
                 Divider(modifier = Modifier.padding(bottom = 8.dp))
 
+                val hideDrawer: () -> Unit = remember {
+                    {
+                        scope.launch {
+                            drawerState.hide()
+                        }
+                    }
+                }
+
+                val hideDrawerAndNavigate: (String) -> Unit = remember {
+                    {route ->
+                        scope.launch {
+                            drawerState.hide()
+                            onNavigate(route)
+                        }
+                    }
+                }
+
                 DrawerItem(
                     text = "Home",
-                    icon = if (drawerItemSelected == "home") Icons.Filled.Home else Icons.Outlined.Home,
-                    onClick = {
-                        drawerItemSelected = "home"
-                        scope.launch { drawerState.hide() }
-                    },
-                    selected = drawerItemSelected == "home",
+                    icon = Icons.Filled.Home,
+                    onClick = hideDrawer,
+                    selected = true,
                 )
 
                 DrawerItem(
                     text = "Settings",
                     icon = Icons.Outlined.Settings,
                     onClick = {
-                        scope.launch {
-                            drawerState.hide()
-                            mainNavigation.navigate("${MainRoute.Settings}")
-                        }
+                        hideDrawerAndNavigate("${MainRoute.Settings}")
                     },
                     selected = false,
                 )
@@ -98,10 +113,7 @@ fun PostsBottomDrawer(
                     text = "About",
                     icon = Icons.Outlined.Info,
                     onClick = {
-                        scope.launch {
-                            drawerState.hide()
-                            mainNavigation.navigate("${MainRoute.About}")
-                        }
+                        hideDrawerAndNavigate("${MainRoute.Settings}")
                     },
                     selected = false,
                 )

@@ -1,21 +1,45 @@
 package com.github.uragiristereo.mejiboard.presentation.posts
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -43,6 +67,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @ExperimentalAnimationApi
@@ -55,18 +80,21 @@ fun PostsScreen(
     mainViewModel: MainViewModel,
     viewModel: PostsViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val density = LocalDensity.current
     val navigationBarsPadding = LocalFixedInsets.current.navigationBarsPadding
 
     val drawerState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
-    val gridState = rememberLazyListState()
+    val gridState = rememberLazyGridState()
     val scaffoldState = rememberScaffoldState()
     val systemUiController = rememberSystemUiController()
 
     val isLight = MaterialTheme.colors.isLight
     val surfaceColor = MaterialTheme.colors.surface
+    val navigationBarColor = MaterialTheme.colors.surface.copy(alpha = 0.4f)
 
     remember {
         if (!viewModel.state.initialized) {
@@ -85,27 +113,6 @@ fun PostsScreen(
         viewModel.updateState { it.copy(selectedProvider = mainViewModel.state.selectedProvider) }
 
         true
-    }
-
-    val toolbarHeight = remember { 56.dp }
-    val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.toPx() }
-
-    val fabVisible by remember {
-        derivedStateOf {
-            if (gridState.firstVisibleItemIndex >= 5 && viewModel.state.posts.isNotEmpty()) {
-                when (viewModel.toolbarOffsetHeightPx) {
-                    0f -> true
-                    -(toolbarHeightPx + viewModel.browseHeightPx) -> false
-                    else -> viewModel.state.lastFabVisible
-                }
-            } else {
-                false
-            }
-        }
-    }
-
-    LaunchedEffect(key1 = fabVisible) {
-        viewModel.updateState { it.copy(lastFabVisible = fabVisible) }
     }
 
     val gridCount by remember {
@@ -142,6 +149,7 @@ fun PostsScreen(
                         }
                     }
                 }
+
                 Lifecycle.Event.ON_RESUME -> {}
                 else -> {
                     job?.cancel()
@@ -180,7 +188,6 @@ fun PostsScreen(
 
     LaunchedEffect(key1 = mainViewModel.refreshNeeded) {
         if (mainViewModel.refreshNeeded) {
-//            viewModel.updateState { it.copy(toolbarOffsetHeightPx = 0f) }
             viewModel.toolbarOffsetHeightPx = 0f
 
             if (viewModel.savedState.loadFromSession) {
@@ -204,46 +211,71 @@ fun PostsScreen(
                     delay(timeMillis = 50L)
 
                     gridState.scrollToItem(
-                        viewModel.savedState.scrollIndex,
-                        viewModel.savedState.scrollOffset,
+                        index = viewModel.savedState.scrollIndex,
+                        scrollOffset = viewModel.savedState.scrollOffset,
                     )
                 }
             }
         }
     }
 
-// TODO: fix scrolling lag
+    val toolbarHeight = remember { 56.dp }
+    val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.toPx() }
+    var offsetToAnimate by remember { mutableStateOf(0f) }
+    var animationInProgress by remember { mutableStateOf(false) }
 
-//    val animatedToolbarOffsetHeightPx by animateFloatAsState(
-//        targetValue = offsetToAnimate,
-//        finishedListener = {
-//            animationInProgress = false
-//        },
-//    )
-//    DisposableEffect(key1 = gridState.isScrollInProgress) {
-//        scope.launch {
-//            if (!gridState.isScrollInProgress) {
-//                if (gridState.firstVisibleItemIndex > 0 && toolbarOffsetHeightPx != -toolbarHeightPx + -browseHeightPx && toolbarOffsetHeightPx != 0f) {
-//                    delay(timeMillis = 50L)
-//
-//                    animationInProgress = true
-//
-//                    val half = (toolbarHeightPx + browseHeightPx) / 2
-//
-//                    val oldToolbarOffsetHeightPx = toolbarOffsetHeightPx
-//
-//                    toolbarOffsetHeightPx = when {
-//                        -toolbarOffsetHeightPx >= half -> -toolbarHeightPx + -browseHeightPx
-//                        else -> 0f
-//                    }
-//
-//                    gridState.animateScrollBy(value = oldToolbarOffsetHeightPx - toolbarOffsetHeightPx)
-//                }
-//            }
-//        }
-//
-//        onDispose { }
-//    }
+    val animatedToolbarOffsetHeightPx by animateFloatAsState(
+        targetValue = when {
+            animationInProgress -> offsetToAnimate
+            else -> 0f
+        },
+        finishedListener = {
+            animationInProgress = false
+        },
+    )
+
+    val fabVisible by remember {
+        derivedStateOf {
+            if (gridState.firstVisibleItemIndex >= 5 && viewModel.posts.isNotEmpty()) {
+                when (viewModel.toolbarOffsetHeightPx) {
+                    0f -> true
+                    -viewModel.combinedToolbarHeightPx -> false
+                    else -> viewModel.state.lastFabVisible
+                }
+            } else {
+                false
+            }
+        }
+    }
+
+    LaunchedEffect(key1 = fabVisible) {
+        viewModel.updateState { it.copy(lastFabVisible = fabVisible) }
+    }
+
+    DisposableEffect(key1 = gridState.isScrollInProgress) {
+        // prevent coroutine scope to get cancelled
+        scope.launch {
+            if (!gridState.isScrollInProgress) {
+                if (viewModel.toolbarOffsetHeightPx != -viewModel.combinedToolbarHeightPx && viewModel.toolbarOffsetHeightPx != 0f) {
+
+                    val half = viewModel.combinedToolbarHeightPx / 2
+                    val oldToolbarOffsetHeightPx = viewModel.toolbarOffsetHeightPx
+
+                    viewModel.toolbarOffsetHeightPx = when {
+                        abs(viewModel.toolbarOffsetHeightPx) >= half -> -viewModel.combinedToolbarHeightPx
+                        else -> 0f
+                    }
+
+                    offsetToAnimate = animatedToolbarOffsetHeightPx - (oldToolbarOffsetHeightPx - viewModel.toolbarOffsetHeightPx)
+                    animationInProgress = true
+
+                    gridState.animateScrollBy(value = oldToolbarOffsetHeightPx - viewModel.toolbarOffsetHeightPx)
+                }
+            }
+        }
+
+        onDispose { }
+    }
 
     LaunchedEffect(
         key1 = isMoreLoadingVisible,
@@ -262,12 +294,16 @@ fun PostsScreen(
         scope.launch {
             viewModel.updateState { it.copy(confirmExit = false) }
             scaffoldState.snackbarHostState.showSnackbar(
-                "Press BACK again to exit Mejiboard",
-                null,
-                SnackbarDuration.Short
+                message = "Press BACK again to exit Mejiboard",
+                actionLabel = null,
+                duration = SnackbarDuration.Short
             )
             viewModel.updateState { it.copy(confirmExit = true) }
         }
+    }
+
+    BackHandler(enabled = !viewModel.state.confirmExit && !drawerState.isVisible) {
+        (context as Activity).finishAffinity()
     }
 
     if (mainViewModel.updateDialogVisible && mainViewModel.remindLaterCounter == -1) {
@@ -279,43 +315,71 @@ fun PostsScreen(
         floatingActionButton = {
             PostsFab(
                 visible = fabVisible,
-                onClick = {
-                    scope.launch {
-                        gridState.animateScrollToItem(index = 0)
+                onClick = remember {
+                    {
+                        scope.launch {
+                            gridState.animateScrollToItem(index = 0)
+                        }
                     }
-                },
+                }
             )
         },
         bottomBar = {
             PostsBottomAppBar(
                 tags = viewModel.state.tags,
-                drawerState = drawerState,
                 moreDropDownExpanded = viewModel.state.moreDropDownExpanded,
-                onNavigate = { route ->
-                    mainNavigation.navigate(route)
-                },
-                onDropDownExpandedChange = { value ->
-                    viewModel.updateState { it.copy(moreDropDownExpanded = value) }
-                },
-                onDropDownClicked = { item ->
-                    if (item == "all_post") {
-                        viewModel.updateState { it.copy(tags = "") }
-                    }
-
-                    viewModel.toolbarOffsetHeightPx = 0f
-                    viewModel.updateState {
-                        it.copy(
-//                            toolbarOffsetHeightPx = 0f,
-                            moreDropDownExpanded = false,
+                onNavigate = remember {
+                    {
+                        mainNavigation.navigate(
+                            route = MainRoute.Search.parseRoute(value = viewModel.state.tags)
                         )
                     }
+                },
+                onDropDownExpandedChange = remember {
+                    { value ->
+                        viewModel.updateState { it.copy(moreDropDownExpanded = value) }
+                    }
+                },
+                onDropDownClicked = remember {
+                    { item ->
+                        viewModel.toolbarOffsetHeightPx = 0f
+                        viewModel.updateState { it.copy(moreDropDownExpanded = false) }
 
-                    viewModel.getPosts(
-                        refresh = true,
-                        onLoaded = {
-                            scope.launch { gridState.scrollToItem(index = 0) }
-                        },
-                    )
+                        fun getPosts() {
+                            viewModel.getPosts(
+                                refresh = true,
+                                onLoaded = {
+                                    scope.launch { gridState.scrollToItem(index = 0) }
+                                },
+                            )
+                        }
+
+                        when (item) {
+                            "all_post" -> {
+                                viewModel.updateState { it.copy(tags = "") }
+                                getPosts()
+                            }
+
+                            "refresh" -> {
+                                getPosts()
+                            }
+
+                            "go_top" -> {
+                                scope.launch {
+                                    gridState.animateScrollToItem(index = 0)
+                                }
+                            }
+                        }
+                    }
+                },
+                onMenuClicked = remember {
+                    {
+                        systemUiController.setNavigationBarColor(color = navigationBarColor)
+
+                        scope.launch {
+                            drawerState.show()
+                        }
+                    }
                 },
             )
         },
@@ -332,24 +396,13 @@ fun PostsScreen(
                         object : NestedScrollConnection {
                             override fun onPreScroll(
                                 available: Offset,
-                                source: NestedScrollSource
+                                source: NestedScrollSource,
                             ): Offset {
-                                if (!viewModel.state.loading && viewModel.state.posts.size > 4) {
+                                if (!viewModel.state.loading && viewModel.posts.size > 4) {
                                     val delta = available.y
-                                    val newOffset =
-                                        viewModel.toolbarOffsetHeightPx + delta
-
-//                                    viewModel.updateState {
-//                                        it.copy(
-//                                            toolbarOffsetHeightPx = newOffset.coerceIn(
-//                                                minimumValue = -toolbarHeightPx + -viewModel.state.browseHeightPx,
-//                                                maximumValue = 0f,
-//                                            )
-//                                        )
-//                                    }
-
+                                    val newOffset = viewModel.toolbarOffsetHeightPx + delta
                                     viewModel.toolbarOffsetHeightPx = newOffset.coerceIn(
-                                        minimumValue = -toolbarHeightPx + -viewModel.browseHeightPx,
+                                        minimumValue = -viewModel.combinedToolbarHeightPx,
                                         maximumValue = 0f,
                                     )
                                 }
@@ -362,23 +415,24 @@ fun PostsScreen(
         ) {
             if (viewModel.state.error.isEmpty()) {
                 PostsGrid(
-                    posts = viewModel.state.posts,
+                    posts = viewModel.posts,
                     canLoadMore = viewModel.state.canLoadMore,
                     gridState = gridState,
                     gridCount = gridCount,
                     loading = viewModel.state.loading,
                     page = viewModel.state.page,
-                    toolbarHeight = toolbarHeight,
-                    browseHeightPx = viewModel.browseHeightPx,
+                    combinedToolbarHeight = with(density) { viewModel.combinedToolbarHeightPx.toDp() },
                     allowPostClick = viewModel.state.allowPostClick,
-                    onNavigateImage = { item ->
-                        viewModel.updateState { it.copy(allowPostClick = false) }
-                        mainViewModel.backPressedByGesture = false
+                    onNavigateImage = remember {
+                        { item ->
+                            viewModel.updateState { it.copy(allowPostClick = false) }
+                            mainViewModel.backPressedByGesture = false
 
-                        mainNavigation.navigate(
-                            route = "${MainRoute.Image}",
-                            data = MainRoute.Image.Key to item,
-                        )
+                            mainNavigation.navigate(
+                                route = "${MainRoute.Image}",
+                                data = MainRoute.Image.Key to item,
+                            )
+                        }
                     },
                 )
             } else {
@@ -390,13 +444,26 @@ fun PostsScreen(
                 )
             }
 
+            val offsetY by remember {
+                derivedStateOf {
+                    when {
+                        animationInProgress -> (viewModel.toolbarOffsetHeightPx - offsetToAnimate) + animatedToolbarOffsetHeightPx
+                        else -> viewModel.toolbarOffsetHeightPx
+                    }
+                }
+            }
+
             PostsTopAppBar(
-                toolbarOffsetHeightPx = viewModel.toolbarOffsetHeightPx,
-                onBrowseHeightChange = { height ->
-//                    viewModel.updateState { it.copy(browseHeightPx = height) }
-                    viewModel.browseHeightPx = height
-                },
                 searchTags = viewModel.state.tags,
+                onBrowseHeightChange = remember {
+                    { height ->
+                        viewModel.combinedToolbarHeightPx = toolbarHeightPx + height
+                    }
+                },
+                modifier = Modifier
+                    .graphicsLayer {
+                        translationY = offsetY
+                    },
             )
         }
 
@@ -414,7 +481,11 @@ fun PostsScreen(
     }
 
     PostsBottomDrawer(
-        mainNavigation = mainNavigation,
         drawerState = drawerState,
+        onNavigate = remember {
+            { route ->
+                mainNavigation.navigate(route)
+            }
+        },
     )
 }
