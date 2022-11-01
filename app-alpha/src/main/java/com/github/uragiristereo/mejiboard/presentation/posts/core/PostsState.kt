@@ -11,6 +11,7 @@ data class PostsState(
     val error: String = "",
     val page: Int = 0,
     val canLoadMore: Boolean = true,
+    val lastFabVisible: Boolean = false,
 
     // saved state
     val jumpToPosition: Boolean = false,

@@ -59,6 +59,7 @@ import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.github.uragiristereo.mejiboard.presentation.posts.appbar.PostsBottomAppBar
 import com.github.uragiristereo.mejiboard.presentation.posts.appbar.PostsTopAppBar
 import com.github.uragiristereo.mejiboard.presentation.posts.common.PostsError
+import com.github.uragiristereo.mejiboard.presentation.posts.common.PostsFab
 import com.github.uragiristereo.mejiboard.presentation.posts.common.UpdateDialog
 import com.github.uragiristereo.mejiboard.presentation.posts.drawer.PostsBottomDrawer
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.PostsGrid
@@ -233,6 +234,24 @@ fun PostsScreen(
         },
     )
 
+    val fabVisible by remember {
+        derivedStateOf {
+            if (gridState.firstVisibleItemIndex >= 5 && viewModel.posts.isNotEmpty()) {
+                when (viewModel.toolbarOffsetHeightPx) {
+                    0f -> true
+                    -viewModel.combinedToolbarHeightPx -> false
+                    else -> viewModel.state.lastFabVisible
+                }
+            } else {
+                false
+            }
+        }
+    }
+
+    LaunchedEffect(key1 = fabVisible) {
+        viewModel.updateState { it.copy(lastFabVisible = fabVisible) }
+    }
+
     DisposableEffect(key1 = gridState.isScrollInProgress) {
         // prevent coroutine scope to get cancelled
         scope.launch {
@@ -293,6 +312,18 @@ fun PostsScreen(
 
     Scaffold(
         scaffoldState = scaffoldState,
+        floatingActionButton = {
+            PostsFab(
+                visible = fabVisible,
+                onClick = remember {
+                    {
+                        scope.launch {
+                            gridState.animateScrollToItem(index = 0)
+                        }
+                    }
+                }
+            )
+        },
         bottomBar = {
             PostsBottomAppBar(
                 tags = viewModel.state.tags,
@@ -367,7 +398,6 @@ fun PostsScreen(
                                 available: Offset,
                                 source: NestedScrollSource,
                             ): Offset {
-//                                if (!viewModel.state.loading && viewModel.posts.value.size > 4) {
                                 if (!viewModel.state.loading && viewModel.posts.size > 4) {
                                     val delta = available.y
                                     val newOffset = viewModel.toolbarOffsetHeightPx + delta
