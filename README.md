@@ -25,9 +25,9 @@ _Note: all providers are filtered as rated safe (general & sensitive)._
 
 ## Download
 Latest **alpha** variant:
-- Version: `1.5.1-alpha`
-- Date: 2022-11-01
-- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.5.1-alpha) • [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.5.1-alpha/Mejiboard_v1.5.1-alpha.apk)
+- Version: `1.5.0-alpha`
+- Date: 2022-06-01
+- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.5.0-alpha) • [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.5.0-alpha/Mejiboard_v1.5.0-alpha.apk)
 
 > _Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more._
 
