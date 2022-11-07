@@ -113,7 +113,7 @@ fun PostsBottomDrawer(
                     text = "About",
                     icon = Icons.Outlined.Info,
                     onClick = {
-                        hideDrawerAndNavigate("${MainRoute.Settings}")
+                        hideDrawerAndNavigate("${MainRoute.About}")
                     },
                     selected = false,
                 )
