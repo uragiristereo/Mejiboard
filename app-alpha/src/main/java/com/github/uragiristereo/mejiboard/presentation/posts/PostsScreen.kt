@@ -364,12 +364,6 @@ fun PostsScreen(
                             "refresh" -> {
                                 getPosts()
                             }
-
-                            "go_top" -> {
-                                scope.launch {
-                                    gridState.animateScrollToItem(index = 0)
-                                }
-                            }
                         }
                     }
                 },

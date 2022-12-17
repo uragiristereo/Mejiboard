@@ -119,15 +119,6 @@ fun PostsBottomAppBar(
                         content = {
                             DropdownMenuItem(
                                 onClick = {
-                                    onDropDownClicked("go_top")
-                                },
-                                content = {
-                                    Text(text = "Go to top")
-                                },
-                            )
-
-                            DropdownMenuItem(
-                                onClick = {
                                     onDropDownClicked("refresh")
                                 },
                                 content = {
