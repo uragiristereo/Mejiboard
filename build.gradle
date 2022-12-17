@@ -2,19 +2,20 @@
 
 buildscript {
     ext {
-        compose_version = "1.2.0-beta02"
-        kotlin_version = "1.6.21"
+        compose_version = "1.4.0-alpha03"
+        kotlin_version = "1.7.21"
+        hilt_version = "2.44.2"
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.1'
+        classpath "com.android.tools.build:gradle:7.3.1"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.40.1'
-        classpath "com.google.gms:google-services:4.3.10"
-        classpath "com.google.firebase:firebase-crashlytics-gradle:2.8.1"
+        classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
+        classpath "com.google.gms:google-services:4.3.14"
+        classpath "com.google.firebase:firebase-crashlytics-gradle:2.9.2"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files

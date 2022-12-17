@@ -3,7 +3,11 @@ package com.github.uragiristereo.mejiboard.presentation.image.video
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.uragiristereo.mejiboard.common.Constants
@@ -14,7 +18,7 @@ import com.github.uragiristereo.mejiboard.presentation.image.video.controls.Vide
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.TracksInfo
+import com.google.android.exoplayer2.Tracks
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -69,14 +73,14 @@ fun VideoPost(
             playWhenReady = true
             volume = videoVolume
             addListener(object : Player.Listener {
-                override fun onTracksInfoChanged(tracksInfo: TracksInfo) {
-                    super.onTracksInfoChanged(tracksInfo)
+                override fun onTracksChanged(tracks: Tracks) {
+                    super.onTracksChanged(tracks)
 
                     viewModel.state.update { it.copy(isVideoHasAudio = false) }
 
-                    tracksInfo.trackGroupInfos.forEach { trackGroupInfo ->
-                        for (i in 0 until trackGroupInfo.trackGroup.length) {
-                            val trackMimeType = trackGroupInfo.trackGroup.getFormat(i).sampleMimeType
+                    tracks.groups.forEach { trackGroupInfo ->
+                        for (i in 0 until trackGroupInfo.mediaTrackGroup.length) {
+                            val trackMimeType = trackGroupInfo.mediaTrackGroup.getFormat(i).sampleMimeType
                             if (trackMimeType?.contains("audio") == true)
                                 viewModel.state.update { it.copy(isVideoHasAudio = true) }
                         }
