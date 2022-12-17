@@ -3,9 +3,16 @@ package com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.DrawerDefaults
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -13,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.presentation.common.DragHandle
-import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.settings.preference.RadioPreferenceItem
 import kotlinx.coroutines.launch
 
@@ -36,7 +42,7 @@ fun SettingsBottomSheet(
         sheetElevation = 0.dp,
         sheetContent = {
             Column(
-                modifier = Modifier.fixedNavigationBarsPadding(),
+                modifier = Modifier.navigationBarsPadding(),
             ) {
                 Box(
                     contentAlignment = Alignment.Center,

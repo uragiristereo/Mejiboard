@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedStatusBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.common.theme.MejiboardTheme
 
 @Composable
@@ -46,7 +45,7 @@ fun FullscreenPreference(
                             },
                         )
                     },
-                    modifier = Modifier.fixedStatusBarsPadding(),
+                    modifier = Modifier.statusBarsPadding(),
                 )
             }
         },

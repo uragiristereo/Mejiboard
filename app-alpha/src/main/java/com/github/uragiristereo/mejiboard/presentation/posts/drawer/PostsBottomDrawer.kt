@@ -3,6 +3,7 @@ package com.github.uragiristereo.mejiboard.presentation.posts.drawer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
@@ -25,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.presentation.common.DragHandle
-import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import kotlinx.coroutines.launch
 
@@ -44,7 +44,7 @@ fun PostsBottomDrawer(
         sheetElevation = 0.dp,
         sheetContent = {
             Column(
-                modifier = Modifier.fixedNavigationBarsPadding(),
+                modifier = Modifier.navigationBarsPadding(),
             ) {
                 Box(
                     contentAlignment = Alignment.Center,

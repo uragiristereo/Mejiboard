@@ -9,11 +9,16 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -41,7 +46,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,8 +56,6 @@ import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
 import com.github.uragiristereo.mejiboard.presentation.common.extension.navigate
-import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedStatusBarsPadding
-import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.github.uragiristereo.mejiboard.presentation.posts.appbar.PostsBottomAppBar
@@ -84,7 +86,6 @@ fun PostsScreen(
     val configuration = LocalConfiguration.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val density = LocalDensity.current
-    val navigationBarsPadding = LocalFixedInsets.current.navigationBarsPadding
 
     val drawerState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -384,13 +385,14 @@ fun PostsScreen(
             )
         },
         modifier = Modifier.padding(
-            start = navigationBarsPadding.calculateStartPadding(LocalLayoutDirection.current),
-            end = navigationBarsPadding.calculateEndPadding(LocalLayoutDirection.current),
+            paddingValues = WindowInsets.navigationBars
+                .only(sides = WindowInsetsSides.Start + WindowInsetsSides.End)
+                .asPaddingValues(),
         ),
     ) {
         Box(
             modifier = Modifier
-                .fixedStatusBarsPadding()
+                .statusBarsPadding()
                 .nestedScroll(
                     connection = remember {
                         object : NestedScrollConnection {
@@ -470,7 +472,7 @@ fun PostsScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(LocalFixedInsets.current.statusBarHeight)
+                .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
                 .background(
                     color = when {
                         MaterialTheme.colors.isLight -> Color.White

@@ -19,8 +19,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.github.uragiristereo.mejiboard.R
-import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedNavigationBarsPadding
-import com.github.uragiristereo.mejiboard.presentation.common.mapper.fixedStatusBarsPadding
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -50,7 +48,7 @@ fun ImageAppBar(
                     }
                 )
             }
-            .fixedNavigationBarsPadding(),
+            .navigationBarsPadding(),
     ) {
         Box(
             modifier = Modifier
@@ -100,7 +98,7 @@ fun ImageAppBar(
             elevation = 0.dp,
             backgroundColor = Color.Transparent,
             contentColor = Color.White,
-            modifier = Modifier.fixedStatusBarsPadding(),
+            modifier = Modifier.statusBarsPadding(),
         )
     }
 }

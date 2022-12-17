@@ -3,7 +3,10 @@ package com.github.uragiristereo.mejiboard.presentation.posts.grid
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -17,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
-import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostItem
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostsProgress
 
@@ -35,7 +37,7 @@ fun PostsGrid(
     onNavigateImage: (Post) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val navigationBarsPadding = LocalFixedInsets.current.navigationBarsPadding
+    val navigationBarsPadding = WindowInsets.navigationBars.asPaddingValues()
 
     Crossfade(
         targetState = loading && page == 0,

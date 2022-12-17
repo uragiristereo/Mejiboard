@@ -4,9 +4,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomAppBar
@@ -28,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import com.github.uragiristereo.mejiboard.presentation.main.LocalFixedInsets
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 
 
@@ -42,13 +44,11 @@ fun PostsBottomAppBar(
     onDropDownClicked: (String) -> Unit,
     onMenuClicked: () -> Unit,
 ) {
-    val endPadding = LocalFixedInsets.current.navigationBarsPadding
-        .calculateEndPadding(LocalLayoutDirection.current)
 
     BottomAppBar(
         backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.95f),
-        contentPadding = when (endPadding) {
-            0.dp -> LocalFixedInsets.current.navigationBarsPadding
+        contentPadding = when (WindowInsets.navigationBars.asPaddingValues().calculateEndPadding(LocalLayoutDirection.current)) {
+            0.dp -> WindowInsets.navigationBars.asPaddingValues()
             else -> PaddingValues()
         },
     ) {
