@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
@@ -19,7 +20,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetValue
@@ -71,6 +72,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
+@OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @ExperimentalAnimationApi
 @ExperimentalCoilApi
@@ -89,7 +91,7 @@ fun PostsScreen(
 
     val drawerState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
-    val gridState = rememberLazyGridState()
+    val gridState = rememberLazyStaggeredGridState()
     val scaffoldState = rememberScaffoldState()
     val systemUiController = rememberSystemUiController()
 
@@ -97,7 +99,7 @@ fun PostsScreen(
     val surfaceColor = MaterialTheme.colors.surface
     val navigationBarColor = MaterialTheme.colors.surface.copy(alpha = 0.4f)
 
-    remember {
+    remember(viewModel) {
         if (!viewModel.state.initialized) {
             viewModel.updateState {
                 it.copy(
@@ -120,7 +122,7 @@ fun PostsScreen(
         derivedStateOf {
             when (configuration.orientation) {
                 Configuration.ORIENTATION_PORTRAIT -> 2
-                else -> 5
+                else -> 4
             }
         }
     }
@@ -328,6 +330,7 @@ fun PostsScreen(
         bottomBar = {
             PostsBottomAppBar(
                 tags = viewModel.state.tags,
+                loading = isMoreLoadingVisible,
                 moreDropDownExpanded = viewModel.state.moreDropDownExpanded,
                 onNavigate = remember {
                     {

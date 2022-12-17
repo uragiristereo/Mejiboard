@@ -28,6 +28,14 @@ fun PostItem(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val aspectRatio = remember {
+        val ratio = item.originalImage.width.toFloat() / item.originalImage.height
+
+        ratio.coerceIn(
+            minimumValue = 0.5f,
+            maximumValue = 2f,
+        )
+    }
 
     val borderColor = remember {
         when (item.originalImage.fileType) {
@@ -40,7 +48,7 @@ fun PostItem(
 
     Box(
         modifier = modifier
-            .aspectRatio(ratio = 3f / 4f)
+            .aspectRatio(aspectRatio)
             .clip(RoundedCornerShape(size = 4.dp))
             .border(
                 BorderStroke(

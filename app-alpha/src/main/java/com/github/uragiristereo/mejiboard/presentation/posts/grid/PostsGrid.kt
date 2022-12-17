@@ -1,20 +1,22 @@
 package com.github.uragiristereo.mejiboard.presentation.posts.grid
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
@@ -23,12 +25,13 @@ import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostItem
 import com.github.uragiristereo.mejiboard.presentation.posts.grid.common.PostsProgress
 
+@OptIn(ExperimentalFoundationApi::class)
 @ExperimentalCoilApi
 @Composable
 fun PostsGrid(
     posts: SnapshotStateList<Post>,
     canLoadMore: Boolean,
-    gridState: LazyGridState,
+    gridState: LazyStaggeredGridState,
     gridCount: Int,
     loading: Boolean,
     page: Int,
@@ -44,9 +47,9 @@ fun PostsGrid(
         modifier = modifier,
     ) { target ->
         if (!target) {
-            LazyVerticalGrid(
+            LazyVerticalStaggeredGrid(
                 state = gridState,
-                columns = GridCells.Fixed(count = gridCount),
+                columns = StaggeredGridCells.Fixed(count = gridCount),
                 verticalArrangement = Arrangement.spacedBy(space = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
                 contentPadding = PaddingValues(
@@ -55,6 +58,7 @@ fun PostsGrid(
                     top = navigationBarsPadding.calculateTopPadding() + combinedToolbarHeight,
                     bottom = navigationBarsPadding.calculateBottomPadding() + 56.dp + 8.dp,
                 ),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 items(
                     items = posts,
@@ -72,9 +76,13 @@ fun PostsGrid(
                 if (posts.isNotEmpty() && (canLoadMore || loading)) {
                     item(
                         key = Constants.KEY_LOAD_MORE_PROGRESS,
-                        span = { GridItemSpan(gridCount) },
+//                        span = { GridItemSpan(gridCount) },
                     ) {
-                        PostsProgress()
+                        PostsProgress(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .alpha(0f),
+                        )
                     }
                 }
             }
