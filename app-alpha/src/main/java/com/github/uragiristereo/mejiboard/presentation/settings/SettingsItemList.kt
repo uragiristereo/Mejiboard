@@ -12,7 +12,11 @@ import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
@@ -33,8 +37,6 @@ import com.github.uragiristereo.mejiboard.presentation.common.mapper.update
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet.SettingsBottomSheetData
 import com.github.uragiristereo.mejiboard.presentation.settings.bottomsheet.toPreferenceItem
-import com.github.uragiristereo.mejiboard.presentation.settings.core.BigHeader
-import com.github.uragiristereo.mejiboard.presentation.settings.core.SettingsState
 import com.github.uragiristereo.mejiboard.presentation.settings.preference.DropDownPreference
 import com.github.uragiristereo.mejiboard.presentation.settings.preference.RegularPreference
 import com.github.uragiristereo.mejiboard.presentation.settings.preference.SwitchPreference
@@ -46,10 +48,10 @@ import kotlinx.coroutines.launch
 @ExperimentalAnimationApi
 @Composable
 fun SettingItemList(
-    state: SettingsState,
+    isCacheCleaned: Boolean,
+    cacheDirectorySize: String,
     bottomSheetState: ModalBottomSheetState,
     columnState: LazyListState,
-    bigHeaderOpacity: Float,
     innerPadding: PaddingValues,
     mainViewModel: MainViewModel,
     modifier: Modifier = Modifier,
@@ -87,15 +89,6 @@ fun SettingItemList(
         contentPadding = innerPadding,
         modifier = modifier.fillMaxSize(),
     ) {
-        item {
-            BigHeader(
-                bigHeaderOpacity = bigHeaderOpacity,
-                onSizeChange = { new ->
-                    viewModel.state.update { it.copy(settingsHeaderSize = new) }
-                },
-            )
-        }
-
         item { SettingsCategory(text = "Interface") }
 
         item {
@@ -105,7 +98,7 @@ fun SettingItemList(
                 selectedItem = preferences.theme,
                 onItemSelected = { theme ->                    
                     viewModel.updatePreferences { it.copy(theme = theme) }
-                }
+                },
             )
         }
 
@@ -267,13 +260,13 @@ fun SettingItemList(
                 subtitle = buildAnnotatedString {
                     append("Remove all cached memory and files\n")
 
-                    if (state.isCacheCleaned) {
+                    if (isCacheCleaned) {
                         append("Cache successfully cleaned!")
                     } else {
                         append("Cache size: ")
 
                         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append(state.cacheDirectorySize)
+                            append(cacheDirectorySize)
                         }
 
                         append(" (estimated)")
@@ -286,7 +279,7 @@ fun SettingItemList(
                             cacheDir.deleteRecursively()
                         }
 
-                        delay(350)
+                            delay(350)
 
                         viewModel.updateIsCacheCleanedState(file = context.cacheDir)
                     }
