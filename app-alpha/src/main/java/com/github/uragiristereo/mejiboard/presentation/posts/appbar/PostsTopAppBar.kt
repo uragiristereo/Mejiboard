@@ -48,7 +48,7 @@ fun PostsTopAppBar(
             .background(color = MaterialTheme.colors.background),
     ) {
         Card(
-            elevation = 4.dp,
+            elevation = 2.dp,
             shape = RectangleShape,
         ) {
             TopAppBar(

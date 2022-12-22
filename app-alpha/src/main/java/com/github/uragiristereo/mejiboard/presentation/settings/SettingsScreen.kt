@@ -50,7 +50,6 @@ fun SettingsScreen(
     val state by viewModel.state
 
     val surfaceColor = MaterialTheme.colors.surface
-    val isLight = MaterialTheme.colors.isLight
 
     LaunchedEffect(key1 = Unit) {
         viewModel.getFormattedFolderSize(context.cacheDir)
@@ -58,13 +57,13 @@ fun SettingsScreen(
         mainViewModel.checkForUpdate()
     }
 
-    LaunchedEffect(key1 = surfaceColor, key2 = isLight) {
+    LaunchedEffect(key1 = surfaceColor) {
         systemUiController.apply {
             if (MiuiHelper.isDeviceMiui() && !mainViewModel.isDesiredThemeDark) {
                 setStatusBarColor(Color.Black)
                 setNavigationBarColor(surfaceColor)
             } else {
-                setStatusBarColor(Color.Transparent, isLight)
+                setStatusBarColor(surfaceColor)
                 setNavigationBarColor(surfaceColor.copy(0.4f))
             }
         }

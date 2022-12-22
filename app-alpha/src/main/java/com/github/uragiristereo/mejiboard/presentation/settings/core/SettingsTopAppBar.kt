@@ -9,13 +9,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -24,7 +24,7 @@ fun SettingsTopAppBar(
     modifier: Modifier = Modifier,
 ) {
     TopAppBar(
-        backgroundColor = Color.Transparent,
+        backgroundColor = MaterialTheme.colors.background,
         elevation = 2.dp,
         title = {
             Text(text = "Settings")
