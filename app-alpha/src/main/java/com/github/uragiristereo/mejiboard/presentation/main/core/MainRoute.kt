@@ -1,46 +1,27 @@
 package com.github.uragiristereo.mejiboard.presentation.main.core
 
+import com.github.uragiristereo.mejiboard.presentation.common.navigation.NavigationRoute
+
 sealed class MainRoute(
-    private val route: String,
-    val Key: String = "",
-    private val optional: Boolean = false,
-    val defaultValue: String = "",
-) {
+    route: String,
+    argsKeys: List<String> = listOf(),
+) : NavigationRoute(route, argsKeys) {
     object Posts : MainRoute(
         route = "posts",
-        Key = "tags",
-        defaultValue = "",
-        optional = true,
+        argsKeys = listOf("tags"),
     )
+
     object Search : MainRoute(
         route = "search",
-        Key = "tags",
-        defaultValue = "",
-        optional = true,
+        argsKeys = listOf("tags"),
     )
-    object Settings : MainRoute(
-        route = "settings",
-    )
+
     object Image : MainRoute(
         route = "image",
-        Key = "post",
-    )
-    object About : MainRoute(
-        route = "about",
+        argsKeys = listOf("post"),
     )
 
-    override fun toString(): String {
-        return when {
-            Key.isNotEmpty() && !optional -> "$route/{$Key}"
-            Key.isNotEmpty() && optional -> "$route?$Key={$Key}"
-            else -> route
-        }
-    }
+    object Settings : MainRoute(route = "settings")
 
-    fun parseRoute(value: String): String {
-        return when {
-            Key.isNotEmpty() && optional -> "$route?$Key=$value"
-            else -> route
-        }
-    }
+    object About : MainRoute(route = "about")
 }

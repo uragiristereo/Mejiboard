@@ -20,4 +20,13 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -keep class com.github.uragiristereo.** { *; }
+
+# OkHttp
+-dontwarn org.bouncycastle.jsse.BCSSLParameters
+-dontwarn org.bouncycastle.jsse.BCSSLSocket
+-dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
+-dontwarn org.openjsse.javax.net.ssl.SSLParameters
+-dontwarn org.openjsse.javax.net.ssl.SSLSocket
+-dontwarn org.openjsse.net.ssl.OpenJSSE
+
 #-keepnames class **
