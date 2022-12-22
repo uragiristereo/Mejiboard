@@ -55,7 +55,7 @@ import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.common.Constants
 import com.github.uragiristereo.mejiboard.common.helper.MiuiHelper
-import com.github.uragiristereo.mejiboard.presentation.common.extension.navigate
+import com.github.uragiristereo.mejiboard.presentation.common.navigation.navigate
 import com.github.uragiristereo.mejiboard.presentation.main.MainViewModel
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import com.github.uragiristereo.mejiboard.presentation.posts.appbar.PostsBottomAppBar
@@ -314,10 +314,11 @@ fun PostsScreen(
                 tags = viewModel.state.tags,
                 loading = isMoreLoadingVisible,
                 moreDropDownExpanded = viewModel.state.moreDropDownExpanded,
-                onNavigate = remember {
-                    {
+                onNavigateSearch = remember {
+                    { tags ->
                         mainNavigation.navigate(
-                            route = MainRoute.Search.parseRoute(value = viewModel.state.tags)
+                            route = MainRoute.Search,
+                            data = mapOf("tags" to tags),
                         )
                     }
                 },
@@ -418,8 +419,8 @@ fun PostsScreen(
                             mainViewModel.backPressedByGesture = false
 
                             mainNavigation.navigate(
-                                route = "${MainRoute.Image}",
-                                data = MainRoute.Image.Key to item,
+                                route = MainRoute.Image,
+                                data = mapOf("post" to item),
                             )
                         }
                     },

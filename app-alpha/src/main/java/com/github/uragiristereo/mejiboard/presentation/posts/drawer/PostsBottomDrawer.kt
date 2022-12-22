@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.github.uragiristereo.mejiboard.BuildConfig
 import com.github.uragiristereo.mejiboard.presentation.common.DragHandle
+import com.github.uragiristereo.mejiboard.presentation.common.navigation.NavigationRoute
 import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 import kotlinx.coroutines.launch
 
@@ -33,7 +34,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun PostsBottomDrawer(
     drawerState: ModalBottomSheetState,
-    onNavigate: (String) -> Unit,
+    onNavigate: (NavigationRoute) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
 
@@ -84,7 +85,7 @@ fun PostsBottomDrawer(
                     }
                 }
 
-                val hideDrawerAndNavigate: (String) -> Unit = remember {
+                val hideDrawerAndNavigate: (NavigationRoute) -> Unit = remember {
                     {route ->
                         scope.launch {
                             drawerState.hide()
@@ -104,7 +105,7 @@ fun PostsBottomDrawer(
                     text = "Settings",
                     icon = Icons.Outlined.Settings,
                     onClick = {
-                        hideDrawerAndNavigate("${MainRoute.Settings}")
+                        hideDrawerAndNavigate(MainRoute.Settings)
                     },
                     selected = false,
                 )
@@ -113,7 +114,7 @@ fun PostsBottomDrawer(
                     text = "About",
                     icon = Icons.Outlined.Info,
                     onClick = {
-                        hideDrawerAndNavigate("${MainRoute.About}")
+                        hideDrawerAndNavigate(MainRoute.About)
                     },
                     selected = false,
                 )

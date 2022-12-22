@@ -36,7 +36,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import com.github.uragiristereo.mejiboard.presentation.main.core.MainRoute
 
 
 @ExperimentalMaterialApi
@@ -45,7 +44,7 @@ fun PostsBottomAppBar(
     tags: String,
     loading: Boolean,
     moreDropDownExpanded: Boolean,
-    onNavigate: (String) -> Unit,
+    onNavigateSearch: (String) -> Unit,
     onDropDownExpandedChange: (Boolean) -> Unit,
     onDropDownClicked: (String) -> Unit,
     onMenuClicked: () -> Unit,
@@ -108,7 +107,7 @@ fun PostsBottomAppBar(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceEvenly,
                             modifier = Modifier.clickable {
-                                onNavigate(MainRoute.Search.parseRoute(value = tags))
+                                onNavigateSearch(tags)
                             },
                         ) {
                             Icon(

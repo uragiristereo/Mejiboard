@@ -5,19 +5,16 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import coil.annotation.ExperimentalCoilApi
 import com.github.uragiristereo.mejiboard.domain.entity.provider.post.Post
 import com.github.uragiristereo.mejiboard.presentation.about.AboutScreen
-import com.github.uragiristereo.mejiboard.presentation.common.extension.rememberGetData
 import com.github.uragiristereo.mejiboard.presentation.common.materialFadeIn
 import com.github.uragiristereo.mejiboard.presentation.common.materialFadeOut
 import com.github.uragiristereo.mejiboard.presentation.common.materialSharedAxisZNoFadeIn
 import com.github.uragiristereo.mejiboard.presentation.common.materialSharedAxisZNoFadeOut
+import com.github.uragiristereo.mejiboard.presentation.common.navigation.composable
 import com.github.uragiristereo.mejiboard.presentation.common.translateYFadeIn
 import com.github.uragiristereo.mejiboard.presentation.common.translateYFadeOut
 import com.github.uragiristereo.mejiboard.presentation.image.ImageScreen
@@ -29,7 +26,6 @@ import com.github.uragiristereo.mejiboard.presentation.splash.SplashScreen
 import soup.compose.material.motion.holdIn
 import soup.compose.material.motion.holdOut
 import soup.compose.material.motion.navigation.MaterialMotionNavHost
-import soup.compose.material.motion.navigation.composable
 import soup.compose.material.motion.navigation.rememberMaterialMotionNavController
 
 @ExperimentalAnimationApi
@@ -44,48 +40,41 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
         if (splashShown) {
             MaterialMotionNavHost(
                 navController = mainNavigation,
-                startDestination = "${MainRoute.Posts}",
+                startDestination = MainRoute.Posts.route,
             ) {
                 composable(
-                    route = "${MainRoute.Posts}",
-                    arguments = listOf(
-                        navArgument(name = MainRoute.Posts.Key) {
-                            type = NavType.StringType
-                            defaultValue = MainRoute.Posts.defaultValue
-                        },
-                    ),
+                    route = MainRoute.Posts,
                     enterMotionSpec = {
                         when (initialState.destination.route) {
-                            "${MainRoute.Posts}" -> materialFadeIn()
-                            "${MainRoute.Search}" -> holdIn()
+                            MainRoute.Posts.route -> materialFadeIn()
+                            MainRoute.Search.route -> holdIn()
                             else -> materialSharedAxisZNoFadeIn()
                         }
                     },
                     exitMotionSpec = {
                         when (targetState.destination.route) {
-                            "${MainRoute.Posts}" -> materialFadeOut()
-                            "${MainRoute.Image}" -> holdOut()
-                            "${MainRoute.Search}" -> holdOut()
+                            MainRoute.Posts.route -> materialFadeOut()
+                            MainRoute.Image.route -> holdOut()
+                            MainRoute.Search.route -> holdOut()
                             else -> materialSharedAxisZNoFadeOut()
                         }
                     },
                     popEnterMotionSpec = {
                         when (initialState.destination.route) {
-                            "${MainRoute.Image}" -> holdIn()
-                            "${MainRoute.Search}" -> materialFadeIn()
+                            MainRoute.Image.route -> holdIn()
+                            MainRoute.Search.route -> materialFadeIn()
                             else -> materialSharedAxisZNoFadeIn()
                         }
                     },
                     popExitMotionSpec = {
                         when (targetState.destination.route) {
-                            "${MainRoute.Image}" -> holdOut()
-                            "${MainRoute.Search}" -> holdOut()
+                            MainRoute.Image.route -> holdOut()
+                            MainRoute.Search.route -> holdOut()
                             else -> materialSharedAxisZNoFadeOut()
                         }
                     },
                     content = { entry ->
-                        val tags =
-                            remember { entry.arguments?.getString(MainRoute.Posts.Key) ?: MainRoute.Posts.defaultValue }
+                        val tags = rememberGetData(entry = entry, key = "tags") ?: ""
 
                         PostsScreen(
                             tags = tags,
@@ -96,13 +85,7 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
                 )
 
                 composable(
-                    route = "${MainRoute.Search}",
-                    arguments = listOf(
-                        navArgument(name = MainRoute.Search.Key) {
-                            type = NavType.StringType
-                            defaultValue = MainRoute.Search.defaultValue
-                        },
-                    ),
+                    route = MainRoute.Search,
                     enterMotionSpec = {
                         holdIn()
                     },
@@ -110,8 +93,7 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
                         materialFadeOut()
                     },
                     content = { entry ->
-                        val tags =
-                            remember { entry.arguments?.getString(MainRoute.Search.Key) ?: MainRoute.Search.defaultValue }
+                        val tags = rememberGetData(entry = entry, key = "tags") ?: ""
 
                         SearchScreen(
                             tags = tags,
@@ -122,7 +104,7 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
                 )
 
                 composable(
-                    route = "${MainRoute.Settings}",
+                    route = MainRoute.Settings,
                     enterMotionSpec = {
                         materialSharedAxisZNoFadeIn()
                     },
@@ -146,10 +128,7 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
                 )
 
                 composable(
-                    route = "${MainRoute.Image}",
-                    arguments = listOf(
-                        navArgument(name = MainRoute.Image.Key) { type = NavType.StringType },
-                    ),
+                    route = MainRoute.Image,
                     enterMotionSpec = {
                         translateYFadeIn(
                             initialOffsetY = { it / 5 },
@@ -166,7 +145,7 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
                             )
                     },
                     content = { entry ->
-                        val selectedPost = entry.rememberGetData<Post>(key = MainRoute.Image.Key)
+                        val selectedPost = rememberGetData<Post>(entry = entry, key = "post")
 
                         selectedPost?.let { post ->
                             ImageScreen(
@@ -179,8 +158,10 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
                 )
 
                 composable(
-                    route = "${MainRoute.About}",
-                    content = { AboutScreen(mainNavigation, mainViewModel) },
+                    route = MainRoute.About,
+                    content = {
+                        AboutScreen(mainNavigation, mainViewModel)
+                    },
                 )
             }
         } else {
@@ -190,5 +171,4 @@ fun MainNavGraph(mainViewModel: MainViewModel) {
             )
         }
     }
-
 }
