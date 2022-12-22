@@ -1,5 +1,6 @@
 package com.github.uragiristereo.mejiboard.presentation.posts
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,8 +37,7 @@ class PostsViewModel @Inject constructor(
     val state by mutableState
     var savedState = savedStateHandle[Constants.STATE_KEY_POSTS] ?: PostsSavedState()
 
-    var toolbarOffsetHeightPx by mutableStateOf(0f)
-    var combinedToolbarHeightPx by mutableStateOf(0f)
+    val offsetY = Animatable(0f)
     val posts = mutableStateListOf<Post>()
 
     var preferences by mutableStateOf(AppPreferences())

@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
@@ -99,15 +98,10 @@ fun PostsScreen(
     val surfaceColor = MaterialTheme.colors.surface
     val navigationBarColor = MaterialTheme.colors.surface.copy(alpha = 0.4f)
 
-    remember(viewModel) {
-        if (!viewModel.state.initialized) {
-            viewModel.updateState {
-                it.copy(
-                    tags = tags,
-                    initialized = true,
-                )
-            }
-        }
+    var topAppBarHeight by remember { mutableStateOf(0.dp) }
+
+    remember {
+        viewModel.updateState { it.copy(tags = tags) }
 
         true
     }
@@ -191,7 +185,7 @@ fun PostsScreen(
 
     LaunchedEffect(key1 = mainViewModel.refreshNeeded) {
         if (mainViewModel.refreshNeeded) {
-            viewModel.toolbarOffsetHeightPx = 0f
+            viewModel.offsetY.snapTo(targetValue = 0f)
 
             if (viewModel.savedState.loadFromSession) {
                 viewModel.getPostsFromSession()
@@ -222,27 +216,12 @@ fun PostsScreen(
         }
     }
 
-    val toolbarHeight = remember { 56.dp }
-    val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.toPx() }
-    var offsetToAnimate by remember { mutableStateOf(0f) }
-    var animationInProgress by remember { mutableStateOf(false) }
-
-    val animatedToolbarOffsetHeightPx by animateFloatAsState(
-        targetValue = when {
-            animationInProgress -> offsetToAnimate
-            else -> 0f
-        },
-        finishedListener = {
-            animationInProgress = false
-        },
-    )
-
     val fabVisible by remember {
         derivedStateOf {
             if (gridState.firstVisibleItemIndex >= 5 && viewModel.posts.isNotEmpty()) {
-                when (viewModel.toolbarOffsetHeightPx) {
+                when (viewModel.offsetY.value) {
                     0f -> true
-                    -viewModel.combinedToolbarHeightPx -> false
+                    -with(density) { topAppBarHeight.toPx() } -> false
                     else -> viewModel.state.lastFabVisible
                 }
             } else {
@@ -259,20 +238,23 @@ fun PostsScreen(
         // prevent coroutine scope to get cancelled
         scope.launch {
             if (!gridState.isScrollInProgress) {
-                if (viewModel.toolbarOffsetHeightPx != -viewModel.combinedToolbarHeightPx && viewModel.toolbarOffsetHeightPx != 0f) {
+                val topAppBarHeightPx = with(density) { topAppBarHeight.toPx() }
 
-                    val half = viewModel.combinedToolbarHeightPx / 2
-                    val oldToolbarOffsetHeightPx = viewModel.toolbarOffsetHeightPx
-
-                    viewModel.toolbarOffsetHeightPx = when {
-                        abs(viewModel.toolbarOffsetHeightPx) >= half -> -viewModel.combinedToolbarHeightPx
+                if (viewModel.offsetY.value != -topAppBarHeightPx && viewModel.offsetY.value != 0f) {
+                    val half = topAppBarHeightPx / 2
+                    val oldOffsetY = viewModel.offsetY.value
+                    val targetOffsetY = when {
+                        abs(viewModel.offsetY.value) >= half -> -topAppBarHeightPx
                         else -> 0f
                     }
 
-                    offsetToAnimate = animatedToolbarOffsetHeightPx - (oldToolbarOffsetHeightPx - viewModel.toolbarOffsetHeightPx)
-                    animationInProgress = true
+                    launch {
+                        gridState.animateScrollBy(value = oldOffsetY - targetOffsetY)
+                    }
 
-                    gridState.animateScrollBy(value = oldToolbarOffsetHeightPx - viewModel.toolbarOffsetHeightPx)
+                    launch {
+                        viewModel.offsetY.animateTo(targetOffsetY)
+                    }
                 }
             }
         }
@@ -346,7 +328,10 @@ fun PostsScreen(
                 },
                 onDropDownClicked = remember {
                     { item ->
-                        viewModel.toolbarOffsetHeightPx = 0f
+                        scope.launch {
+                            viewModel.offsetY.animateTo(targetValue = 0f)
+                        }
+
                         viewModel.updateState { it.copy(moreDropDownExpanded = false) }
 
                         fun getPosts() {
@@ -399,11 +384,16 @@ fun PostsScreen(
                             ): Offset {
                                 if (!viewModel.state.loading && viewModel.posts.size > 4) {
                                     val delta = available.y
-                                    val newOffset = viewModel.toolbarOffsetHeightPx + delta
-                                    viewModel.toolbarOffsetHeightPx = newOffset.coerceIn(
-                                        minimumValue = -viewModel.combinedToolbarHeightPx,
-                                        maximumValue = 0f,
-                                    )
+                                    val newOffset = viewModel.offsetY.value + delta
+
+                                    scope.launch {
+                                        viewModel.offsetY.snapTo(
+                                            targetValue = newOffset.coerceIn(
+                                                minimumValue = -with(density) { topAppBarHeight.toPx() },
+                                                maximumValue = 0f,
+                                            )
+                                        )
+                                    }
                                 }
 
                                 return Offset.Zero
@@ -420,7 +410,7 @@ fun PostsScreen(
                     gridCount = gridCount,
                     loading = viewModel.state.loading,
                     page = viewModel.state.page,
-                    combinedToolbarHeight = with(density) { viewModel.combinedToolbarHeightPx.toDp() },
+                    topAppBarHeight = topAppBarHeight,
                     allowPostClick = viewModel.state.allowPostClick,
                     onNavigateImage = remember {
                         { item ->
@@ -443,33 +433,25 @@ fun PostsScreen(
                 )
             }
 
-            val offsetY by remember {
-                derivedStateOf {
-                    when {
-                        animationInProgress -> (viewModel.toolbarOffsetHeightPx - offsetToAnimate) + animatedToolbarOffsetHeightPx
-                        else -> viewModel.toolbarOffsetHeightPx
-                    }
-                }
-            }
-
             PostsTopAppBar(
                 searchTags = viewModel.state.tags,
-                onBrowseHeightChange = remember {
-                    { height ->
-                        viewModel.combinedToolbarHeightPx = toolbarHeightPx + height
-                    }
-                },
+                currentHeight = topAppBarHeight,
+                onHeightChanged = { topAppBarHeight = it },
                 modifier = Modifier
                     .graphicsLayer {
-                        translationY = offsetY
-                    },
+                        translationY = viewModel.offsetY.value
+                    }
             )
         }
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
+                .height(
+                    WindowInsets.statusBars
+                        .asPaddingValues()
+                        .calculateTopPadding()
+                )
                 .background(
                     color = when {
                         MaterialTheme.colors.isLight -> Color.White

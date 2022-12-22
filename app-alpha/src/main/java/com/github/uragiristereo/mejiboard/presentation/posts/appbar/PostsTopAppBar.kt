@@ -16,23 +16,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.uragiristereo.mejiboard.R
 
 @Composable
 fun PostsTopAppBar(
-    onBrowseHeightChange: (Float) -> Unit,
     searchTags: String,
+    currentHeight: Dp,
+    onHeightChanged: (Dp) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val density = LocalDensity.current
+
     Column(
         modifier = modifier
+            .onSizeChanged { size ->
+                val newHeight = with(density) { size.height.toDp() }
+
+                if (newHeight != currentHeight) {
+                    onHeightChanged(newHeight)
+                }
+            }
             .background(color = MaterialTheme.colors.background),
     ) {
         Card(
@@ -70,9 +82,6 @@ fun PostsTopAppBar(
             },
             fontSize = 16.sp,
             modifier = Modifier
-                .onSizeChanged {
-                    onBrowseHeightChange(it.height.toFloat())
-                }
                 .padding(
                     horizontal = 8.dp,
                     vertical = 4.dp,

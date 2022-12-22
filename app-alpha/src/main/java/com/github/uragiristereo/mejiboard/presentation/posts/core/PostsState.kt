@@ -6,8 +6,7 @@ import com.github.uragiristereo.mejiboard.domain.entity.provider.ApiProvider
 
 data class PostsState(
     val tags: String = "",
-    val initialized: Boolean = false,
-    val loading: Boolean = true,
+    val loading: Boolean = false,
     val error: String = "",
     val page: Int = 0,
     val canLoadMore: Boolean = true,

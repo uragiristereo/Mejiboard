@@ -35,7 +35,7 @@ fun PostsGrid(
     gridCount: Int,
     loading: Boolean,
     page: Int,
-    combinedToolbarHeight: Dp,
+    topAppBarHeight: Dp,
     allowPostClick: Boolean,
     onNavigateImage: (Post) -> Unit,
     modifier: Modifier = Modifier,
@@ -55,7 +55,7 @@ fun PostsGrid(
                 contentPadding = PaddingValues(
                     start = 8.dp,
                     end = 8.dp,
-                    top = navigationBarsPadding.calculateTopPadding() + combinedToolbarHeight,
+                    top = topAppBarHeight,
                     bottom = navigationBarsPadding.calculateBottomPadding() + 56.dp + 8.dp,
                 ),
                 modifier = Modifier.fillMaxSize(),
