@@ -1,7 +1,10 @@
 <img src="https://github.com/uragiristereo/Mejiboard/raw/main/docs/banner.png" width="100%">
 
 # Mejiboard
-image (イメージ) + board = メジboard (mejiboard)
+![GitHub all releases](https://img.shields.io/github/downloads/uragiristereo/Mejiboard/total)
+[![)](https://img.shields.io/badge/latest-v1.6.0--alpha-orange)](https://github.com/uragiristereo/Mejiboard/releases)
+
+_image (イメージ) + board = メジboard (mejiboard)_
 
 An anime image board (booru) viewer for android, made from Jetpack Compose 🚀.
 
@@ -15,7 +18,7 @@ _Note: all providers are filtered as rated safe (general & sensitive)._
 
 ## Features
 - Material Design UI
-- Easy one-handed operation
+- Optimized for one-handed operation
 - System-based theme with 3 themes available (Light, Dark & Black)
 - Search images with tags
 - Image viewer with zoom, pan & gesture support
@@ -24,10 +27,10 @@ _Note: all providers are filtered as rated safe (general & sensitive)._
 - Using latest Android tech stacks
 
 ## Download
-Latest **alpha** variant:
-- Version: `1.5.1-alpha`
-- Date: 2022-11-01
-- Links: [changelogs](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.5.1-alpha) • [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.5.1-alpha/Mejiboard_v1.5.1-alpha.apk)
+
+| variant  | date       | latest version                                                                       | link                                                                                                               |
+|----------|------------|--------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| v1-alpha | 2022-12-23 | [v1.6.0-alpha](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.6.0-alpha) | [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.5.1-alpha/Mejiboard_v1.5.1-alpha.apk) |
 
 > _Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more._
 
@@ -35,12 +38,6 @@ Latest **alpha** variant:
 <img src="https://github.com/uragiristereo/Mejiboard/raw/main/docs/screenshots.jpg">
 
 > _Demo video: [streamable.com/y8yc4p](https://streamable.com/y8yc4p)_
-
-## To-Dos
-> _See [TODOs.md](https://github.com/uragiristereo/Mejiboard/blob/main/docs/TODOs.md)_
-
-## Libraries used
-> _See [LIBRARIES.md](https://github.com/uragiristereo/Mejiboard/blob/main/docs/LIBRARIES.md)_
 
 ## License
     Copyright 2021 Agung Watanabe

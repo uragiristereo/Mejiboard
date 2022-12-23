@@ -2,8 +2,8 @@
   "variant": "alpha",
   "releases": [
     {
-      "versionCode": 105010,
-      "versionName": "1.5.1-alpha",
+      "versionCode": 106000,
+      "versionName": "1.6.0-alpha",
       "updateRequired": true
     }
   ]
