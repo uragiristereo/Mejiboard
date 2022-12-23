@@ -30,7 +30,7 @@ _Note: all providers are filtered as rated safe (general & sensitive)._
 
 | variant  | date       | latest version                                                                       | link                                                                                                               |
 |----------|------------|--------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
-| v1-alpha | 2022-12-23 | [v1.6.0-alpha](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.6.0-alpha) | [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.5.1-alpha/Mejiboard_v1.5.1-alpha.apk) |
+| v1-alpha | 2022-12-23 | [v1.6.0-alpha](https://github.com/uragiristereo/Mejiboard/releases/tag/v1.6.0-alpha) | [direct APK](https://github.com/uragiristereo/Mejiboard/releases/download/v1.6.0-alpha/Mejiboard_v1.6.0-alpha.apk) |
 
 > _Check out [Releases](https://github.com/uragiristereo/Mejiboard/releases) section for more._
 
